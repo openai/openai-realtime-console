@@ -74,7 +74,7 @@ It will start automatically on `localhost:8081`. **You will need to create a `.e
 with `OPENAI_API_KEY=` set to your API key. Note that you should change the following code
 in [`ConsolePage.tsx`](/src/pages/ConsolePage.tsx):
 
-```
+```javascript
 /**
  * Change this if you want to connect to a local relay server!
  * This will require you to set OPENAI_API_KEY= in a `.env` file
