@@ -1,6 +1,6 @@
 {
-  "name": "realtime-js",
-  "version": "0.1.0",
+  "name": "openai-realtime-console",
+  "version": "0.0.0",
   "type": "module",
   "private": true,
   "dependencies": {
