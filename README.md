@@ -4,7 +4,7 @@ The OpenAI Realtime Console is intended as an inspector and interactive API refe
 for the OpenAI Realtime API. It comes packaged with two utility libraries,
 [openai/openai-realtime-api-beta](https://github.com/openai/openai-reatime-api-beta)
 that acts as a **Reference Client** (for browser and Node.js) and
-[`/src/lib/wavtools`](./src/lib/wavtools) which allows for simple Audio
+[`/src/lib/wavtools`](./src/lib/wavtools) which allows for simple audio
 management in the browser.
 
 <img src="/readme/realtime-console.png" width="800" />
