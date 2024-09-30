@@ -693,10 +693,18 @@ export function ConsolePage() {
             <div className="content-block-title">get_weather()</div>
             <div className="content-block-title bottom">
               {marker?.location || 'not yet retrieved'}
-              {!!marker?.temperature &&
-                ` 🌡️ ${marker.temperature.value} ${marker.temperature.units}`}
-              {!!marker?.wind_speed &&
-                ` 🍃 ${marker.wind_speed.value} ${marker.wind_speed.units}`}
+              {!!marker?.temperature && (
+                <>
+                  <br />
+                  🌡️ {marker.temperature.value} {marker.temperature.units}
+                </>
+              )}
+              {!!marker?.wind_speed && (
+                <>
+                  {' '}
+                  🍃 {marker.wind_speed.value} {marker.wind_speed.units}
+                </>
+              )}
             </div>
             <div className="content-block-body full">
               {coords && (

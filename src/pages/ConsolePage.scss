@@ -83,6 +83,8 @@
           position: absolute;
           display: flex;
           align-items: center;
+          justify-content: center;
+          line-height: 2em;
           top: 16px;
           left: 16px;
           padding: 4px 16px;
@@ -90,11 +92,12 @@
           border-radius: 1000px;
           min-height: 32px;
           z-index: 9999;
+          text-align: center;
           white-space: pre;
-          text-align: right;
           &.bottom {
             top: auto;
             bottom: 16px;
+            right: 16px;
           }
         }
       }
