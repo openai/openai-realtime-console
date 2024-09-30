@@ -350,5 +350,5 @@ You can also reach out and let us know what you think directly!
 - Mark Hudnall / API / [@landakram](https://x.com/landakram)
 - Peter Bakkum / API / [@pbbakkum](https://x.com/pbbakkum)
 - Atty Eleti / API / [@athyuttamre](https://x.com/athyuttamre)
-- Karolis Kosas / Design / [karoliskosas](https://x.com/karoliskosas)
+- Karolis Kosas / Design / [@karoliskosas](https://x.com/karoliskosas)
 - Keith Horwood / API + DX / [@keithwhor](https://x.com/keithwhor)
