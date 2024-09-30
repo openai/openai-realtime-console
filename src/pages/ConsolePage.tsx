@@ -22,6 +22,7 @@ import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map';
 
 import './ConsolePage.scss';
+import { isJsxOpeningLikeElement } from 'typescript';
 
 /**
  * Type for result from get_weather() function call
@@ -30,6 +31,14 @@ interface Coordinates {
   lat: number;
   lng: number;
   location?: string;
+  temperature?: {
+    value: number;
+    units: string;
+  };
+  wind_speed?: {
+    value: number;
+    units: string;
+  };
 }
 
 /**
@@ -430,6 +439,15 @@ export function ConsolePage() {
           `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
         );
         const json = await result.json();
+        const temperature = {
+          value: json.current.temperature_2m as number,
+          units: json.current_units.temperature_2m as string,
+        };
+        const wind_speed = {
+          value: json.current.wind_speed_10m as number,
+          units: json.current_units.wind_speed_10m as string,
+        };
+        setMarker({ lat, lng, location, temperature, wind_speed });
         return json;
       }
     );
@@ -675,6 +693,10 @@ export function ConsolePage() {
             <div className="content-block-title">get_weather()</div>
             <div className="content-block-title bottom">
               {marker?.location || 'not yet retrieved'}
+              {!!marker?.temperature &&
+                ` 🌡️ ${marker.temperature.value} ${marker.temperature.units}`}
+              {!!marker?.wind_speed &&
+                ` 🍃 ${marker.wind_speed.value} ${marker.wind_speed.units}`}
             </div>
             <div className="content-block-body full">
               {coords && (
