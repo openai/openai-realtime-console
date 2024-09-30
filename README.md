@@ -110,9 +110,9 @@ import { RealtimeClient } from '/src/lib/realtime-api-beta/index.js';
 const client = new RealtimeClient({ apiKey: process.env.OPENAI_API_KEY });
 
 // Can set parameters ahead of connecting
-client.updateSettings({ instructions: 'You are a great, upbeat friend.' });
-client.updateSettings({ voice: 'alloy' });
-client.updateSettings({ turn_detection: 'server_vad' });
+client.updateSession({ instructions: 'You are a great, upbeat friend.' });
+client.updateSession({ voice: 'alloy' });
+client.updateSession({ turn_detection: 'server_vad' });
 client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
 // Set up event handling
