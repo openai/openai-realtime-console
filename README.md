@@ -354,5 +354,5 @@ You can also reach out and let us know what you think directly!
 - Keith Horwood / API + DX / [@keithwhor](https://x.com/keithwhor)
 - Romain Huet / DX / [@romainhuet](https://x.com/romainhuet)
 - Katia Gil Guzman / DX / [@kagigz](https://x.com/kagigz)
-- Ilan Bigio / DX [@ilanbigio](https://x.com/ilanbigio)
+- Ilan Bigio / DX / [@ilanbigio](https://x.com/ilanbigio)
 - Kevin Whinnery / DX / [@kevinwhinnery](https://x.com/kevinwhinnery)
