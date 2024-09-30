@@ -63,9 +63,9 @@ You can freely interrupt the model at any time in push-to-talk or VAD mode.
 
 ## Using a server relay
 
-If you would like to build a more robust implementation and play around with the client
-on the server, we have included a Node.js [Relay Server](/relay-server/index.js). You
-can run it with:
+If you would like to build a more robust implementation and play around with the reference
+client using your own server, we have included a Node.js [Relay Server](/relay-server/index.js).
+You can run it with:
 
 ```shell
 $ npm run relay
