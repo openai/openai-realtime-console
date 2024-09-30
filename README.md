@@ -65,7 +65,6 @@ You can freely interrupt the model at any time in push-to-talk or VAD mode.
 
 If you would like to build a more robust implementation and play around with the reference
 client using your own server, we have included a Node.js [Relay Server](/relay-server/index.js).
-You can run it with:
 
 ```shell
 $ npm run relay
@@ -86,6 +85,15 @@ in [`ConsolePage.tsx`](/src/pages/ConsolePage.tsx):
 // const USE_LOCAL_RELAY_SERVER_URL: string | undefined = 'http://localhost:8081';
 const USE_LOCAL_RELAY_SERVER_URL: string | undefined = void 0;
 ```
+
+This server is **only a simple message relay**, but it can be extended to:
+
+- Hide API credentials if you would like to ship an app to play with online
+- Handle certain calls you would like to keep secret (e.g. `instructions`) on
+  the server directly
+- Restrict what types of events the client can receive and send
+
+You will have to implement these features yourself.
 
 # Realtime API reference client
 
