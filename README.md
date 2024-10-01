@@ -98,7 +98,7 @@ You will have to implement these features yourself.
 # Realtime API reference client
 
 The latest reference client and documentation are available on GitHub at
-[openai/openai-realtime-api-beta](https://github.com/openai/openai-reatime-api-beta).
+[openai/openai-realtime-api-beta](https://github.com/openai/openai-realtime-api-beta).
 
 You can use this client yourself in any React (front-end) or Node.js project.
 For full documentation, refer to the GitHub repository, but you can use the
@@ -212,7 +212,7 @@ anything it has generated that is ahead of where the user's state is.
 There are five main client events for application control flow in `RealtimeClient`.
 Note that this is only an overview of using the client, the full Realtime API
 event specification is considerably larger, if you need more control check out the GitHub repository:
-[openai/openai-realtime-api-beta](https://github.com/openai/openai-reatime-api-beta).
+[openai/openai-realtime-api-beta](https://github.com/openai/openai-realtime-api-beta).
 
 ```javascript
 // errors like connection failures
