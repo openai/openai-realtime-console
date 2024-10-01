@@ -78,7 +78,7 @@ export function ConsolePage() {
   );
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(
     new WavStreamPlayer({ sampleRate: getSystemSampleRate() })
-  );
+);
   const clientRef = useRef<RealtimeClient>(
     new RealtimeClient(
       USE_LOCAL_RELAY_SERVER_URL

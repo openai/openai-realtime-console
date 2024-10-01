@@ -2,6 +2,43 @@ import { AudioProcessorSrc } from './worklets/audio_processor.js';
 import { AudioAnalysis } from './analysis/audio_analysis.js';
 import { WavPacker } from './wav_packer.js';
 
+// Add the helper functions here
+/**
+ * Converts Int16Array to AudioBuffer
+ * @param {Int16Array} pcmData - The raw PCM data
+ * @param {number} sampleRate - The sample rate of the PCM data
+ * @returns {Promise<AudioBuffer>} - A promise that resolves to the AudioBuffer
+ */
+async function int16ArrayToAudioBuffer(pcmData, sampleRate) {
+  const audioCtx = new AudioContext({ sampleRate });
+  const audioBuffer = audioCtx.createBuffer(1, pcmData.length, sampleRate);
+  const bufferData = audioBuffer.getChannelData(0);
+
+  // Convert Int16Array to Float32Array, as AudioBuffer expects Float32 data
+  for (let i = 0; i < pcmData.length; i++) {
+    bufferData[i] = pcmData[i] / 0x8000; // Convert to [-1, 1] range
+  }
+
+  return audioBuffer;
+}
+
+/**
+ * Converts AudioBuffer to Int16Array
+ * @param {AudioBuffer} audioBuffer - The audio buffer to convert
+ * @returns {Int16Array} - The converted Int16Array
+ */
+function audioBufferToInt16Array(audioBuffer) {
+  const float32Array = audioBuffer.getChannelData(0);
+  const int16Array = new Int16Array(float32Array.length);
+
+  for (let i = 0; i < float32Array.length; i++) {
+    // Convert Float32 ([-1, 1]) to Int16 ([−32768, 32767])
+    int16Array[i] = Math.max(-1, Math.min(1, float32Array[i])) * 0x8000;
+  }
+
+  return int16Array;
+}
+
 /**
  * Decodes audio into a wav file
  * @typedef {Object} DecodedAudioType
@@ -12,9 +49,36 @@ import { WavPacker } from './wav_packer.js';
  */
 
 /**
+ * Resample audio from system sample rate to 24,000 Hz
+ * @param {AudioBuffer} audioBuffer - The captured audio buffer at system sample rate
+ * @param {number} targetSampleRate - The target sample rate, e.g., 24000 Hz
+ * @returns {Promise<AudioBuffer>} - A promise that resolves with the resampled audio buffer
+ */
+
+/**
  * Records live stream of user audio as PCM16 "audio/wav" data
  * @class
  */
+
+async function resampleAudioBuffer(audioBuffer, targetSampleRate) {
+  const numChannels = audioBuffer.numberOfChannels;
+  const context = new OfflineAudioContext(
+    numChannels,
+    audioBuffer.duration * targetSampleRate,
+    targetSampleRate
+  );
+
+  // Create a buffer source and set its buffer to the input buffer
+  const bufferSource = context.createBufferSource();
+  bufferSource.buffer = audioBuffer;
+  bufferSource.connect(context.destination);
+
+  // Start processing the audio
+  bufferSource.start(0);
+  const renderedBuffer = await context.startRendering();
+  return renderedBuffer;
+}
+
 export class WavRecorder {
   /**
    * Create a new WavRecorder instance
@@ -22,14 +86,14 @@ export class WavRecorder {
    * @returns {WavRecorder}
    */
   constructor({
-    this.sampleRate = sampleRate || new AudioContext().sampleRate;
+    sampleRate = new AudioContext().sampleRate,  // Capture the system sample rate if none provided
     outputToSpeakers = false,
     debug = false,
   } = {}) {
     // Script source
     this.scriptSrc = AudioProcessorSrc;
     // Config
-    this.sampleRate = sampleRate;
+    this.sampleRate = sampleRate;  // Now correctly assigned
     this.outputToSpeakers = outputToSpeakers;
     this.debug = !!debug;
     this._deviceChangeCallback = null;
@@ -431,6 +495,7 @@ export class WavRecorder {
    * @param {number} [chunkSize] chunkProcessor will not be triggered until this size threshold met in mono audio
    * @returns {Promise<true>}
    */
+
   async record(chunkProcessor = () => {}, chunkSize = 8192) {
     if (!this.processor) {
       throw new Error('Session ended: please call .begin() first');
@@ -439,6 +504,7 @@ export class WavRecorder {
     } else if (typeof chunkProcessor !== 'function') {
       throw new Error(`chunkProcessor must be a function`);
     }
+  
     this._chunkProcessor = chunkProcessor;
     this._chunkProcessorSize = chunkSize;
     this._chunkProcessorBuffer = {
@@ -446,8 +512,40 @@ export class WavRecorder {
       mono: new ArrayBuffer(0),
     };
     this.log('Recording ...');
+  
+    // Start recording and capture audio at the system sample rate
     await this._event('start');
     this.recording = true;
+  
+    // Example: Process small chunks of audio data
+    const processChunk = async (startIdx, endIdx) => {
+      // Extract the smaller chunk of data
+      const chunkBuffer = this._chunkProcessorBuffer.mono.slice(startIdx, endIdx);
+  
+      // Convert raw PCM data to AudioBuffer
+      const rawBuffer = new Int16Array(chunkBuffer);
+      const audioBuffer = await int16ArrayToAudioBuffer(rawBuffer, this.sampleRate);
+  
+      // Resample captured audio to 24,000 Hz
+      const resampledBuffer = await resampleAudioBuffer(audioBuffer, 24000);
+  
+      // Convert the resampled AudioBuffer back to Int16Array
+      const resampledInt16Array = audioBufferToInt16Array(resampledBuffer);
+  
+      // Process the resampled buffer (now in Int16Array format)
+      this._chunkProcessor({ mono: resampledInt16Array });
+    };
+  
+    // Now process the full buffer in smaller chunks
+    const totalSamples = this._chunkProcessorBuffer.mono.byteLength / 2;  // Each Int16 is 2 bytes
+    const chunkSizeInSamples = Math.min(this._chunkProcessorSize, totalSamples);
+  
+    // Iterate over the buffer in smaller chunks
+    for (let i = 0; i < totalSamples; i += chunkSizeInSamples) {
+      const endIdx = Math.min(i + chunkSizeInSamples, totalSamples);
+      await processChunk(i * 2, endIdx * 2);  // Multiply by 2 to get byte offset
+    }
+  
     return true;
   }
 

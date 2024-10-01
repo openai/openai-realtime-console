@@ -100,7 +100,8 @@ export class WavStreamPlayer {
    * @param {string} [trackId]
    * @returns {Int16Array}
    */
-  add16BitPCM(arrayBuffer, trackId = 'default') {
+
+  async add16BitPCM(arrayBuffer, trackId = 'default') {
     if (typeof trackId !== 'string') {
       throw new Error(`trackId must be a string`);
     } else if (this.interruptedTrackIds[trackId]) {
@@ -109,6 +110,7 @@ export class WavStreamPlayer {
     if (!this.stream) {
       this._start();
     }
+  
     let buffer;
     if (arrayBuffer instanceof Int16Array) {
       buffer = arrayBuffer;
@@ -117,9 +119,33 @@ export class WavStreamPlayer {
     } else {
       throw new Error(`argument must be Int16Array or ArrayBuffer`);
     }
-    this.stream.port.postMessage({ event: 'write', buffer, trackId });
+  
+    // Example: Process smaller chunks of the buffer
+    const processChunk = async (startIdx, endIdx) => {
+      const chunkBuffer = buffer.slice(startIdx, endIdx);
+  
+      // Convert Int16Array to AudioBuffer
+      const audioBuffer = await int16ArrayToAudioBuffer(chunkBuffer, this.sampleRate);
+  
+      // Resample to 24,000 Hz
+      const resampledBuffer = await resampleAudioBuffer(audioBuffer, 24000);
+  
+      // Convert the resampled AudioBuffer back to Int16Array
+      const resampledInt16Array = audioBufferToInt16Array(resampledBuffer);
+  
+      // Send the resampled buffer to the stream for playback
+      this.stream.port.postMessage({ event: 'write', buffer: resampledInt16Array, trackId });
+    };
+  
+    // Process the buffer in smaller chunks
+    const chunkSize = 1024;  // Customize the chunk size as needed
+    for (let i = 0; i < buffer.length; i += chunkSize) {
+      const endIdx = Math.min(i + chunkSize, buffer.length);
+      await processChunk(i, endIdx);
+    }
+  
     return buffer;
-  }
+  }  
 
   /**
    * Gets the offset (sample count) of the currently playing stream
