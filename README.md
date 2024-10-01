@@ -2,7 +2,7 @@
 
 The OpenAI Realtime Console is intended as an inspector and interactive API reference
 for the OpenAI Realtime API. It comes packaged with two utility libraries,
-[openai/openai-realtime-api-beta](https://github.com/openai/openai-reatime-api-beta)
+[openai/openai-realtime-api-beta](https://github.com/openai/openai-realtime-api-beta)
 that acts as a **Reference Client** (for browser and Node.js) and
 [`/src/lib/wavtools`](./src/lib/wavtools) which allows for simple audio
 management in the browser.
@@ -28,17 +28,20 @@ It should be available via `localhost:3000`.
 
 # Table of contents
 
-1. [Using the console](#using-the-console)
-   1. [Using a server relay](#using-a-server-relay)
-1. [Realtime API reference client](#realtime-api-reference-client)
-   1. [Sending streaming audio](#sending-streaming-audio)
-   1. [Adding and using tools](#adding-and-using-tools)
-   1. [Interrupting the model](#interrupting-the-model)
-   1. [Reference client events](#reference-client-events)
-1. [Wavtools](#wavtools)
-   1. [WavRecorder quickstart](#wavrecorder-quickstart)
-   1. [WavStreamPlayer quickstart](#wavstreamplayer-quickstart)
-1. [Acknowledgements and contact](#acknowledgements-and-contact)
+- [OpenAI Realtime Console](#openai-realtime-console)
+- [Starting the console](#starting-the-console)
+- [Table of contents](#table-of-contents)
+- [Using the console](#using-the-console)
+  - [Using a server relay](#using-a-server-relay)
+- [Realtime API reference client](#realtime-api-reference-client)
+  - [Sending streaming audio](#sending-streaming-audio)
+  - [Adding and using tools](#adding-and-using-tools)
+  - [Interrupting the model](#interrupting-the-model)
+  - [Reference client events](#reference-client-events)
+- [Wavtools](#wavtools)
+  - [WavRecorder Quickstart](#wavrecorder-quickstart)
+  - [WavStreamPlayer Quickstart](#wavstreamplayer-quickstart)
+- [Acknowledgements and contact](#acknowledgements-and-contact)
 
 # Using the console
 
