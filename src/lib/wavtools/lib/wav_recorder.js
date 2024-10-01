@@ -22,7 +22,7 @@ export class WavRecorder {
    * @returns {WavRecorder}
    */
   constructor({
-    sampleRate = 44100,
+    this.sampleRate = sampleRate || new AudioContext().sampleRate;
     outputToSpeakers = false,
     debug = false,
   } = {}) {
