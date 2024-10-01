@@ -145,7 +145,7 @@ export class WavStreamPlayer {
     }
   
     return buffer;
-  }  
+  }
 
   /**
    * Gets the offset (sample count) of the currently playing stream
