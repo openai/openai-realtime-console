@@ -3,6 +3,8 @@
  * @typedef {(event: {[key: string]: any}): void} EventHandlerCallbackType
  */
 
+const sleep = (t) => new Promise((r) => setTimeout(() => r(), t));
+
 /**
  * Inherited class for RealtimeAPI and RealtimeClient
  * Adds basic event handling
@@ -95,6 +97,28 @@ export class RealtimeEventHandler {
       delete this.nextEventHandlers[eventName];
     }
     return true;
+  }
+
+  /**
+   * Waits for next event of a specific type and returns the payload
+   * @param {string} eventName
+   * @param {number|null} [timeout]
+   * @returns {Promise<{[key: string]: any}|null>}
+   */
+  async waitForNext(eventName, timeout = null) {
+    const t0 = Date.now();
+    let nextEvent;
+    this.onNext(eventName, (event) => (nextEvent = event));
+    while (!nextEvent) {
+      if (timeout) {
+        const t1 = Date.now();
+        if (t1 - t0 > timeout) {
+          return null;
+        }
+      }
+      await sleep(1);
+    }
+    return nextEvent;
   }
 
   /**

@@ -1,8 +1,4 @@
 /**
- * EventHandler callback
- * @typedef {(event: {[key: string]: any}): void} EventHandlerCallbackType
- */
-/**
  * Inherited class for RealtimeAPI and RealtimeClient
  * Adds basic event handling
  * @class
@@ -45,6 +41,15 @@ export class RealtimeEventHandler {
      * @returns {true}
      */
     offNext(eventName: string, callback?: EventHandlerCallbackType): true;
+    /**
+     * Waits for next event of a specific type and returns the payload
+     * @param {string} eventName
+     * @param {number|null} [timeout]
+     * @returns {Promise<{[key: string]: any}|null>}
+     */
+    waitForNext(eventName: string, timeout?: number | null): Promise<{
+        [key: string]: any;
+    } | null>;
     /**
      * Executes all events in the order they were added, with .on() event handlers executing before .onNext() handlers
      * @param {string} eventName

@@ -3,8 +3,6 @@ import { RealtimeAPI } from './api.js';
 import { RealtimeConversation } from './conversation.js';
 import { RealtimeUtils } from './utils.js';
 
-const sleep = (t) => new Promise((r) => setTimeout(() => r(), t));
-
 /**
  * Valid audio formats
  * @typedef {"pcm16"|"g711-ulaw"|"g711-alaw"} AudioFormatType
@@ -272,7 +270,7 @@ export class RealtimeClient extends RealtimeEventHandler {
     // Handles session created event, can optionally wait for it
     this.realtime.on(
       'server.session.created',
-      () => (this.sessionCreated = true)
+      () => (this.sessionCreated = true),
     );
 
     // Setup for application control flow
@@ -326,7 +324,7 @@ export class RealtimeClient extends RealtimeEventHandler {
       this.dispatch('conversation.interrupted');
     });
     this.realtime.on('server.input_audio_buffer.speech_stopped', (event) =>
-      handler(event, this.inputAudioBuffer)
+      handler(event, this.inputAudioBuffer),
     );
 
     // Handlers to update application state
@@ -341,16 +339,16 @@ export class RealtimeClient extends RealtimeEventHandler {
     this.realtime.on('server.conversation.item.deleted', handlerWithDispatch);
     this.realtime.on(
       'server.conversation.item.input_audio_transcription.completed',
-      handlerWithDispatch
+      handlerWithDispatch,
     );
     this.realtime.on(
       'server.response.audio_transcript.delta',
-      handlerWithDispatch
+      handlerWithDispatch,
     );
     this.realtime.on('server.response.audio.delta', handlerWithDispatch);
     this.realtime.on(
       'server.response.function_call_arguments.delta',
-      handlerWithDispatch
+      handlerWithDispatch,
     );
     this.realtime.on('server.response.output_item.done', async (event) => {
       const { item } = handlerWithDispatch(event);
@@ -444,7 +442,7 @@ export class RealtimeClient extends RealtimeEventHandler {
     const name = definition?.name;
     if (this.tools[name]) {
       throw new Error(
-        `Tool "${name}" already added. Please use .removeTool("${name}") before trying to add again.`
+        `Tool "${name}" already added. Please use .removeTool("${name}") before trying to add again.`,
       );
     }
     if (typeof handler !== 'function') {
@@ -523,7 +521,7 @@ export class RealtimeClient extends RealtimeEventHandler {
         };
         if (this.tools[definition?.name]) {
           throw new Error(
-            `Tool "${definition?.name}" has already been defined`
+            `Tool "${definition?.name}" has already been defined`,
           );
         }
         return definition;
@@ -533,7 +531,7 @@ export class RealtimeClient extends RealtimeEventHandler {
           type: 'function',
           ...this.tools[key].definition,
         };
-      })
+      }),
     );
     const session = { ...this.sessionConfig };
     session.tools = useTools;
@@ -581,7 +579,7 @@ export class RealtimeClient extends RealtimeEventHandler {
       });
       this.inputAudioBuffer = RealtimeUtils.mergeInt16Arrays(
         this.inputAudioBuffer,
-        arrayBuffer
+        arrayBuffer,
       );
     }
     return true;
@@ -624,7 +622,7 @@ export class RealtimeClient extends RealtimeEventHandler {
         throw new Error(`Can only cancelResponse messages with type "message"`);
       } else if (item.role !== 'assistant') {
         throw new Error(
-          `Can only cancelResponse messages with role "assistant"`
+          `Can only cancelResponse messages with role "assistant"`,
         );
       }
       this.realtime.send('response.cancel');
@@ -636,7 +634,7 @@ export class RealtimeClient extends RealtimeEventHandler {
         item_id: id,
         content_index: audioIndex,
         audio_end_ms: Math.floor(
-          (sampleCount / this.conversation.defaultFrequency) * 1000
+          (sampleCount / this.conversation.defaultFrequency) * 1000,
         ),
       });
       return { item };
@@ -648,15 +646,9 @@ export class RealtimeClient extends RealtimeEventHandler {
    * @returns {Promise<{item: ItemType}>}
    */
   async waitForNextItem() {
-    let nextItem;
-    this.onNext('conversation.item.appended', (event) => {
-      const { item } = event;
-      nextItem = item;
-    });
-    while (!nextItem) {
-      await sleep(1);
-    }
-    return { item: nextItem };
+    const event = await this.waitForNext('conversation.item.appended');
+    const { item } = event;
+    return { item };
   }
 
   /**
@@ -664,14 +656,8 @@ export class RealtimeClient extends RealtimeEventHandler {
    * @returns {Promise<{item: ItemType}>}
    */
   async waitForNextCompletedItem() {
-    let nextItem;
-    this.onNext('conversation.item.completed', (event) => {
-      const { item } = event;
-      nextItem = item;
-    });
-    while (!nextItem) {
-      await sleep(1);
-    }
-    return { item: nextItem };
+    const event = await this.waitForNext('conversation.item.completed');
+    const { item } = event;
+    return { item };
   }
 }
