@@ -60,7 +60,6 @@
         padding-top: 4px;
         line-height: 1.2em;
         overflow: auto;
-        position: relative;
         &.full {
           padding: 0px;
         }
@@ -190,6 +189,8 @@
     }
     .speaker-content {
       color: #18181b;
+      overflow: hidden;
+      word-wrap: break-word;
     }
   }
 

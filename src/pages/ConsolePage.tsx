@@ -602,7 +602,7 @@ export function ConsolePage() {
               {items.map((conversationItem, i) => {
                 return (
                   <div className="conversation-item" key={conversationItem.id}>
-                    <div className={`speaker ${conversationItem.role}`}>
+                    <div className={`speaker ${conversationItem.role || ''}`}>
                       <div>
                         {(
                           conversationItem.role || conversationItem.type
