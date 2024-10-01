@@ -69,6 +69,12 @@ export class RealtimeConversation {
                 audio: Int16Array;
             };
         };
+        'response.text.delta': (event: any) => {
+            item: any;
+            delta: {
+                text: any;
+            };
+        };
         'response.function_call_arguments.delta': (event: any) => {
             item: any;
             delta: {

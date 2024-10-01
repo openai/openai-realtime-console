@@ -346,6 +346,7 @@ export class RealtimeClient extends RealtimeEventHandler {
       handlerWithDispatch,
     );
     this.realtime.on('server.response.audio.delta', handlerWithDispatch);
+    this.realtime.on('server.response.text.delta', handlerWithDispatch);
     this.realtime.on(
       'server.response.function_call_arguments.delta',
       handlerWithDispatch,
