@@ -71,11 +71,13 @@ export function ConsolePage() {
    * - WavStreamPlayer (speech output)
    * - RealtimeClient (API client)
    */
+  const getSystemSampleRate = () => new AudioContext().sampleRate;
+
   const wavRecorderRef = useRef<WavRecorder>(
-    new WavRecorder({ sampleRate: 24000 })
+    new WavRecorder({ sampleRate: getSystemSampleRate() })
   );
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(
-    new WavStreamPlayer({ sampleRate: 24000 })
+    new WavStreamPlayer({ sampleRate: getSystemSampleRate() })
   );
   const clientRef = useRef<RealtimeClient>(
     new RealtimeClient(
