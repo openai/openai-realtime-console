@@ -93,7 +93,7 @@ export class WavRecorder {
     // Script source
     this.scriptSrc = AudioProcessorSrc;
     // Config
-    this.sampleRate = sampleRate;  // Now correctly assigned
+    this.sampleRate = sampleRate;
     this.outputToSpeakers = outputToSpeakers;
     this.debug = !!debug;
     this._deviceChangeCallback = null;
