@@ -211,6 +211,16 @@ export class RealtimeConversation {
       );
       return { item, delta: { audio: appendValues } };
     },
+    'response.text.delta': (event) => {
+      const { item_id, content_index, delta } = event;
+      const item = this.itemLookup[item_id];
+      if (!item) {
+        throw new Error(`response.text.delta: Item "${item_id}" not found`);
+      }
+      item.content[content_index].text += delta;
+      item.formatted.text += delta;
+      return { item, delta: { text: delta } };
+    },
     'response.function_call_arguments.delta': (event) => {
       const { item_id, delta } = event;
       const item = this.itemLookup[item_id];
