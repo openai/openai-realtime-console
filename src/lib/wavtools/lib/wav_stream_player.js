@@ -12,8 +12,8 @@ export class WavStreamPlayer {
    * @returns {WavStreamPlayer}
    */
   constructor({ sampleRate = 44100 } = {}) {
+    this.sampleRate = sampleRate || new AudioContext().sampleRate;  // Fallback to system sample rate
     this.scriptSrc = StreamProcessorSrc;
-    this.sampleRate = sampleRate;
     this.context = null;
     this.stream = null;
     this.analyser = null;
