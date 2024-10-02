@@ -1,12 +1,12 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { LatLngTuple } from 'leaflet';
-import './Map.scss';
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 
-function ChangeView({ center, zoom }: { center: LatLngTuple; zoom: number }) {
-  const map = useMap();
-  map.setView(center, zoom);
-  return null;
-}
+// Dynamically import the MapComponent
+const MapComponent = dynamic(() => import('./MapComponent'), {
+  ssr: false, // This will disable server-side rendering for this component
+  loading: () => <p>Loading map...</p>,
+});
 
 export function Map({
   center,
@@ -15,21 +15,15 @@ export function Map({
   center: LatLngTuple;
   location?: string;
 }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
     <div data-component="Map">
-      <MapContainer
-        center={center}
-        zoom={11}
-        scrollWheelZoom={false}
-        zoomControl={false}
-        attributionControl={false}
-      >
-        <ChangeView center={center} zoom={11} />
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <Marker position={center}>
-          <Popup>{location}</Popup>
-        </Marker>
-      </MapContainer>
+      {isMounted && <MapComponent center={center} location={location} />}
     </div>
   );
 }

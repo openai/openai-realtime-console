@@ -21,7 +21,6 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map';
 
-import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
 /**
@@ -52,18 +51,36 @@ interface RealtimeEvent {
 }
 
 export function ConsolePage() {
-  /**
-   * Ask user for API Key
-   * If we're using the local relay server, we don't need this
-   */
-  const apiKey = USE_LOCAL_RELAY_SERVER_URL
-    ? ''
-    : localStorage.getItem('tmp::voice_api_key') ||
-      prompt('OpenAI API Key') ||
-      '';
-  if (apiKey !== '') {
-    localStorage.setItem('tmp::voice_api_key', apiKey);
-  }
+  const [apiKey, setApiKey] = useState<string>('');
+  const clientRef = useRef<RealtimeClient | null>(null);
+
+  useEffect(() => {
+    // call localStorage operations inside useEffect to ensure they run only on the client side
+    const storedApiKey = localStorage.getItem('tmp::voice_api_key') || '';
+    setApiKey(storedApiKey);
+
+    if (!USE_LOCAL_RELAY_SERVER_URL && !storedApiKey) {
+      const newApiKey = prompt('OpenAI API Key') || '';
+      if (newApiKey) {
+        localStorage.setItem('tmp::voice_api_key', newApiKey);
+        setApiKey(newApiKey);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Initialize RealtimeClient when apiKey is available
+    if (apiKey || USE_LOCAL_RELAY_SERVER_URL) {
+      clientRef.current = new RealtimeClient(
+        USE_LOCAL_RELAY_SERVER_URL
+          ? { url: USE_LOCAL_RELAY_SERVER_URL }
+          : {
+              apiKey: apiKey,
+              dangerouslyAllowAPIKeyInBrowser: true,
+            }
+      );
+    }
+  }, [apiKey]);
 
   /**
    * Instantiate:
@@ -76,16 +93,6 @@ export function ConsolePage() {
   );
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(
     new WavStreamPlayer({ sampleRate: 24000 })
-  );
-  const clientRef = useRef<RealtimeClient>(
-    new RealtimeClient(
-      USE_LOCAL_RELAY_SERVER_URL
-        ? { url: USE_LOCAL_RELAY_SERVER_URL }
-        : {
-            apiKey: apiKey,
-            dangerouslyAllowAPIKeyInBrowser: true,
-          }
-    )
   );
 
   /**
@@ -147,10 +154,11 @@ export function ConsolePage() {
    * When you click the API key
    */
   const resetAPIKey = useCallback(() => {
-    const apiKey = prompt('OpenAI API Key');
-    if (apiKey !== null) {
+    const newApiKey = prompt('OpenAI API Key');
+    if (newApiKey !== null) {
       localStorage.clear();
-      localStorage.setItem('tmp::voice_api_key', apiKey);
+      localStorage.setItem('tmp::voice_api_key', newApiKey);
+      setApiKey(newApiKey);
       window.location.reload();
     }
   }, []);

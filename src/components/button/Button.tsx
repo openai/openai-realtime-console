@@ -1,5 +1,5 @@
 import React from 'react';
-import './Button.scss';
+
 
 import { Icon } from 'react-feather';
 
