@@ -78,6 +78,14 @@ OPENAI_API_KEY=YOUR_API_KEY
 REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
 ```
 
+**NOTE:** For Codespaces, you need the generated forwarded address. You find it under the Ports tab in the terminal. 
+Copy the address and place it in `.env` like so:
+
+```conf
+OPENAI_API_KEY=YOUR_API_KEY
+REACT_APP_LOCAL_RELAY_SERVER_URL=https://your-codespace-name-hashnumber-8081.app.github.dev/
+```
+
 You will need to restart both your React app and relay server for the `.env.` changes
 to take effect. 
 
