@@ -9,15 +9,18 @@
   "customizations": {
     "codespaces": {
       "openFiles": [
-        "src/pages/ConsolePage.tsx"
+        "src/pages/ConsolePage.tsx",
+        "src/utils/conversation_config.js"
       ]
     }
   },
   "portsAttributes": {
     "3000": {
-      "label": "Application",
-      "onAutoForward": "openPreview"
+      "label": "Application"
+    },
+    "8081": {
+      "label": "Server"
     }
   },
-  "forwardPorts": [3000]
+  "forwardPorts": [3000,8081]
 }
