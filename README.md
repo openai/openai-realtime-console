@@ -9,10 +9,15 @@ management in the browser.
 
 <img src="/readme/realtime-console-demo.png" width="800" />
 
-# Starting the console
+## Starting the console
 
 This is a React project created using `create-react-app` that is bundled via Webpack.
-Install it by extracting the contents of this package and using;
+
+To get started quickly, you can use a pre-built development environment. **Click the button below** to open the repo in GitHub Codespaces. This will install all dependencies, forward the neccessary ports, start the development server, and open the Realtime Console in a new browser tab.
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/openai/openai-realtime-console?quickstart=1)
+
+If you want to get started in your local environment, first install the packages:
 
 ```shell
 $ npm i
@@ -26,7 +31,7 @@ $ npm start
 
 It should be available via `localhost:3000`.
 
-# Table of contents
+## Table of contents
 
 1. [Using the console](#using-the-console)
    1. [Using a relay server](#using-a-relay-server)
@@ -40,7 +45,7 @@ It should be available via `localhost:3000`.
    1. [WavStreamPlayer quickstart](#wavstreamplayer-quickstart)
 1. [Acknowledgements and contact](#acknowledgements-and-contact)
 
-# Using the console
+## Using the console
 
 The console requires an OpenAI API key (**user key** or **project key**) that has access to the
 Realtime API. You'll be prompted on startup to enter it. It will be saved via `localStorage` and can be
@@ -61,16 +66,10 @@ There are two functions enabled;
 
 You can freely interrupt the model at any time in push-to-talk or VAD mode.
 
-## Using a relay server
+### Using a relay server
 
 If you would like to build a more robust implementation and play around with the reference
 client using your own server, we have included a Node.js [Relay Server](/relay-server/index.js).
-
-```shell
-$ npm run relay
-```
-
-It will start automatically on `localhost:8081`.
 
 **You will need to create a `.env` file** with the following configuration:
 
@@ -80,9 +79,26 @@ REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
 ```
 
 You will need to restart both your React app and relay server for the `.env.` changes
-to take effect. The local server URL is loaded via [`ConsolePage.tsx`](/src/pages/ConsolePage.tsx).
+to take effect. 
+
+To start the relay server:
+
+```shell
+$ npm run relay
+```
+
+It will start automatically on `localhost:8081`.
+
+To start the development server, open a new console tab and run:
+
+```shell
+$ npm start
+```
+
 To stop using the relay server at any time, simply delete the environment
 variable or set it to empty string.
+
+The local server URL is loaded automatically via [`ConsolePage.tsx`](/src/pages/ConsolePage.tsx):
 
 ```javascript
 /**
@@ -108,7 +124,9 @@ This server is **only a simple message relay**, but it can be extended to:
 
 You will have to implement these features yourself.
 
-# Realtime API reference client
+
+
+## Realtime API reference client
 
 The latest reference client and documentation are available on GitHub at
 [openai/openai-realtime-api-beta](https://github.com/openai/openai-realtime-api-beta).
@@ -141,7 +159,7 @@ await client.connect();
 client.sendUserMessageContent([{ type: 'text', text: `How are you?` }]);
 ```
 
-## Sending streaming audio
+### Sending streaming audio
 
 To send streaming audio, use the `.appendInputAudio()` method. If you're in `turn_detection: 'disabled'` mode,
 then you need to use `.generate()` to tell the model to respond.
@@ -162,7 +180,7 @@ for (let i = 0; i < 10; i++) {
 client.createResponse();
 ```
 
-## Adding and using tools
+### Adding and using tools
 
 Working with tools is easy. Just call `.addTool()` and set a callback as the second parameter.
 The callback will be executed with the parameters for the tool, and the result will be automatically
@@ -204,7 +222,7 @@ client.addTool(
 );
 ```
 
-## Interrupting the model
+### Interrupting the model
 
 You may want to manually interrupt the model, especially in `turn_detection: 'disabled'` mode.
 To do this, we can use:
@@ -220,7 +238,7 @@ item being played by removing all audio after `sampleCount` and clearing the tex
 response. By using this method you can interrupt the model and prevent it from "remembering"
 anything it has generated that is ahead of where the user's state is.
 
-## Reference client events
+### Reference client events
 
 There are five main client events for application control flow in `RealtimeClient`.
 Note that this is only an overview of using the client, the full Realtime API
@@ -275,12 +293,12 @@ client.on('conversation.item.completed', ({ item }) => {
 });
 ```
 
-# Wavtools
+## Wavtools
 
 Wavtools contains easy management of PCM16 audio streams in the browser, both
 recording and playing.
 
-## WavRecorder Quickstart
+### WavRecorder Quickstart
 
 ```javascript
 import { WavRecorder } from '/src/lib/wavtools/index.js';
@@ -323,7 +341,7 @@ const finalAudio = await wavRecorder.end();
 wavRecorder.listenForDeviceChange((deviceList) => {});
 ```
 
-## WavStreamPlayer Quickstart
+### WavStreamPlayer Quickstart
 
 ```javascript
 import { WavStreamPlayer } from '/src/lib/wavtools/index.js';
@@ -351,7 +369,7 @@ trackOffset.offset; // sample number
 trackOffset.currentTime; // time in track
 ```
 
-# Acknowledgements and contact
+## Acknowledgements and contact
 
 Thanks for checking out the Realtime Console. We hope you have fun with the Realtime API.
 Special thanks to the whole Realtime API team for making this possible. Please feel free
