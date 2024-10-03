@@ -76,7 +76,7 @@ It will start automatically on `localhost:8081`.
 
 ```conf
 OPENAI_API_KEY=YOUR_API_KEY
-REACT_APP_LOCAL_RELAY_SERVER=http://localhost:8081
+REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
 ```
 
 You will need to restart both your React app and relay server for the `.env.` changes
@@ -90,13 +90,13 @@ variable or set it to empty string.
  * and run custom logic on the server
  *
  * Set the local relay server address to:
- * REACT_APP_LOCAL_RELAY_SERVER=http://localhost:8081
+ * REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
  *
  * This will also require you to set OPENAI_API_KEY= in a `.env` file
  * You can run it with `npm run relay`, in parallel with `npm start`
  */
-const LOCAL_RELAY_SERVER: string =
-  process.env.REACT_APP_LOCAL_RELAY_SERVER || '';
+const LOCAL_RELAY_SERVER_URL: string =
+  process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 ```
 
 This server is **only a simple message relay**, but it can be extended to:
