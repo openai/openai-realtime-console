@@ -1,12 +1,15 @@
 /**
- * Change this if you want to connect to a local relay server!
- * This will require you to set OPENAI_API_KEY= in a `.env` file
- * You can run it with `npm run relay`, in parallel with `npm start`
+ * Running a local relay server will allow you to hide your API key
+ * and run custom logic on the server
  *
- * Simply switch the lines by commenting one and removing the other
+ * Set the local relay server address to:
+ * REACT_APP_LOCAL_RELAY_SERVER=http://localhost:8081
+ *
+ * This will also require you to set OPENAI_API_KEY= in a `.env` file
+ * You can run it with `npm run relay`, in parallel with `npm start`
  */
-// const USE_LOCAL_RELAY_SERVER_URL: string | undefined = 'http://localhost:8081';
-const USE_LOCAL_RELAY_SERVER_URL: string | undefined = void 0;
+const LOCAL_RELAY_SERVER: string =
+  process.env.REACT_APP_LOCAL_RELAY_SERVER || '';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 
@@ -56,7 +59,7 @@ export function ConsolePage() {
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
    */
-  const apiKey = USE_LOCAL_RELAY_SERVER_URL
+  const apiKey = LOCAL_RELAY_SERVER
     ? ''
     : localStorage.getItem('tmp::voice_api_key') ||
       prompt('OpenAI API Key') ||
@@ -79,8 +82,8 @@ export function ConsolePage() {
   );
   const clientRef = useRef<RealtimeClient>(
     new RealtimeClient(
-      USE_LOCAL_RELAY_SERVER_URL
-        ? { url: USE_LOCAL_RELAY_SERVER_URL }
+      LOCAL_RELAY_SERVER
+        ? { url: LOCAL_RELAY_SERVER }
         : {
             apiKey: apiKey,
             dangerouslyAllowAPIKeyInBrowser: true,
@@ -508,7 +511,7 @@ export function ConsolePage() {
           <span>realtime console</span>
         </div>
         <div className="content-api-key">
-          {!USE_LOCAL_RELAY_SERVER_URL && (
+          {!LOCAL_RELAY_SERVER && (
             <Button
               icon={Edit}
               iconPosition="end"
