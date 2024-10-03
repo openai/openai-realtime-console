@@ -1,12 +1,12 @@
 /**
- * Change this if you want to connect to a local relay server!
- * This will require you to set OPENAI_API_KEY= in a `.env` file
- * You can run it with `npm run relay`, in parallel with `npm start`
+ * Environment variables:
+ * - OPENAI_API_KEY: Required. Set this in your .env file.
+ * - USE_LOCAL_RELAY_SERVER_URL: Optional. Set this if you want to connect to a local relay server.
  *
- * Simply switch the lines by commenting one and removing the other
+ * If USE_LOCAL_RELAY_SERVER_URL is not set, it will use OpenAI's servers directly.
+ * You can run a local relay server with `npm run relay`, in parallel with `npm start`
  */
-// const USE_LOCAL_RELAY_SERVER_URL: string | undefined = 'http://localhost:8081';
-const USE_LOCAL_RELAY_SERVER_URL: string | undefined = void 0;
+const USE_LOCAL_RELAY_SERVER_URL: string | undefined = process.env.USE_LOCAL_RELAY_SERVER_URL;
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 
