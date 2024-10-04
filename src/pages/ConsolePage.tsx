@@ -51,6 +51,13 @@ interface RealtimeEvent {
   event: { [key: string]: any };
 }
 
+// Add this near the top of your file with other interfaces
+interface Flashcard {
+  id: string;
+  foreignWord: string;
+  englishWord: string;
+}
+
 export function ConsolePage() {
   /**
    * Ask user for API Key
@@ -121,6 +128,7 @@ export function ConsolePage() {
     lng: -122.418137,
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
 
   /**
    * Utility for formatting the timing of logs
@@ -365,6 +373,24 @@ export function ConsolePage() {
   }, []);
 
   /**
+   * Create a memoized callback for creating flashcards
+   */
+  const createFlashcard = useCallback((foreignWord: string, englishWord: string) => {
+    const newFlashcard: Flashcard = {
+      id: Date.now().toString(),
+      foreignWord,
+      englishWord,
+    };
+    
+    setFlashcards((prevFlashcards) => [...prevFlashcards, newFlashcard]);
+    
+    return {
+      message: 'Flashcard created successfully',
+      flashcard: newFlashcard,
+    };
+  }, []);
+
+  /**
    * Core RealtimeClient and audio capture setup
    * Set all of our instructions, tools, events and more
    */
@@ -452,6 +478,31 @@ export function ConsolePage() {
       }
     );
 
+    // Add Create Flashcard tool
+    client.addTool(
+      {
+        name: 'create_flashcard',
+        description: 'Creates a flashcard with a foreign word and its English translation.',
+        parameters: {
+          type: 'object',
+          properties: {
+            foreignWord: {
+              type: 'string',
+              description: 'The word in the foreign language',
+            },
+            englishWord: {
+              type: 'string',
+              description: 'The English translation of the foreign word',
+            },
+          },
+          required: ['foreignWord', 'englishWord'],
+        },
+      },
+      async ({ foreignWord, englishWord }: { foreignWord: string; englishWord: string }) => {
+        return createFlashcard(foreignWord, englishWord);
+      }
+    );
+
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
       setRealtimeEvents((realtimeEvents) => {
@@ -495,7 +546,7 @@ export function ConsolePage() {
       // cleanup; resets to defaults
       client.reset();
     };
-  }, []);
+  }, [createFlashcard]);
 
   /**
    * Render the application
@@ -719,6 +770,22 @@ export function ConsolePage() {
             <div className="content-block-title">set_memory()</div>
             <div className="content-block-body content-kv">
               {JSON.stringify(memoryKv, null, 2)}
+            </div>
+          </div>
+          <div className="content-block flashcards">
+            <div className="content-block-title">Flashcards</div>
+            <div className="content-block-body">
+              {flashcards.length === 0 ? (
+                <p>No flashcards created yet.</p>
+              ) : (
+                <ul>
+                  {flashcards.map((card) => (
+                    <li key={card.id}>
+                      {card.foreignWord} - {card.englishWord}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>

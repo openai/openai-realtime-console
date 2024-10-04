@@ -277,4 +277,25 @@
       }
     }
   }
+
+  .flashcards {
+    .content-block-body {
+      max-height: 200px;
+      overflow-y: auto;
+
+      ul {
+        list-style-type: none;
+        padding: 0;
+
+        li {
+          padding: 5px 0;
+          border-bottom: 1px solid #eee;
+
+          &:last-child {
+            border-bottom: none;
+          }
+        }
+      }
+    }
+  }
 }
