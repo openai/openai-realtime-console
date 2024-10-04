@@ -7,8 +7,8 @@ const USE_CLIENT_API_KEY = process.env.REACT_APP_USE_CLIENT_API_KEY === 'true';
 
 if (!USE_CLIENT_API_KEY && !OPENAI_API_KEY) {
   console.error(
-    `Environment variable "OPENAI_API_KEY" is required when not using client API key.\n` +
-      `Please set it in your .env file or set USE_CLIENT_API_KEY=true.`
+    `Environment variable "OPENAI_API_KEY" is required when not using a client API key.\n` +
+      `Please set it in your .env file or set REACT_APP_USE_CLIENT_API_KEY=true.`
   );
   process.exit(1);
 }
