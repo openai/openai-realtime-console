@@ -23,6 +23,7 @@ import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map';
+import RestaurantList from '../components/RestaurantList'; // Import the new component
 
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
@@ -52,6 +53,18 @@ interface RealtimeEvent {
   source: 'client' | 'server';
   count?: number;
   event: { [key: string]: any };
+}
+
+interface Restaurant {
+  id: string;
+  name: string;
+  image_url: string;
+  location: {
+    address1: string;
+    city: string;
+    state: string;
+    zip_code: string;
+  };
 }
 
 export function ConsolePage() {
@@ -124,6 +137,7 @@ export function ConsolePage() {
     lng: -122.418137,
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]); // State to hold restaurant data
 
   /**
    * Utility for formatting the timing of logs
@@ -454,6 +468,46 @@ export function ConsolePage() {
         return json;
       }
     );
+    client.addTool(
+      {
+        name: 'search_restaurants',
+        description: 'Searches for restaurants based on a term and location.',
+        parameters: {
+          type: 'object',
+          properties: {
+            term: {
+              type: 'string',
+              description: 'Search term for the restaurant.',
+            },
+            location: {
+              type: 'string',
+              description: 'Location to search for restaurants.',
+            },
+          },
+          required: ['term', 'location'],
+        },
+      },
+      async ({ term, location }: { [key: string]: any }) => {
+        try {
+          const response = await fetch(
+            `https://api-dev.braininc.net/be/svc-adapter/yelp/businesses/search?categories=restaurants&categories=food&limit=10&location=${encodeURIComponent(location)}&offset=0&term=${encodeURIComponent(term)}`,
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': 'Bearer a1c8d8acedb03aa810aa9c4ff053b90e10ddc985',
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          const data = await response.json();
+          setRestaurants(data.businesses); // Update state with fetched restaurant data
+          return data;
+        } catch (error) {
+          console.error('Error fetching restaurants:', error);
+          return { error: 'Failed to fetch restaurants' };
+        }
+      }
+    );
 
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
@@ -726,6 +780,7 @@ export function ConsolePage() {
           </div>
         </div>
       </div>
+      <RestaurantList restaurants={restaurants} />
     </div>
   );
 }
