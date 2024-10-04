@@ -1,17 +1,20 @@
 /**
- * Change this if you want to connect to a local relay server!
- * This will require you to set OPENAI_API_KEY= in a `.env` file
- * You can run it with `npm run relay`, in parallel with `npm start`
+ * Running a local relay server will allow you to hide your API key
+ * and run custom logic on the server
  *
- * Simply switch the lines by commenting one and removing the other
+ * Set the local relay server address to:
+ * REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
+ *
+ * This will also require you to set OPENAI_API_KEY= in a `.env` file
+ * You can run it with `npm run relay`, in parallel with `npm start`
  */
-// const USE_LOCAL_RELAY_SERVER_URL: string | undefined = 'http://localhost:8081';
-const USE_LOCAL_RELAY_SERVER_URL: string | undefined = void 0;
+const LOCAL_RELAY_SERVER_URL: string =
+  process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 
-import { RealtimeClient } from '../lib/realtime-api-beta/index.js';
-import { ItemType } from '../lib/realtime-api-beta/dist/lib/client.js';
+import { RealtimeClient } from '@openai/realtime-api-beta';
+import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
 import { instructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
@@ -57,7 +60,7 @@ export function ConsolePage() {
     const storedApiKey = localStorage.getItem('tmp::voice_api_key') || '';
     setApiKey(storedApiKey);
 
-    if (!USE_LOCAL_RELAY_SERVER_URL && !storedApiKey) {
+    if (!LOCAL_RELAY_SERVER_URL && !storedApiKey) {
       const newApiKey = prompt('OpenAI API Key') || '';
       if (newApiKey) {
         localStorage.setItem('tmp::voice_api_key', newApiKey);
@@ -68,14 +71,14 @@ export function ConsolePage() {
 
   useEffect(() => {
     // Initialize RealtimeClient when apiKey is available
-    if (apiKey || USE_LOCAL_RELAY_SERVER_URL) {
+    if (apiKey || LOCAL_RELAY_SERVER_URL) {
       clientRef.current = new RealtimeClient(
-        USE_LOCAL_RELAY_SERVER_URL
-          ? { url: USE_LOCAL_RELAY_SERVER_URL }
-          : {
-              apiKey: apiKey,
-              dangerouslyAllowAPIKeyInBrowser: true,
-            }
+        LOCAL_RELAY_SERVER_URL
+        ? { url: LOCAL_RELAY_SERVER_URL }
+        : {
+            apiKey: apiKey,
+            dangerouslyAllowAPIKeyInBrowser: true,
+          }
       );
     }
   }, [apiKey]);
@@ -523,7 +526,7 @@ export function ConsolePage() {
           <span>realtime console</span>
         </div>
         <div className="content-api-key">
-          {!USE_LOCAL_RELAY_SERVER_URL && (
+          {!LOCAL_RELAY_SERVER_URL && (
             <Button
               icon={Edit}
               iconPosition="end"
