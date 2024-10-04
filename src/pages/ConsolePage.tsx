@@ -21,8 +21,6 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map';
 
-import { isJsxOpeningLikeElement } from 'typescript';
-
 /**
  * Type for result from get_weather() function call
  */
@@ -169,6 +167,7 @@ export function ConsolePage() {
    */
   const connectConversation = useCallback(async () => {
     const client = clientRef.current;
+    if(!client) throw new Error('RealtimeClient is not initialized');
     const wavRecorder = wavRecorderRef.current;
     const wavStreamPlayer = wavStreamPlayerRef.current;
 
@@ -214,6 +213,7 @@ export function ConsolePage() {
     setMarker(null);
 
     const client = clientRef.current;
+    if(!client) throw new Error('RealtimeClient is not initialized');
     client.disconnect();
 
     const wavRecorder = wavRecorderRef.current;
@@ -225,6 +225,7 @@ export function ConsolePage() {
 
   const deleteConversationItem = useCallback(async (id: string) => {
     const client = clientRef.current;
+    if(!client) throw new Error('RealtimeClient is not initialized');
     client.deleteItem(id);
   }, []);
 
@@ -235,6 +236,7 @@ export function ConsolePage() {
   const startRecording = async () => {
     setIsRecording(true);
     const client = clientRef.current;
+    if(!client) throw new Error('RealtimeClient is not initialized');
     const wavRecorder = wavRecorderRef.current;
     const wavStreamPlayer = wavStreamPlayerRef.current;
     const trackSampleOffset = await wavStreamPlayer.interrupt();
@@ -242,7 +244,9 @@ export function ConsolePage() {
       const { trackId, offset } = trackSampleOffset;
       await client.cancelResponse(trackId, offset);
     }
-    await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+    await wavRecorder.record((data) => {
+        client.appendInputAudio(data.mono);
+    });
   };
 
   /**
@@ -251,9 +255,10 @@ export function ConsolePage() {
   const stopRecording = async () => {
     setIsRecording(false);
     const client = clientRef.current;
+    if(!client) throw new Error('RealtimeClient is not initialized');
     const wavRecorder = wavRecorderRef.current;
     await wavRecorder.pause();
-    client.createResponse();
+      client.createResponse();
   };
 
   /**
@@ -261,6 +266,7 @@ export function ConsolePage() {
    */
   const changeTurnEndType = async (value: string) => {
     const client = clientRef.current;
+    if(!client) throw new Error('RealtimeClient is not initialized');
     const wavRecorder = wavRecorderRef.current;
     if (value === 'none' && wavRecorder.getStatus() === 'recording') {
       await wavRecorder.pause();
@@ -380,6 +386,7 @@ export function ConsolePage() {
     // Get refs
     const wavStreamPlayer = wavStreamPlayerRef.current;
     const client = clientRef.current;
+    if(!client) return;
 
     // Set instructions
     client.updateSession({ instructions: instructions });
@@ -503,7 +510,7 @@ export function ConsolePage() {
       // cleanup; resets to defaults
       client.reset();
     };
-  }, []);
+  }, [clientRef.current]);
 
   /**
    * Render the application

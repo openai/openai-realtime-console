@@ -15,13 +15,13 @@ This is a React project created using `create-react-app` that is bundled via Web
 Install it by extracting the contents of this package and using;
 
 ```shell
-$ npm run dev 
+$ npm i
 ```
 
 Start your server with:
 
 ```shell
-$ npm start
+$ npm run dev
 ```
 
 It should be available via `localhost:3000`.
