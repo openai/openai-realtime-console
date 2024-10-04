@@ -228,9 +228,13 @@ export function ConsolePage() {
    * .appendInputAudio() for each sample
    */
   const startRecording = async () => {
+    const wavRecorder = wavRecorderRef.current;
+    if (wavRecorder.getStatus() === 'recording') {
+      stopRecording();
+      return;
+    }
     setIsRecording(true);
     const client = clientRef.current;
-    const wavRecorder = wavRecorderRef.current;
     const wavStreamPlayer = wavStreamPlayerRef.current;
     const trackSampleOffset = await wavStreamPlayer.interrupt();
     if (trackSampleOffset?.trackId) {
@@ -247,8 +251,10 @@ export function ConsolePage() {
     setIsRecording(false);
     const client = clientRef.current;
     const wavRecorder = wavRecorderRef.current;
-    await wavRecorder.pause();
-    client.createResponse();
+    if (wavRecorder.getStatus() === 'recording') {
+      await wavRecorder.pause();
+      client.createResponse();
+    }
   };
 
   /**
