@@ -11,6 +11,9 @@
 const LOCAL_RELAY_SERVER_URL: string =
   process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
+const USE_CLIENT_API_KEY: boolean =
+  process.env.REACT_APP_USE_CLIENT_API_KEY === 'true';
+
 import { useEffect, useRef, useCallback, useState } from 'react';
 
 import { RealtimeClient } from '@openai/realtime-api-beta';
@@ -59,11 +62,11 @@ export function ConsolePage() {
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
    */
-  const apiKey = LOCAL_RELAY_SERVER_URL
-    ? ''
-    : localStorage.getItem('tmp::voice_api_key') ||
+  const apiKey = USE_CLIENT_API_KEY || !LOCAL_RELAY_SERVER_URL
+    ? localStorage.getItem('tmp::voice_api_key') ||
       prompt('OpenAI API Key') ||
-      '';
+      ''
+    : '';
   if (apiKey !== '') {
     localStorage.setItem('tmp::voice_api_key', apiKey);
   }
@@ -83,7 +86,14 @@ export function ConsolePage() {
   const clientRef = useRef<RealtimeClient>(
     new RealtimeClient(
       LOCAL_RELAY_SERVER_URL
-        ? { url: LOCAL_RELAY_SERVER_URL }
+        ? {
+            url: LOCAL_RELAY_SERVER_URL,
+            ...(USE_CLIENT_API_KEY && 
+              { 
+                apiKey, 
+                dangerouslyAllowAPIKeyInBrowser: true 
+              }),
+          }
         : {
             apiKey: apiKey,
             dangerouslyAllowAPIKeyInBrowser: true,
@@ -511,7 +521,7 @@ export function ConsolePage() {
           <span>realtime console</span>
         </div>
         <div className="content-api-key">
-          {!LOCAL_RELAY_SERVER_URL && (
+        {(!LOCAL_RELAY_SERVER_URL || USE_CLIENT_API_KEY) && (
             <Button
               icon={Edit}
               iconPosition="end"

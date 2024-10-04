@@ -2,8 +2,9 @@ import { WebSocketServer } from 'ws';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 
 export class RealtimeRelay {
-  constructor(apiKey) {
+  constructor(apiKey, useClientApiKey) {
     this.apiKey = apiKey;
+    this.useClientApiKey = useClientApiKey;
     this.sockets = new WeakMap();
     this.wss = null;
   }
@@ -30,9 +31,25 @@ export class RealtimeRelay {
       return;
     }
 
+    let clientApiKey = this.apiKey;
+    if (this.useClientApiKey) {
+      const protocols = req.headers['sec-websocket-protocol'];
+      if (protocols) {
+        const apiKeyProtocol = protocols.split(',').find(p => p.trim().startsWith('openai-insecure-api-key.'));
+        if (apiKeyProtocol) {
+          clientApiKey = apiKeyProtocol.trim().split('.')[1];
+        }
+      }
+      if (!clientApiKey) {
+        this.log('No API key provided in client request, closing connection.');
+        ws.close();
+        return;
+      }
+    }
+
     // Instantiate new client
-    this.log(`Connecting with key "${this.apiKey.slice(0, 3)}..."`);
-    const client = new RealtimeClient({ apiKey: this.apiKey });
+    this.log(`Connecting with key "${clientApiKey.slice(0, 3)}..."`);
+    const client = new RealtimeClient({ apiKey: clientApiKey });
 
     // Relay: OpenAI Realtime API Event -> Browser Event
     client.realtime.on('server.*', (event) => {

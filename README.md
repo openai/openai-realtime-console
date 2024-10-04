@@ -72,11 +72,24 @@ $ npm run relay
 
 It will start automatically on `localhost:8081`.
 
-**You will need to create a `.env` file** with the following configuration:
+**You will need to create a `.env` file** with the relay server URL specified:
+
+```conf
+REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
+```
+
+The `.env` file also needs to either contain an OpenAI API key or specify that the client should provide the API key.
+
+To use an OpenAI API key, add the following line to your `.env` file:
 
 ```conf
 OPENAI_API_KEY=YOUR_API_KEY
-REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
+```
+
+To use the client API key, add the following line to your `.env file:
+
+```conf
+REACT_APP_USE_CLIENT_API_KEY=true
 ```
 
 You will need to restart both your React app and relay server for the `.env.` changes
