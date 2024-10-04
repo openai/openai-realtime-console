@@ -29,6 +29,16 @@ interface Flashcard {
   englishWord: string;
 }
 
+// Add these new interfaces
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface GameState {
+  position: Position;
+}
+
 export function ConsolePage() {
   /**
    * Ask user for API Key
@@ -85,6 +95,11 @@ export function ConsolePage() {
   const [canPushToTalk, setCanPushToTalk] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+
+  // Add new state for the game
+  const [gameState, setGameState] = useState<GameState>({
+    position: { x: 0, y: 0 },
+  });
 
   /**
    * When you click the API key
@@ -301,6 +316,29 @@ export function ConsolePage() {
     };
   }, []);
 
+  // Function to move the square
+  const moveSquare = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+    setGameState((prevState) => {
+      const newPosition = { ...prevState.position };
+      switch (direction) {
+        case 'up':
+          newPosition.y = Math.max(newPosition.y - 1, 0);
+          break;
+        case 'down':
+          newPosition.y = Math.min(newPosition.y + 1, 9);
+          break;
+        case 'left':
+          newPosition.x = Math.max(newPosition.x - 1, 0);
+          break;
+        case 'right':
+          newPosition.x = Math.min(newPosition.x + 1, 9);
+          break;
+      }
+      return { ...prevState, position: newPosition };
+    });
+    return `Moved ${direction}`;
+  }, []);
+
   /**
    * Core RealtimeClient and audio capture setup
    * Set all of our instructions, tools, events and more
@@ -340,6 +378,43 @@ export function ConsolePage() {
       }
     );
 
+    // Add new tools for moving the square
+    client.addTool(
+      {
+        name: 'move_up',
+        description: 'Move the square up',
+        parameters: { type: 'object', properties: {} },
+      },
+      async () => moveSquare('up')
+    );
+
+    client.addTool(
+      {
+        name: 'move_down',
+        description: 'Move the square down',
+        parameters: { type: 'object', properties: {} },
+      },
+      async () => moveSquare('down')
+    );
+
+    client.addTool(
+      {
+        name: 'move_left',
+        description: 'Move the square left',
+        parameters: { type: 'object', properties: {} },
+      },
+      async () => moveSquare('left')
+    );
+
+    client.addTool(
+      {
+        name: 'move_right',
+        description: 'Move the square right',
+        parameters: { type: 'object', properties: {} },
+      },
+      async () => moveSquare('right')
+    );
+
     // handle realtime events from client + server for event logging
     client.on('error', (event: any) => console.error(event));
     client.on('conversation.interrupted', async () => {
@@ -371,7 +446,7 @@ export function ConsolePage() {
       // cleanup; resets to defaults
       client.reset();
     };
-  }, [createFlashcard]);
+  }, [createFlashcard, moveSquare]);
 
   /**
    * Render the application
@@ -403,6 +478,32 @@ export function ConsolePage() {
             </div>
             <div className="visualization-entry server">
               <canvas ref={serverCanvasRef} />
+            </div>
+          </div>
+          {/* Add the game window */}
+          <div className="content-block game-window">
+            <div className="content-block-title">Game Window</div>
+            <div className="content-block-body">
+              <div
+                style={{
+                  width: '300px',
+                  height: '300px',
+                  border: '1px solid #ccc',
+                  position: 'relative',
+                }}
+              >
+                <div
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    backgroundColor: 'blue',
+                    position: 'absolute',
+                    left: `${gameState.position.x * 30}px`,
+                    top: `${gameState.position.y * 30}px`,
+                    transition: 'all 0.3s ease',
+                  }}
+                />
+              </div>
             </div>
           </div>
           <div className="content-block conversation">

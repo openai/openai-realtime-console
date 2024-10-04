@@ -298,4 +298,15 @@
       }
     }
   }
+
+  .game-window {
+    margin-bottom: 20px;
+    
+    .content-block-body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+  }
 }
