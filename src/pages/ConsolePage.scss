@@ -51,6 +51,9 @@
         padding-top: 16px;
         padding-bottom: 4px;
         position: relative;
+        .cost {
+          float: right;
+        }
       }
       .content-block-body {
         color: #6e6e7f;

@@ -54,6 +54,15 @@ interface RealtimeEvent {
   event: { [key: string]: any };
 }
 
+interface UsageTotal {
+  input_audio_tokens: number;
+  output_audio_tokens: number;
+  input_text_tokens: number;
+  output_text_tokens: number;
+  cost: number;
+}
+
+
 export function ConsolePage() {
   /**
    * Ask user for API Key
@@ -124,7 +133,14 @@ export function ConsolePage() {
     lng: -122.418137,
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
-
+  const [usage, setUsage] = useState<UsageTotal>({
+    input_audio_tokens: 0,
+    output_audio_tokens: 0,
+    input_text_tokens: 0,
+    output_text_tokens: 0,
+    cost: 0,
+  });
+  
   /**
    * Utility for formatting the timing of logs
    */
@@ -207,6 +223,13 @@ export function ConsolePage() {
       lng: -122.418137,
     });
     setMarker(null);
+    setUsage({
+      input_audio_tokens: 0,
+      output_audio_tokens: 0,
+      input_text_tokens: 0,
+      output_text_tokens: 0,
+      cost: 0,
+    });
 
     const client = clientRef.current;
     client.disconnect();
@@ -467,6 +490,28 @@ export function ConsolePage() {
           return realtimeEvents.concat(realtimeEvent);
         }
       });
+      if(realtimeEvent.event.type === 'response.done') {
+        setUsage((usage) => {
+          const u = realtimeEvent.event.response.usage;
+          const input_audio_tokens = u.input_token_details.audio_tokens;
+          const output_audio_tokens = u.output_token_details.audio_tokens;
+          const input_text_tokens = u.input_token_details.text_tokens;
+          const output_text_tokens = u.output_token_details.text_tokens;
+
+          const currentCost = input_audio_tokens * 100 / 1000000 + 
+            output_audio_tokens * 200 / 1000000 + 
+            input_text_tokens * 5 / 1000000 + 
+            output_text_tokens * 20 / 1000000;
+
+          return {
+            output_audio_tokens: usage.output_audio_tokens + output_audio_tokens,
+            input_audio_tokens: usage.input_audio_tokens + input_audio_tokens,
+            output_text_tokens: usage.output_text_tokens + output_text_tokens,
+            input_text_tokens: usage.input_text_tokens + input_text_tokens,
+            cost: usage.cost + currentCost
+          }
+        })
+      }
     });
     client.on('error', (event: any) => console.error(event));
     client.on('conversation.interrupted', async () => {
@@ -533,7 +578,9 @@ export function ConsolePage() {
                 <canvas ref={serverCanvasRef} />
               </div>
             </div>
-            <div className="content-block-title">events</div>
+            <div className="content-block-title">events
+              <span className='cost'>${usage.cost.toFixed(2)}</span>
+            </div>
             <div className="content-block-body" ref={eventsScrollRef}>
               {!realtimeEvents.length && `awaiting connection...`}
               {realtimeEvents.map((realtimeEvent, i) => {
