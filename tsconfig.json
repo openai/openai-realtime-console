@@ -16,5 +16,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "src/lib"]
+  "include": ["src", "src/lib", "relay-server/lib"]
 }

@@ -171,6 +171,13 @@ export function ConsolePage() {
     startTimeRef.current = new Date().toISOString();
     setIsConnected(true);
     setRealtimeEvents([]);
+    setItems([]);
+    setMemoryKv({});
+    setCoords({
+      lat: 37.775593,
+      lng: -122.418137,
+    });
+    setMarker(null);
     setItems(client.conversation.getItems());
 
     // Connect to microphone
@@ -199,14 +206,6 @@ export function ConsolePage() {
    */
   const disconnectConversation = useCallback(async () => {
     setIsConnected(false);
-    setRealtimeEvents([]);
-    setItems([]);
-    setMemoryKv({});
-    setCoords({
-      lat: 37.775593,
-      lng: -122.418137,
-    });
-    setMarker(null);
 
     const client = clientRef.current;
     client.disconnect();

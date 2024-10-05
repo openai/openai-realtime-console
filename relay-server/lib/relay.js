@@ -1,5 +1,12 @@
 import { WebSocketServer } from 'ws';
 import { RealtimeClient } from '@openai/realtime-api-beta';
+import { initLogger, traced, startSpan } from "braintrust";
+import { BraintrustRealtimeLogger } from './braintrust-realtime-logger.js';
+
+const logger = initLogger({
+  projectName: "OpenAI Realtime Demo Relay",
+  apiKey: process.env.BRAINTRUST_API_KEY,
+});
 
 export class RealtimeRelay {
   constructor(apiKey) {
@@ -15,6 +22,9 @@ export class RealtimeRelay {
   }
 
   async connectionHandler(ws, req) {
+    const rootSpan = startSpan({name: "connectionHandler"});
+    const realtimeLogger = new BraintrustRealtimeLogger(rootSpan);
+
     if (!req.url) {
       this.log('No URL provided, closing connection.');
       ws.close();
@@ -37,9 +47,13 @@ export class RealtimeRelay {
     // Relay: OpenAI Realtime API Event -> Browser Event
     client.realtime.on('server.*', (event) => {
       this.log(`Relaying "${event.type}" to Client`);
+      realtimeLogger.handleMessageServer(event);
       ws.send(JSON.stringify(event));
     });
-    client.realtime.on('close', () => ws.close());
+    client.realtime.on('close', () => {
+      realtimeLogger.close();
+      ws.close();
+    });
 
     // Relay: Browser Event -> OpenAI Realtime API Event
     // We need to queue data waiting for the OpenAI connection
@@ -48,6 +62,7 @@ export class RealtimeRelay {
       try {
         const event = JSON.parse(data);
         this.log(`Relaying "${event.type}" to OpenAI`);
+        realtimeLogger.handleMessageClient(event);
         client.realtime.send(event.type, event);
       } catch (e) {
         console.error(e.message);
@@ -61,7 +76,10 @@ export class RealtimeRelay {
         messageHandler(data);
       }
     });
-    ws.on('close', () => client.disconnect());
+    ws.on('close', () => {
+      realtimeLogger.close();
+      client.disconnect();
+    });
 
     // Connect to OpenAI Realtime API
     try {

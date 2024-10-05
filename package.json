@@ -13,6 +13,7 @@
     "@types/node": "^16.18.108",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
+    "braintrust": "^0.0.160",
     "dotenv": "^16.4.5",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",
@@ -32,7 +33,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "zip": "zip -r realtime-api-console.zip . -x 'node_modules' 'node_modules/*' 'node_modules/**' '.git' '.git/*' '.git/**' '.DS_Store' '*/.DS_Store' 'package-lock.json' '*.zip' '*.tar.gz' '*.tar' '.env'",
-    "relay": "nodemon ./relay-server/index.js"
+    "relay": "nodemon ./relay-server/index.js",
+    "watch:ts": "tsc --watch --project relay-server/tsconfig.json"
   },
   "eslintConfig": {
     "extends": [
