@@ -126,6 +126,16 @@
         align-items: center;
         justify-content: center;
         gap: 16px;
+        .text-container {
+          display: 'flex';
+          align-items: 'center';
+          gap: '5px';
+          .text-field {
+            margin-right: '5px';
+            padding: '5px';
+            flex: '0 1 auto';
+          }
+        }
       }
       & > div.events {
         overflow: hidden;

@@ -124,6 +124,7 @@ export function ConsolePage() {
     lng: -122.418137,
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
+  const [userText, setUserText] = useState<string>('');
 
   /**
    * Utility for formatting the timing of logs
@@ -249,6 +250,28 @@ export function ConsolePage() {
     const wavRecorder = wavRecorderRef.current;
     await wavRecorder.pause();
     client.createResponse();
+  };
+
+  /**
+   * Sends the user's text input to the RealtimeClient,
+   */
+  const sendText = async () => {
+    const client = clientRef.current;
+    const wavStreamPlayer = wavStreamPlayerRef.current;
+    const trackSampleOffset = await wavStreamPlayer.interrupt();
+    if (trackSampleOffset?.trackId) {
+      const { trackId, offset } = trackSampleOffset;
+      await client.cancelResponse(trackId, offset);
+    }
+
+    await client.sendUserMessageContent([
+      {
+        type: 'input_text',
+        text: userText,
+      },
+    ]);
+
+    setUserText('');
   };
 
   /**
@@ -678,6 +701,30 @@ export function ConsolePage() {
                 onMouseDown={startRecording}
                 onMouseUp={stopRecording}
               />
+            )}
+            <div className="spacer" />
+            {isConnected && (
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                <input
+                  style={{
+                    marginRight: '5px',
+                    padding: '5px',
+                    flex: '0 1 auto',
+                  }}
+                  type="text"
+                  value={userText}
+                  onChange={(e) => setUserText(e.target.value)}
+                  placeholder="Type your message here..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && userText.trim()) {
+                      sendText();
+                    }
+                  }}
+                />
+                <Button label="Send" buttonStyle="action" onClick={sendText} />
+              </div>
             )}
             <div className="spacer" />
             <Button
