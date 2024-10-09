@@ -32,7 +32,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "zip": "zip -r realtime-api-console.zip . -x 'node_modules' 'node_modules/*' 'node_modules/**' '.git' '.git/*' '.git/**' '.DS_Store' '*/.DS_Store' 'package-lock.json' '*.zip' '*.tar.gz' '*.tar' '.env'",
-    "relay": "nodemon ./relay-server/index.js"
+    "relay": "nodemon ./relay-server/index.js",
+    "postinstall": "patch-package"
   },
   "eslintConfig": {
     "extends": [
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "patch-package": "^8.0.0"
   }
 }
