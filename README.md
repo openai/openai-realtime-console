@@ -29,7 +29,7 @@ It should be available via `localhost:3000`.
 # Table of contents
 
 1. [Using the console](#using-the-console)
-   1. [Using a server relay](#using-a-server-relay)
+   1. [Using a relay server](#using-a-relay-server)
 1. [Realtime API reference client](#realtime-api-reference-client)
    1. [Sending streaming audio](#sending-streaming-audio)
    1. [Adding and using tools](#adding-and-using-tools)
@@ -61,7 +61,7 @@ There are two functions enabled;
 
 You can freely interrupt the model at any time in push-to-talk or VAD mode.
 
-## Using a server relay
+## Using a relay server
 
 If you would like to build a more robust implementation and play around with the reference
 client using your own server, we have included a Node.js [Relay Server](/relay-server/index.js).
@@ -70,20 +70,33 @@ client using your own server, we have included a Node.js [Relay Server](/relay-s
 $ npm run relay
 ```
 
-It will start automatically on `localhost:8081`. **You will need to create a `.env` file**
-with `OPENAI_API_KEY=` set to your API key. Note that you should change the following code
-in [`ConsolePage.tsx`](/src/pages/ConsolePage.tsx):
+It will start automatically on `localhost:8081`.
+
+**You will need to create a `.env` file** with the following configuration:
+
+```conf
+OPENAI_API_KEY=YOUR_API_KEY
+REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
+```
+
+You will need to restart both your React app and relay server for the `.env.` changes
+to take effect. The local server URL is loaded via [`ConsolePage.tsx`](/src/pages/ConsolePage.tsx).
+To stop using the relay server at any time, simply delete the environment
+variable or set it to empty string.
 
 ```javascript
 /**
- * Change this if you want to connect to a local relay server!
- * This will require you to set OPENAI_API_KEY= in a `.env` file
- * You can run it with `npm run relay`, in parallel with `npm start`
+ * Running a local relay server will allow you to hide your API key
+ * and run custom logic on the server
  *
- * Simply switch the lines by commenting one and removing the other
+ * Set the local relay server address to:
+ * REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
+ *
+ * This will also require you to set OPENAI_API_KEY= in a `.env` file
+ * You can run it with `npm run relay`, in parallel with `npm start`
  */
-// const USE_LOCAL_RELAY_SERVER_URL: string | undefined = 'http://localhost:8081';
-const USE_LOCAL_RELAY_SERVER_URL: string | undefined = void 0;
+const LOCAL_RELAY_SERVER_URL: string =
+  process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 ```
 
 This server is **only a simple message relay**, but it can be extended to:
@@ -124,7 +137,7 @@ client.on('conversation.updated', ({ item, delta }) => {
 // Connect to Realtime API
 await client.connect();
 
-// Send a item and triggers a generation
+// Send an item and triggers a generation
 client.sendUserMessageContent([{ type: 'text', text: `How are you?` }]);
 ```
 
