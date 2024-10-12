@@ -281,6 +281,37 @@ export function ConsolePage() {
     client.updateSession({ instructions: instructions });
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
+  client.addTool(
+      {
+        name: 'set_memory',
+        description: 'Saves important data about the user into memory.',
+        parameters: {
+          type: 'object',
+          properties: {
+            key: {
+              type: 'string',
+              description:
+                'The key of the memory value. Always use lowercase and underscores, no other characters.',
+            },
+            value: {
+              type: 'string',
+              description: 'Value can be anything represented as a string',
+            },
+          },
+          required: ['key', 'value'],
+        },
+      },
+      async ({ key, value }: { [key: string]: any }) => {
+        setMemoryKv((memoryKv) => {
+          const newKv = { ...memoryKv };
+          newKv[key] = value;
+          return newKv;
+        });
+        return { ok: true };
+      }
+    );
+
+    
 client.addTool(
   {
     name: "perplexity_search",
