@@ -299,7 +299,7 @@ export function ConsolePage() {
       async ({ query }: { query: string }) => {
         try {
           // Use the full URL of your proxy server
-          const response = await axios.post('http://localhost:3001/api/brave-search', { query });
+          const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/brave-search`, { query });
           const results = response.data.web.results.slice(0, 3).map((result: any) => ({
             title: result.title,
             url: result.url,
