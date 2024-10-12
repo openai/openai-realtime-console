@@ -29,14 +29,15 @@
     "web-vitals": "^2.1.4",
     "ws": "^8.18.0"
   },
-"scripts": {
-  "start": "react-scripts start",
-  "build": "react-scripts build",
-  "test": "react-scripts test",
-  "eject": "react-scripts eject",
-  "server": "node server.mjs",
-  "dev": "concurrently \"npm run start\" \"npm run server\""
-},
+  "scripts": {
+    "start": "node server.mjs",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "server": "node server.mjs",
+    "dev": "concurrently \"react-scripts start\" \"nodemon server.mjs\"",
+    "deploy": "npm run build && npm start"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
