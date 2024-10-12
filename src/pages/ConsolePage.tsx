@@ -64,6 +64,7 @@ export function ConsolePage() {
   const [isConnected, setIsConnected] = useState(false);
   const [canPushToTalk, setCanPushToTalk] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
+  const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
   const formatTime = useCallback((timestamp: string) => {
@@ -133,6 +134,7 @@ export function ConsolePage() {
     setIsConnected(false);
     setRealtimeEvents([]);
     setItems([]);
+    setMemoryKv({});
     setSearchResults([]);
 
     const client = clientRef.current;
@@ -581,6 +583,11 @@ client.addTool(
             />
           </div>
         </div>
+            <div className="content-block kv">
+            <div className="content-block-title">set_memory()</div>
+            <div className="content-block-body content-kv">
+              {JSON.stringify(memoryKv, null, 2)}
+            </div>
         <div className="content-right">
           <div className="content-block search-results">
             <div className="content-block-title">Brave Search Results</div>
