@@ -281,46 +281,59 @@ export function ConsolePage() {
     client.updateSession({ instructions: instructions });
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
-client.addTool(
-  {
-    name: "brave_search",
-    description: "Perform a web search using Brave Search API",
-    parameters: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description: "The search query",
+    client.addTool(
+      {
+        name: "brave_search",
+        description: "Perform a web search using Brave Search API",
+        parameters: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "The search query",
+            },
+          },
+          required: ["query"],
         },
       },
-      required: ["query"],
-    },
-  },
-  async ({ query }: { query: string }) => {
-    try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/brave-search`, { query });
-      console.log('Brave search response:', response.data);
-      if (response.data.web && response.data.web.results) {
-        const results = response.data.web.results.slice(0, 3).map((result: any) => ({
-          title: result.title,
-          url: result.url,
-          description: result.description
-        }));
-        setSearchResults(results);
-        return { results };
-      } else {
-        console.error('Unexpected response format:', response.data);
-        return { error: 'Unexpected response format' };
+      async ({ query }: { query: string }) => {
+        try {
+          // Use a relative URL for the API call
+          const response = await axios.post('/api/brave-search', { query });
+          console.log('Brave search response:', response.data);
+          
+          if (response.data.web && response.data.web.results) {
+            const results = response.data.web.results.slice(0, 3).map((result: any) => ({
+              title: result.title,
+              url: result.url,
+              description: result.description
+            }));
+            setSearchResults(results);
+            return { results };
+          } else if (response.data.mock) {
+            // Handle mock response
+            const mockResults = response.data.web.results.map((result: any) => ({
+              title: result.title,
+              url: "#",
+              description: result.description
+            }));
+            setSearchResults(mockResults);
+            return { results: mockResults };
+          } else {
+            console.error('Unexpected response format:', response.data);
+            return { error: 'Unexpected response format' };
+          }
+        } catch (error) {
+          console.error('Error performing Brave search:', error);
+          if (axios.isAxiosError(error) && error.response) {
+            console.error('API Response:', error.response.status, error.response.data);
+          }
+          // Set an error message in searchResults
+          setSearchResults([{ title: "Error", url: "#", description: "Failed to perform search. Please try again." }]);
+          return { error: 'Failed to perform search' };
+        }
       }
-    } catch (error) {
-      console.error('Error performing Brave search:', error);
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API Response:', error.response.status, error.response.data);
-      }
-      return { error: 'Failed to perform search' };
-    }
-  }
-);
+    );
 
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
       setRealtimeEvents((realtimeEvents) => {
