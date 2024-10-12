@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import axios from 'axios';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fetch from 'node-fetch';
 
 dotenv.config();
 
@@ -19,33 +19,47 @@ app.use(express.json());
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
 
-// EXA search API endpoint
-app.post('/api/exa-search', async (req, res) => {
+// Perplexity AI search API endpoint
+app.post('/api/perplexity-search', async (req, res) => {
   try {
     const { query } = req.body;
-    console.log('Searching with EXA for:', query);
-    console.log('API Key available:', !!process.env.EXA_API_KEY);
+    console.log('Searching with Perplexity for:', query);
+    console.log('API Key available:', !!process.env.PERPLEXITY_API_KEY);
 
-    if (!process.env.EXA_API_KEY) {
-      throw new Error('EXA_API_KEY is not set');
+    if (!process.env.PERPLEXITY_API_KEY) {
+      throw new Error('PERPLEXITY_API_KEY is not set');
     }
 
-    const response = await axios.post('https://api.exa.ai/search', {
-      query: query,
-      type: 'auto'
-
-    }, {
+    const options = {
+      method: 'POST',
       headers: {
-        'accept': 'application/json',
-        'content-type': 'application/json',
-        'x-api-key': process.env.EXA_API_KEY
-      }
-    });
+        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-sonar-large-128k-online",
+        messages: [
+          { role: "system", content: "Be precise and concise." },
+          { role: "user", content: query }
+        ],
+        temperature: 0.2,
+        top_p: 0.9,
+        return_citations: true,
+        search_domain_filter: ["perplexity.ai"],
+        return_images: false,
+        return_related_questions: false,
+        search_recency_filter: "month",
+        frequency_penalty: 1
+      })
+    };
 
-    console.log('EXA API Response Status:', response.status);
-    res.json(response.data);
+    const response = await fetch('https://api.perplexity.ai/chat/completions', options);
+    const data = await response.json();
+
+    console.log('Perplexity API Response Status:', response.status);
+    res.json(data);
   } catch (error) {
-    console.error('Error performing EXA search:', error.message);
+    console.error('Error performing Perplexity search:', error.message);
     if (error.response) {
       console.error('API Response:', error.response.status, error.response.data);
     }
@@ -55,9 +69,12 @@ app.post('/api/exa-search', async (req, res) => {
     res.json({
       mock: true,
       query: req.body.query,
-      results: [
-        { title: "Mock Result 1", description: "This is a mock result for: " + req.body.query },
-        { title: "Mock Result 2", description: "This is another mock result for: " + req.body.query }
+      choices: [
+        {
+          message: {
+            content: "This is a mock result for: " + req.body.query
+          }
+        }
       ]
     });
   }
@@ -71,5 +88,5 @@ app.get('*', (req, res) => {
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${port}`);
   console.log('Environment:', process.env.NODE_ENV);
-  console.log('EXA API Key set:', !!process.env.EXA_API_KEY);
+  console.log('Perplexity API Key set:', !!process.env.PERPLEXITY_API_KEY);
 });
