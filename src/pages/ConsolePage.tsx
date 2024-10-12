@@ -283,8 +283,8 @@ export function ConsolePage() {
 
 client.addTool(
   {
-    name: "exa_search",
-    description: "Perform an AI-powered web search using Exa.ai",
+    name: "perplexity_search",
+    description: "Perform an AI-powered search using Perplexity AI",
     parameters: {
       type: "object",
       properties: {
@@ -298,23 +298,23 @@ client.addTool(
   },
   async ({ query }: { query: string }) => {
     try {
-      const response = await axios.post('/api/exa-search', { query });
-      console.log('Exa search response:', response.data);
+      const response = await axios.post('/api/perplexity-search', { query });
+      console.log('Perplexity search response:', response.data);
       
-      if (response.data.results) {
-        const results = response.data.results.slice(0, 3).map((result: any) => ({
-          title: result.title,
-          url: result.url,
-          description: result.snippet
-        }));
-        setSearchResults(results);
-        return { results };
+      if (response.data.choices && response.data.choices.length > 0) {
+        const result = response.data.choices[0].message.content;
+        setSearchResults([{
+          title: "Perplexity AI Result",
+          url: "#",
+          description: result
+        }]);
+        return { result };
       } else {
         console.error('Unexpected response format:', response.data);
         return { error: 'Unexpected response format' };
       }
     } catch (error) {
-      console.error('Error performing Exa search:', error);
+      console.error('Error performing Perplexity search:', error);
       if (axios.isAxiosError(error) && error.response) {
         console.error('API Response:', error.response.status, error.response.data);
       }
@@ -323,7 +323,6 @@ client.addTool(
     }
   }
 );
-
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
       setRealtimeEvents((realtimeEvents) => {
         const lastEvent = realtimeEvents[realtimeEvents.length - 1];
