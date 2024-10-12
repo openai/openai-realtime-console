@@ -32,7 +32,8 @@ app.post('/api/exa-search', async (req, res) => {
 
     const response = await axios.post('https://api.exa.ai/search', {
       query: query,
-      // Add any other parameters as needed
+      type: 'auto'
+
     }, {
       headers: {
         'accept': 'application/json',
