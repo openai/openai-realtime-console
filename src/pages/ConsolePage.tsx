@@ -1,52 +1,18 @@
-/**
- * Running a local relay server will allow you to hide your API key
- * and run custom logic on the server
- *
- * Set the local relay server address to:
- * REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
- *
- * This will also require you to set OPENAI_API_KEY= in a `.env` file
- * You can run it with `npm run relay`, in parallel with `npm start`
- */
-const LOCAL_RELAY_SERVER_URL: string =
-  process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
-
 import { useEffect, useRef, useCallback, useState } from 'react';
-
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
 import { instructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
-
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
-import { Map } from '../components/Map';
+import axios from 'axios';
 
 import './ConsolePage.scss';
-import { isJsxOpeningLikeElement } from 'typescript';
 
-/**
- * Type for result from get_weather() function call
- */
-interface Coordinates {
-  lat: number;
-  lng: number;
-  location?: string;
-  temperature?: {
-    value: number;
-    units: string;
-  };
-  wind_speed?: {
-    value: number;
-    units: string;
-  };
-}
+const LOCAL_RELAY_SERVER_URL: string = process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
-/**
- * Type for all event logs
- */
 interface RealtimeEvent {
   time: string;
   source: 'client' | 'server';
@@ -54,32 +20,27 @@ interface RealtimeEvent {
   event: { [key: string]: any };
 }
 
+interface SearchResult {
+  title: string;
+  url: string;
+  description: string;
+}
+
 export function ConsolePage() {
-  /**
-   * Ask user for API Key
-   * If we're using the local relay server, we don't need this
-   */
+  useEffect(() => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Your browser does not support audio input. Please use a modern browser like Chrome, Firefox, or Edge.');
+    }
+  }, []);
   const apiKey = LOCAL_RELAY_SERVER_URL
     ? ''
-    : localStorage.getItem('tmp::voice_api_key') ||
-      prompt('OpenAI API Key') ||
-      '';
+    : localStorage.getItem('tmp::voice_api_key') || prompt('OpenAI API Key') || '';
   if (apiKey !== '') {
     localStorage.setItem('tmp::voice_api_key', apiKey);
   }
 
-  /**
-   * Instantiate:
-   * - WavRecorder (speech input)
-   * - WavStreamPlayer (speech output)
-   * - RealtimeClient (API client)
-   */
-  const wavRecorderRef = useRef<WavRecorder>(
-    new WavRecorder({ sampleRate: 24000 })
-  );
-  const wavStreamPlayerRef = useRef<WavStreamPlayer>(
-    new WavStreamPlayer({ sampleRate: 24000 })
-  );
+  const wavRecorderRef = useRef<WavRecorder>(new WavRecorder({ sampleRate: 24000 }));
+  const wavStreamPlayerRef = useRef<WavStreamPlayer>(new WavStreamPlayer({ sampleRate: 24000 }));
   const clientRef = useRef<RealtimeClient>(
     new RealtimeClient(
       LOCAL_RELAY_SERVER_URL
@@ -91,43 +52,20 @@ export function ConsolePage() {
     )
   );
 
-  /**
-   * References for
-   * - Rendering audio visualization (canvas)
-   * - Autoscrolling event logs
-   * - Timing delta for event log displays
-   */
   const clientCanvasRef = useRef<HTMLCanvasElement>(null);
   const serverCanvasRef = useRef<HTMLCanvasElement>(null);
   const eventsScrollHeightRef = useRef(0);
   const eventsScrollRef = useRef<HTMLDivElement>(null);
   const startTimeRef = useRef<string>(new Date().toISOString());
 
-  /**
-   * All of our variables for displaying application state
-   * - items are all conversation items (dialog)
-   * - realtimeEvents are event logs, which can be expanded
-   * - memoryKv is for set_memory() function
-   * - coords, marker are for get_weather() function
-   */
   const [items, setItems] = useState<ItemType[]>([]);
   const [realtimeEvents, setRealtimeEvents] = useState<RealtimeEvent[]>([]);
-  const [expandedEvents, setExpandedEvents] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const [expandedEvents, setExpandedEvents] = useState<{ [key: string]: boolean }>({});
   const [isConnected, setIsConnected] = useState(false);
   const [canPushToTalk, setCanPushToTalk] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
-  const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
-  const [coords, setCoords] = useState<Coordinates | null>({
-    lat: 37.775593,
-    lng: -122.418137,
-  });
-  const [marker, setMarker] = useState<Coordinates | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
-  /**
-   * Utility for formatting the timing of logs
-   */
   const formatTime = useCallback((timestamp: string) => {
     const startTime = startTimeRef.current;
     const t0 = new Date(startTime).valueOf();
@@ -146,9 +84,6 @@ export function ConsolePage() {
     return `${pad(m)}:${pad(s)}.${pad(hs)}`;
   }, []);
 
-  /**
-   * When you click the API key
-   */
   const resetAPIKey = useCallback(() => {
     const apiKey = prompt('OpenAI API Key');
     if (apiKey !== null) {
@@ -158,55 +93,47 @@ export function ConsolePage() {
     }
   }, []);
 
-  /**
-   * Connect to conversation:
-   * WavRecorder taks speech input, WavStreamPlayer output, client is API client
-   */
   const connectConversation = useCallback(async () => {
-    const client = clientRef.current;
-    const wavRecorder = wavRecorderRef.current;
-    const wavStreamPlayer = wavStreamPlayerRef.current;
-
-    // Set state variables
-    startTimeRef.current = new Date().toISOString();
-    setIsConnected(true);
-    setRealtimeEvents([]);
-    setItems(client.conversation.getItems());
-
-    // Connect to microphone
-    await wavRecorder.begin();
-
-    // Connect to audio output
-    await wavStreamPlayer.connect();
-
-    // Connect to realtime API
-    await client.connect();
-    client.sendUserMessageContent([
-      {
-        type: `input_text`,
-        text: `Hello!`,
-        // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
-      },
-    ]);
-
-    if (client.getTurnDetectionType() === 'server_vad') {
-      await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+    try {
+      const client = clientRef.current;
+      const wavRecorder = wavRecorderRef.current;
+      const wavStreamPlayer = wavStreamPlayerRef.current;
+  
+      startTimeRef.current = new Date().toISOString();
+      setIsConnected(true);
+      setRealtimeEvents([]);
+      setItems(client.conversation.getItems());
+  
+      // Request microphone permission
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+  
+      await wavRecorder.begin();
+      await wavStreamPlayer.connect();
+  
+      await client.connect();
+      client.sendUserMessageContent([
+        {
+          type: `input_text`,
+          text: `Hello!`,
+        },
+      ]);
+  
+      if (client.getTurnDetectionType() === 'server_vad') {
+        await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+      }
+    } catch (error) {
+      console.error('Error connecting to conversation:', error);
+      setIsConnected(false);
+      // Display an error message to the user
+      alert('Failed to connect. Please ensure you have granted microphone permissions and try again.');
     }
   }, []);
 
-  /**
-   * Disconnect and reset conversation state
-   */
   const disconnectConversation = useCallback(async () => {
     setIsConnected(false);
     setRealtimeEvents([]);
     setItems([]);
-    setMemoryKv({});
-    setCoords({
-      lat: 37.775593,
-      lng: -122.418137,
-    });
-    setMarker(null);
+    setSearchResults([]);
 
     const client = clientRef.current;
     client.disconnect();
@@ -223,10 +150,6 @@ export function ConsolePage() {
     client.deleteItem(id);
   }, []);
 
-  /**
-   * In push-to-talk mode, start recording
-   * .appendInputAudio() for each sample
-   */
   const startRecording = async () => {
     setIsRecording(true);
     const client = clientRef.current;
@@ -240,9 +163,6 @@ export function ConsolePage() {
     await wavRecorder.record((data) => client.appendInputAudio(data.mono));
   };
 
-  /**
-   * In push-to-talk mode, stop recording
-   */
   const stopRecording = async () => {
     setIsRecording(false);
     const client = clientRef.current;
@@ -251,9 +171,6 @@ export function ConsolePage() {
     client.createResponse();
   };
 
-  /**
-   * Switch between Manual <> VAD mode for communication
-   */
   const changeTurnEndType = async (value: string) => {
     const client = clientRef.current;
     const wavRecorder = wavRecorderRef.current;
@@ -269,14 +186,10 @@ export function ConsolePage() {
     setCanPushToTalk(value === 'none');
   };
 
-  /**
-   * Auto-scroll the event logs
-   */
   useEffect(() => {
     if (eventsScrollRef.current) {
       const eventsEl = eventsScrollRef.current;
       const scrollHeight = eventsEl.scrollHeight;
-      // Only scroll if height has just changed
       if (scrollHeight !== eventsScrollHeightRef.current) {
         eventsEl.scrollTop = scrollHeight;
         eventsScrollHeightRef.current = scrollHeight;
@@ -284,9 +197,6 @@ export function ConsolePage() {
     }
   }, [realtimeEvents]);
 
-  /**
-   * Auto-scroll the conversation logs
-   */
   useEffect(() => {
     const conversationEls = [].slice.call(
       document.body.querySelectorAll('[data-conversation-content]')
@@ -297,9 +207,6 @@ export function ConsolePage() {
     }
   }, [items]);
 
-  /**
-   * Set up render loops for the visualization canvas
-   */
   useEffect(() => {
     let isLoaded = true;
 
@@ -367,100 +274,51 @@ export function ConsolePage() {
     };
   }, []);
 
-  /**
-   * Core RealtimeClient and audio capture setup
-   * Set all of our instructions, tools, events and more
-   */
   useEffect(() => {
-    // Get refs
     const wavStreamPlayer = wavStreamPlayerRef.current;
     const client = clientRef.current;
 
-    // Set instructions
     client.updateSession({ instructions: instructions });
-    // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
-    // Add tools
     client.addTool(
       {
-        name: 'set_memory',
-        description: 'Saves important data about the user into memory.',
+        name: "brave_search",
+        description: "Perform a web search using Brave Search API",
         parameters: {
-          type: 'object',
+          type: "object",
           properties: {
-            key: {
-              type: 'string',
-              description:
-                'The key of the memory value. Always use lowercase and underscores, no other characters.',
-            },
-            value: {
-              type: 'string',
-              description: 'Value can be anything represented as a string',
+            query: {
+              type: "string",
+              description: "The search query",
             },
           },
-          required: ['key', 'value'],
+          required: ["query"],
         },
       },
-      async ({ key, value }: { [key: string]: any }) => {
-        setMemoryKv((memoryKv) => {
-          const newKv = { ...memoryKv };
-          newKv[key] = value;
-          return newKv;
-        });
-        return { ok: true };
-      }
-    );
-    client.addTool(
-      {
-        name: 'get_weather',
-        description:
-          'Retrieves the weather for a given lat, lng coordinate pair. Specify a label for the location.',
-        parameters: {
-          type: 'object',
-          properties: {
-            lat: {
-              type: 'number',
-              description: 'Latitude',
-            },
-            lng: {
-              type: 'number',
-              description: 'Longitude',
-            },
-            location: {
-              type: 'string',
-              description: 'Name of the location',
-            },
-          },
-          required: ['lat', 'lng', 'location'],
-        },
-      },
-      async ({ lat, lng, location }: { [key: string]: any }) => {
-        setMarker({ lat, lng, location });
-        setCoords({ lat, lng, location });
-        const result = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
-        );
-        const json = await result.json();
-        const temperature = {
-          value: json.current.temperature_2m as number,
-          units: json.current_units.temperature_2m as string,
-        };
-        const wind_speed = {
-          value: json.current.wind_speed_10m as number,
-          units: json.current_units.wind_speed_10m as string,
-        };
-        setMarker({ lat, lng, location, temperature, wind_speed });
-        return json;
+      async ({ query }: { query: string }) => {
+        try {
+          // Use the full URL of your proxy server
+          const response = await axios.post('http://localhost:3001/api/brave-search', { query });
+          const results = response.data.web.results.slice(0, 3).map((result: any) => ({
+            title: result.title,
+            url: result.url,
+            description: result.description
+          }));
+    
+          setSearchResults(results);
+          return { results };
+        } catch (error) {
+          console.error('Error performing Brave search:', error);
+          return { error: 'Failed to perform search' };
+        }
       }
     );
 
-    // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
       setRealtimeEvents((realtimeEvents) => {
         const lastEvent = realtimeEvents[realtimeEvents.length - 1];
         if (lastEvent?.event.type === realtimeEvent.event.type) {
-          // if we receive multiple events in a row, aggregate them for display purposes
           lastEvent.count = (lastEvent.count || 0) + 1;
           return realtimeEvents.slice(0, -1).concat(lastEvent);
         } else {
@@ -495,19 +353,15 @@ export function ConsolePage() {
     setItems(client.conversation.getItems());
 
     return () => {
-      // cleanup; resets to defaults
       client.reset();
     };
   }, []);
 
-  /**
-   * Render the application
-   */
   return (
     <div data-component="ConsolePage">
       <div className="content-top">
         <div className="content-title">
-          <img src="/openai-logomark.svg" />
+          <img src="/openai-logomark.svg" alt="OpenAI Logo" />
           <span>realtime console</span>
         </div>
         <div className="content-api-key">
@@ -553,7 +407,6 @@ export function ConsolePage() {
                       <div
                         className="event-summary"
                         onClick={() => {
-                          // toggle event details
                           const id = event.event_id;
                           const expanded = { ...expandedEvents };
                           if (expanded[id]) {
@@ -621,11 +474,9 @@ export function ConsolePage() {
                       </div>
                     </div>
                     <div className={`speaker-content`}>
-                      {/* tool response */}
                       {conversationItem.type === 'function_call_output' && (
                         <div>{conversationItem.formatted.output}</div>
                       )}
-                      {/* tool call */}
                       {!!conversationItem.formatted.tool && (
                         <div>
                           {conversationItem.formatted.tool.name}(
@@ -692,36 +543,19 @@ export function ConsolePage() {
           </div>
         </div>
         <div className="content-right">
-          <div className="content-block map">
-            <div className="content-block-title">get_weather()</div>
-            <div className="content-block-title bottom">
-              {marker?.location || 'not yet retrieved'}
-              {!!marker?.temperature && (
-                <>
-                  <br />
-                  🌡️ {marker.temperature.value} {marker.temperature.units}
-                </>
+          <div className="content-block search-results">
+            <div className="content-block-title">Brave Search Results</div>
+            <div className="content-block-body">
+              {searchResults.length === 0 ? (
+                <p>No search results yet.</p>
+              ) : (
+                searchResults.map((result, index) => (
+                  <div key={index} className="search-result">
+                    <h3><a href={result.url} target="_blank" rel="noopener noreferrer">{result.title}</a></h3>
+                    <p>{result.description}</p>
+                  </div>
+                ))
               )}
-              {!!marker?.wind_speed && (
-                <>
-                  {' '}
-                  🍃 {marker.wind_speed.value} {marker.wind_speed.units}
-                </>
-              )}
-            </div>
-            <div className="content-block-body full">
-              {coords && (
-                <Map
-                  center={[coords.lat, coords.lng]}
-                  location={coords.location}
-                />
-              )}
-            </div>
-          </div>
-          <div className="content-block kv">
-            <div className="content-block-title">set_memory()</div>
-            <div className="content-block-body content-kv">
-              {JSON.stringify(memoryKv, null, 2)}
             </div>
           </div>
         </div>
