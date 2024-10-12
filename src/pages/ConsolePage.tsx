@@ -32,6 +32,7 @@ export function ConsolePage() {
       alert('Your browser does not support audio input. Please use a modern browser like Chrome, Firefox, or Edge.');
     }
   }, []);
+
   const apiKey = LOCAL_RELAY_SERVER_URL
     ? ''
     : localStorage.getItem('tmp::voice_api_key') || prompt('OpenAI API Key') || '';
@@ -283,7 +284,7 @@ export function ConsolePage() {
     client.updateSession({ instructions: instructions });
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
-  client.addTool(
+    client.addTool(
       {
         name: 'set_memory',
         description: 'Saves important data about the user into memory.',
@@ -313,49 +314,49 @@ export function ConsolePage() {
       }
     );
 
-    
-client.addTool(
-  {
-    name: "perplexity_search",
-    description: "Perform an AI-powered search using Perplexity AI",
-    parameters: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description: "The search query",
+    client.addTool(
+      {
+        name: "perplexity_search",
+        description: "Perform an AI-powered search using Perplexity AI",
+        parameters: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "The search query",
+            },
+          },
+          required: ["query"],
         },
       },
-      required: ["query"],
-    },
-  },
-  async ({ query }: { query: string }) => {
-    try {
-      const response = await axios.post('/api/perplexity-search', { query });
-      console.log('Perplexity search response:', response.data);
-      
-      if (response.data.choices && response.data.choices.length > 0) {
-        const result = response.data.choices[0].message.content;
-        setSearchResults([{
-          title: "Perplexity AI Result",
-          url: "#",
-          description: result
-        }]);
-        return { result };
-      } else {
-        console.error('Unexpected response format:', response.data);
-        return { error: 'Unexpected response format' };
+      async ({ query }: { query: string }) => {
+        try {
+          const response = await axios.post('/api/perplexity-search', { query });
+          console.log('Perplexity search response:', response.data);
+          
+          if (response.data.choices && response.data.choices.length > 0) {
+            const result = response.data.choices[0].message.content;
+            setSearchResults([{
+              title: "Perplexity AI Result",
+              url: "#",
+              description: result
+            }]);
+            return { result };
+          } else {
+            console.error('Unexpected response format:', response.data);
+            return { error: 'Unexpected response format' };
+          }
+        } catch (error) {
+          console.error('Error performing Perplexity search:', error);
+          if (axios.isAxiosError(error) && error.response) {
+            console.error('API Response:', error.response.status, error.response.data);
+          }
+          setSearchResults([{ title: "Error", url: "#", description: "Failed to perform search. Please try again." }]);
+          return { error: 'Failed to perform search' };
+        }
       }
-    } catch (error) {
-      console.error('Error performing Perplexity search:', error);
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API Response:', error.response.status, error.response.data);
-      }
-      setSearchResults([{ title: "Error", url: "#", description: "Failed to perform search. Please try again." }]);
-      return { error: 'Failed to perform search' };
-    }
-  }
-);
+    );
+
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
       setRealtimeEvents((realtimeEvents) => {
         const lastEvent = realtimeEvents[realtimeEvents.length - 1];
@@ -583,12 +584,13 @@ client.addTool(
             />
           </div>
         </div>
-            <div className="content-block kv">
+        <div className="content-right">
+          <div className="content-block kv">
             <div className="content-block-title">set_memory()</div>
             <div className="content-block-body content-kv">
               {JSON.stringify(memoryKv, null, 2)}
-         </div>
-        <div className="content-right">
+            </div>
+          </div>
           <div className="content-block search-results">
             <div className="content-block-title">Perplexity Search Results</div>
             <div className="content-block-body">
