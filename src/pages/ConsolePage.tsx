@@ -284,7 +284,7 @@ export function ConsolePage() {
 client.addTool(
   {
     name: "exa_search",
-    description: "Perform a web search using EXA AI Search API",
+    description: "Perform an AI-powered web search using Exa.ai",
     parameters: {
       type: "object",
       properties: {
@@ -299,31 +299,22 @@ client.addTool(
   async ({ query }: { query: string }) => {
     try {
       const response = await axios.post('/api/exa-search', { query });
-      console.log('EXA search response:', response.data);
+      console.log('Exa search response:', response.data);
       
       if (response.data.results) {
         const results = response.data.results.slice(0, 3).map((result: any) => ({
           title: result.title,
           url: result.url,
-          description: result.text || result.summary
+          description: result.snippet
         }));
         setSearchResults(results);
         return { results };
-      } else if (response.data.mock) {
-        // Handle mock response
-        const mockResults = response.data.results.map((result: any) => ({
-          title: result.title,
-          url: "#",
-          description: result.description
-        }));
-        setSearchResults(mockResults);
-        return { results: mockResults };
       } else {
         console.error('Unexpected response format:', response.data);
         return { error: 'Unexpected response format' };
       }
     } catch (error) {
-      console.error('Error performing EXA search:', error);
+      console.error('Error performing Exa search:', error);
       if (axios.isAxiosError(error) && error.response) {
         console.error('API Response:', error.response.status, error.response.data);
       }
