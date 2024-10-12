@@ -39,26 +39,14 @@ app.post('/api/brave-search', async (req, res) => {
       }
     });
 
-    console.log('Brave API Response Status:', response.status);
+console.log('Brave API Response Status:', response.status);
     res.json(response.data);
   } catch (error) {
     console.error('Error performing Brave search:', error.message);
     if (error.response) {
       console.error('API Response:', error.response.status, error.response.data);
     }
-
-    // Fallback to mock response
-    console.log('Returning mock response');
-    res.json({
-      mock: true,
-      query: req.body.query,
-      web: {
-        results: [
-          { title: "Mock Result 1", description: "This is a mock result for: " + req.body.query },
-          { title: "Mock Result 2", description: "This is another mock result for: " + req.body.query }
-        ]
-      }
-    });
+    res.status(500).json({ error: 'Failed to perform search' });
   }
 });
 
