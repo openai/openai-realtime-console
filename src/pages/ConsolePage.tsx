@@ -587,10 +587,10 @@ client.addTool(
             <div className="content-block-title">set_memory()</div>
             <div className="content-block-body content-kv">
               {JSON.stringify(memoryKv, null, 2)}
-            </div>
+         </div>
         <div className="content-right">
           <div className="content-block search-results">
-            <div className="content-block-title">Brave Search Results</div>
+            <div className="content-block-title">Perplexity Search Results</div>
             <div className="content-block-body">
               {searchResults.length === 0 ? (
                 <p>No search results yet.</p>
