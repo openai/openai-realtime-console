@@ -24,7 +24,7 @@ app.post('/api/brave-search', async (req, res) => {
   try {
     const { query } = req.body;
     console.log('Searching for:', query);
-    console.log('API Key available:', !!process.env.BRAVE_API_KEY);
+    console.log('Brave API Key:', process.env.BRAVE_API_KEY);
 
     if (!process.env.BRAVE_API_KEY) {
       throw new Error('BRAVE_API_KEY is not set');
