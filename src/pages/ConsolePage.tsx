@@ -281,59 +281,57 @@ export function ConsolePage() {
     client.updateSession({ instructions: instructions });
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
-    client.addTool(
-      {
-        name: "brave_search",
-        description: "Perform a web search using Brave Search API",
-        parameters: {
-          type: "object",
-          properties: {
-            query: {
-              type: "string",
-              description: "The search query",
-            },
-          },
-          required: ["query"],
+client.addTool(
+  {
+    name: "exa_search",
+    description: "Perform a web search using EXA AI Search API",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "The search query",
         },
       },
-      async ({ query }: { query: string }) => {
-        try {
-          // Use a relative URL for the API call
-          const response = await axios.post('/api/brave-search', { query });
-          console.log('Brave search response:', response.data);
-          
-          if (response.data.web && response.data.web.results) {
-            const results = response.data.web.results.slice(0, 3).map((result: any) => ({
-              title: result.title,
-              url: result.url,
-              description: result.description
-            }));
-            setSearchResults(results);
-            return { results };
-          } else if (response.data.mock) {
-            // Handle mock response
-            const mockResults = response.data.web.results.map((result: any) => ({
-              title: result.title,
-              url: "#",
-              description: result.description
-            }));
-            setSearchResults(mockResults);
-            return { results: mockResults };
-          } else {
-            console.error('Unexpected response format:', response.data);
-            return { error: 'Unexpected response format' };
-          }
-        } catch (error) {
-          console.error('Error performing Brave search:', error);
-          if (axios.isAxiosError(error) && error.response) {
-            console.error('API Response:', error.response.status, error.response.data);
-          }
-          // Set an error message in searchResults
-          setSearchResults([{ title: "Error", url: "#", description: "Failed to perform search. Please try again." }]);
-          return { error: 'Failed to perform search' };
-        }
+      required: ["query"],
+    },
+  },
+  async ({ query }: { query: string }) => {
+    try {
+      const response = await axios.post('/api/exa-search', { query });
+      console.log('EXA search response:', response.data);
+      
+      if (response.data.results) {
+        const results = response.data.results.slice(0, 3).map((result: any) => ({
+          title: result.title,
+          url: result.url,
+          description: result.text || result.summary
+        }));
+        setSearchResults(results);
+        return { results };
+      } else if (response.data.mock) {
+        // Handle mock response
+        const mockResults = response.data.results.map((result: any) => ({
+          title: result.title,
+          url: "#",
+          description: result.description
+        }));
+        setSearchResults(mockResults);
+        return { results: mockResults };
+      } else {
+        console.error('Unexpected response format:', response.data);
+        return { error: 'Unexpected response format' };
       }
-    );
+    } catch (error) {
+      console.error('Error performing EXA search:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('API Response:', error.response.status, error.response.data);
+      }
+      setSearchResults([{ title: "Error", url: "#", description: "Failed to perform search. Please try again." }]);
+      return { error: 'Failed to perform search' };
+    }
+  }
+);
 
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
       setRealtimeEvents((realtimeEvents) => {
