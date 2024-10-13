@@ -4,6 +4,8 @@
   --primary-color: #007bff;
   --secondary-color: #6c757d;
   --border-color: #dee2e6;
+  --assistant-color: #009900;
+  --error-color: #990000;
 }
 
 [data-theme='dark'] {
@@ -12,6 +14,8 @@
   --primary-color: #4da3ff;
   --secondary-color: #a1a1a1;
   --border-color: #444444;
+  --assistant-color: #00cc00;
+  --error-color: #ff3333;
 }
 
 body {
