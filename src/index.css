@@ -12,10 +12,61 @@ body {
   color: #18181b;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
 }
 
 #root {
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+/* Responsive font sizes */
+@media (max-width: 768px) {
+  html, body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  html, body {
+    font-size: 12px;
+  }
+}
+
+/* Ensure proper touch targets for interactive elements */
+button, 
+input[type="button"], 
+input[type="submit"],
+input[type="reset"],
+a {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Add some padding to the body on very small screens */
+@media (max-width: 320px) {
+  body {
+    padding: 0 10px;
+  }
+}
+
+/* Improve readability on mobile */
+@media (max-width: 768px) {
+  p, li, td, th {
+    line-height: 1.5;
+  }
+}
+
+/* Adjust heading sizes for mobile */
+@media (max-width: 768px) {
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.2em; }
+}
+
+/* Ensure images and other media are responsive */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
 }
