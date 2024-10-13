@@ -9,7 +9,6 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import axios from 'axios';
 import { useTheme } from '../ThemeContext';
-import ThreeJsVisualization from '../components/ThreeJsVisualization';
 
 import './ConsolePage.scss';
 
@@ -65,7 +64,6 @@ export function ConsolePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [aiSpeechData, setAiSpeechData] = useState<number[]>([]);
 
   const formatTime = useCallback((timestamp: string) => {
     const startTime = startTimeRef.current;
@@ -99,18 +97,18 @@ export function ConsolePage() {
       const client = clientRef.current;
       const wavRecorder = wavRecorderRef.current;
       const wavStreamPlayer = wavStreamPlayerRef.current;
-  
+
       startTimeRef.current = new Date().toISOString();
       setIsConnected(true);
       setRealtimeEvents([]);
       setItems(client.conversation.getItems());
-  
+
       // Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
-  
+
       await wavRecorder.begin();
       await wavStreamPlayer.connect();
-  
+
       await client.connect();
       client.sendUserMessageContent([
         {
@@ -118,7 +116,7 @@ export function ConsolePage() {
           text: `Hello!`,
         },
       ]);
-  
+
       if (client.getTurnDetectionType() === 'server_vad') {
         await wavRecorder.record((data) => client.appendInputAudio(data.mono));
       }
@@ -332,7 +330,7 @@ export function ConsolePage() {
         try {
           const response = await axios.post('/api/perplexity-search', { query });
           console.log('Perplexity search response:', response.data);
-          
+
           if (response.data.choices && response.data.choices.length > 0) {
             const result = response.data.choices[0].message.content;
             setSearchResults([{
@@ -379,7 +377,6 @@ export function ConsolePage() {
       const items = client.conversation.getItems();
       if (delta?.audio) {
         wavStreamPlayer.add16BitPCM(delta.audio, item.id);
-        setAiSpeechData(prevData => [...prevData, ...delta.audio]);
       }
       if (item.status === 'completed' && item.formatted.audio?.length) {
         const wavFile = await WavRecorder.decode(
@@ -427,10 +424,77 @@ export function ConsolePage() {
       </div>
       <div className="content-main">
         <div className="content-logs">
-          <div className="content-block visualization">
-            <div className="content-block-title">AI Speech Visualization</div>
-            <div className="content-block-body">
-              <ThreeJsVisualization aiSpeechData={aiSpeechData.join(',')} />
+          <div className="content-block events">
+            <div className="visualization">
+              <div className="visualization-entry client">
+                <canvas ref={clientCanvasRef} />
+              </div>
+              <div className="visualization-entry server">
+                <canvas ref={serverCanvasRef} />
+              </div>
+            </div>
+            <div className="content-block-title">events</div>
+            <div className="content-block-body" ref={eventsScrollRef}>
+              {!realtimeEvents.length && `awaiting connection...`}
+              {realtimeEvents.map((realtimeEvent, i) => {
+                const count = realtimeEvent.count;
+                const event = { ...realtimeEvent.event };
+                if (event.type === 'input_audio_buffer.append') {
+                  event.audio = `[trimmed: ${event.audio.length} bytes]`;
+                } else if (event.type === 'response.audio.delta') {
+                  event.delta = `[trimmed: ${event.delta.length} bytes]`;
+                }
+                return (
+                  <div className="event" key={event.event_id}>
+                    <div className="event-timestamp">
+                      {formatTime(realtimeEvent.time)}
+                    </div>
+                    <div className="event-details">
+                      <div
+                        className="event-summary"
+                        onClick={() => {
+                          const id = event.event_id;
+                          const expanded = { ...expandedEvents };
+                          if (expanded[id]) {
+                            delete expanded[id];
+                          } else {
+                            expanded[id] = true;
+                          }
+                          setExpandedEvents(expanded);
+                        }}
+                      >
+                        <div
+                          className={`event-source ${
+                            event.type === 'error'
+                              ? 'error'
+                              : realtimeEvent.source
+                          }`}
+                        >
+                          {realtimeEvent.source === 'client' ? (
+                            <ArrowUp />
+                          ) : (
+                            <ArrowDown />
+                          )}
+                          <span>
+                            {event.type === 'error'
+                              ? 'error!'
+                              : realtimeEvent.source}
+                          </span>
+                        </div>
+                        <div className="event-type">
+                          {event.type}
+                          {count && ` (${count})`}
+                        </div>
+                      </div>
+                      {!!expandedEvents[event.event_id] && (
+                        <div className="event-payload">
+                          {JSON.stringify(event, null, 2)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
           <div className="content-block conversation">
@@ -525,79 +589,6 @@ export function ConsolePage() {
           </div>
         </div>
         <div className="content-right">
-          <div className="content-block events">
-            <div className="visualization">
-              <div className="visualization-entry client">
-                <canvas ref={clientCanvasRef} />
-              </div>
-              <div className="visualization-entry server">
-                <canvas ref={serverCanvasRef} />
-              </div>
-            </div>
-            <div className="content-block-title">events</div>
-            <div className="content-block-body" ref={eventsScrollRef}>
-              {!realtimeEvents.length && `awaiting connection...`}
-              {realtimeEvents.map((realtimeEvent, i) => {
-                const count = realtimeEvent.count;
-                const event = { ...realtimeEvent.event };
-                if (event.type === 'input_audio_buffer.append') {
-                  event.audio = `[trimmed: ${event.audio.length} bytes]`;
-                } else if (event.type === 'response.audio.delta') {
-                  event.delta = `[trimmed: ${event.delta.length} bytes]`;
-                }
-                return (
-                  <div className="event" key={event.event_id}>
-                    <div className="event-timestamp">
-                      {formatTime(realtimeEvent.time)}
-                    </div>
-                    <div className="event-details">
-                      <div
-                        className="event-summary"
-                        onClick={() => {
-                          const id = event.event_id;
-                          const expanded = { ...expandedEvents };
-                          if (expanded[id]) {
-                            delete expanded[id];
-                          } else {
-                            expanded[id] = true;
-                          }
-                          setExpandedEvents(expanded);
-                        }}
-                      >
-                        <div
-                          className={`event-source ${
-                            event.type === 'error'
-                              ? 'error'
-                              : realtimeEvent.source
-                          }`}
-                        >
-                          {realtimeEvent.source === 'client' ? (
-                            <ArrowUp />
-                          ) : (
-                            <ArrowDown />
-                          )}
-                          <span>
-                            {event.type === 'error'
-                              ? 'error!'
-                              : realtimeEvent.source}
-                          </span>
-                        </div>
-                        <div className="event-type">
-                          {event.type}
-                          {count && ` (${count})`}
-                        </div>
-                      </div>
-                      {!!expandedEvents[event.event_id] && (
-                        <div className="event-payload">
-                          {JSON.stringify(event, null, 2)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
           <div className="content-block kv">
             <div className="content-block-title">set_memory()</div>
             <div className="content-block-body content-kv">
