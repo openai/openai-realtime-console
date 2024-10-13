@@ -9,6 +9,7 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import axios from 'axios';
 import { useTheme } from '../ThemeContext';
+import { ThreeJsVisualization } from '../components/ThreeJsVisualization';
 
 import './ConsolePage.scss';
 
@@ -64,6 +65,7 @@ export function ConsolePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [aiSpeechData, setAiSpeechData] = useState<number[]>([]);
 
   const formatTime = useCallback((timestamp: string) => {
     const startTime = startTimeRef.current;
@@ -377,6 +379,7 @@ export function ConsolePage() {
       const items = client.conversation.getItems();
       if (delta?.audio) {
         wavStreamPlayer.add16BitPCM(delta.audio, item.id);
+        setAiSpeechData(prevData => [...prevData, ...delta.audio]);
       }
       if (item.status === 'completed' && item.formatted.audio?.length) {
         const wavFile = await WavRecorder.decode(
@@ -608,6 +611,12 @@ export function ConsolePage() {
                   </div>
                 ))
               )}
+            </div>
+          </div>
+          <div className="content-block visualization">
+            <div className="content-block-title">AI Speech Visualization</div>
+            <div className="content-block-body">
+              <ThreeJsVisualization aiSpeechData={aiSpeechData} />
             </div>
           </div>
         </div>
