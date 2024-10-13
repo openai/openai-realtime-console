@@ -4,53 +4,53 @@ import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
 import { instructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
-import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
+import { X, Edit, Zap, ArrowUp, ArrowDown, Moon, Sun } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import axios from 'axios';
+import { useTheme } from '../ThemeContext';
 
 import './ConsolePage.scss';
 
 const LOCAL_RELAY_SERVER_URL: string = process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
-interface RealtimeEvent {
-  time: string;
-  source: 'client' | 'server';
-  count?: number;
-  event: { [key: string]: any };
-}
-
-interface SearchResult {
-  title: string;
-  url: string;
-  description: string;
-}
+// ... (keep all the existing interfaces)
 
 export function ConsolePage() {
-  useEffect(() => {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert('Your browser does not support audio input. Please use a modern browser like Chrome, Firefox, or Edge.');
-    }
-  }, []);
+  const { theme, toggleTheme } = useTheme();
 
-  const apiKey = LOCAL_RELAY_SERVER_URL
-    ? ''
-    : localStorage.getItem('tmp::voice_api_key') || prompt('OpenAI API Key') || '';
-  if (apiKey !== '') {
-    localStorage.setItem('tmp::voice_api_key', apiKey);
-  }
+  // ... (keep all the existing code until the return statement)
 
-  const wavRecorderRef = useRef<WavRecorder>(new WavRecorder({ sampleRate: 24000 }));
-  const wavStreamPlayerRef = useRef<WavStreamPlayer>(new WavStreamPlayer({ sampleRate: 24000 }));
-  const clientRef = useRef<RealtimeClient>(
-    new RealtimeClient(
-      LOCAL_RELAY_SERVER_URL
-        ? { url: LOCAL_RELAY_SERVER_URL }
-        : {
-            apiKey: apiKey,
-            dangerouslyAllowAPIKeyInBrowser: true,
-          }
-    )
+  return (
+    <div data-component="ConsolePage" data-theme={theme}>
+      <div className="content-top">
+        <div className="content-title">
+          <img src="https://truetradinggroup.com/wp-content/uploads/2024/09/mobileDark-1.png" alt="TTG Logo" />
+          <span>realtime console</span>
+        </div>
+        <div className="content-api-key">
+          {!LOCAL_RELAY_SERVER_URL && (
+            <Button
+              icon={Edit}
+              iconPosition="end"
+              buttonStyle="flush"
+              label={`api key: ${apiKey.slice(0, 3)}...`}
+              onClick={() => resetAPIKey()}
+            />
+          )}
+          <Button
+            icon={theme === 'light' ? Moon : Sun}
+            iconPosition="end"
+            buttonStyle="flush"
+            onClick={toggleTheme}
+            label={`Theme: ${theme}`}
+          />
+        </div>
+      </div>
+      {/* ... (keep the rest of the JSX unchanged) */}
+    </div>
+  );
+}
   );
 
   const clientCanvasRef = useRef<HTMLCanvasElement>(null);
