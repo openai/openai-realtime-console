@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
@@ -14,43 +14,40 @@ import './ConsolePage.scss';
 
 const LOCAL_RELAY_SERVER_URL: string = process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
-// ... (keep all the existing interfaces)
+interface RealtimeEvent {
+  time: string;
+  source: 'client' | 'server';
+  count?: number;
+  event: { [key: string]: any };
+}
+
+interface SearchResult {
+  title: string;
+  url: string;
+  description: string;
+}
 
 export function ConsolePage() {
   const { theme, toggleTheme } = useTheme();
 
-  // ... (keep all the existing code until the return statement)
+  const apiKey = LOCAL_RELAY_SERVER_URL
+    ? ''
+    : localStorage.getItem('tmp::voice_api_key') || prompt('OpenAI API Key') || '';
+  if (apiKey !== '') {
+    localStorage.setItem('tmp::voice_api_key', apiKey);
+  }
 
-  return (
-    <div data-component="ConsolePage" data-theme={theme}>
-      <div className="content-top">
-        <div className="content-title">
-          <img src="https://truetradinggroup.com/wp-content/uploads/2024/09/mobileDark-1.png" alt="TTG Logo" />
-          <span>realtime console</span>
-        </div>
-        <div className="content-api-key">
-          {!LOCAL_RELAY_SERVER_URL && (
-            <Button
-              icon={Edit}
-              iconPosition="end"
-              buttonStyle="flush"
-              label={`api key: ${apiKey.slice(0, 3)}...`}
-              onClick={() => resetAPIKey()}
-            />
-          )}
-          <Button
-            icon={theme === 'light' ? Moon : Sun}
-            iconPosition="end"
-            buttonStyle="flush"
-            onClick={toggleTheme}
-            label={`Theme: ${theme}`}
-          />
-        </div>
-      </div>
-      {/* ... (keep the rest of the JSX unchanged) */}
-    </div>
-  );
-}
+  const wavRecorderRef = useRef<WavRecorder>(new WavRecorder({ sampleRate: 24000 }));
+  const wavStreamPlayerRef = useRef<WavStreamPlayer>(new WavStreamPlayer({ sampleRate: 24000 }));
+  const clientRef = useRef<RealtimeClient>(
+    new RealtimeClient(
+      LOCAL_RELAY_SERVER_URL
+        ? { url: LOCAL_RELAY_SERVER_URL }
+        : {
+            apiKey: apiKey,
+            dangerouslyAllowAPIKeyInBrowser: true,
+          }
+    )
   );
 
   const clientCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -400,7 +397,7 @@ export function ConsolePage() {
   }, []);
 
   return (
-    <div data-component="ConsolePage">
+    <div data-component="ConsolePage" data-theme={theme}>
       <div className="content-top">
         <div className="content-title">
           <img src="https://truetradinggroup.com/wp-content/uploads/2024/09/mobileDark-1.png" alt="TTG Logo" />
@@ -416,6 +413,13 @@ export function ConsolePage() {
               onClick={() => resetAPIKey()}
             />
           )}
+          <Button
+            icon={theme === 'light' ? Moon : Sun}
+            iconPosition="end"
+            buttonStyle="flush"
+            onClick={toggleTheme}
+            label={`Theme: ${theme}`}
+          />
         </div>
       </div>
       <div className="content-main">
