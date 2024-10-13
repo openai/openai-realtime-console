@@ -403,7 +403,7 @@ export function ConsolePage() {
     <div data-component="ConsolePage">
       <div className="content-top">
         <div className="content-title">
-          <img src="/ttgIcon.svg" alt="TTG Logo" />
+          <img src="https://truetradinggroup.com/wp-content/uploads/2024/09/mobileDark-1.png" alt="TTG Logo" />
           <span>realtime console</span>
         </div>
         <div className="content-api-key">
