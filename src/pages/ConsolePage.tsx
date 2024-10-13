@@ -113,7 +113,8 @@ export function ConsolePage() {
       client.sendUserMessageContent([
         {
           type: `input_text`,
-          text: `Hello!`,
+          text: `Hello, you are on the True Trading Group Live Stream. Say hello to everyone and tell them about yourself. You are talking to Michael Edward, award winning hedge fund trader and head trader at True Trading Group. Tell us about yourself.`,
+
         },
       ]);
 
