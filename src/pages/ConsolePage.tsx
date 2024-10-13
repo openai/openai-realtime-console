@@ -9,7 +9,8 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import axios from 'axios';
 import { useTheme } from '../ThemeContext';
-import { ThreeJsVisualization } from '../components/ThreeJsVisualization';
+import ThreeJsVisualization from '../components/ThreeJsVisualization';
+
 
 import './ConsolePage.scss';
 
@@ -616,7 +617,7 @@ export function ConsolePage() {
           <div className="content-block visualization">
             <div className="content-block-title">AI Speech Visualization</div>
             <div className="content-block-body">
-              <ThreeJsVisualization aiSpeechData={aiSpeechData} />
+            <ThreeJsVisualization aiSpeechData={aiSpeechData.join(',')} />
             </div>
           </div>
         </div>
