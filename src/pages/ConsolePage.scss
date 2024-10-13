@@ -40,6 +40,9 @@
     display: flex;
     overflow: hidden;
     margin-bottom: 24px;
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
     .content-block {
       position: relative;
       display: flex;
@@ -72,6 +75,11 @@
       flex-direction: column;
       margin-left: 24px;
       gap: 24px;
+      @media (max-width: 768px) {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 24px;
+      }
       & > div {
         border-radius: 16px;
         flex-grow: 1;
@@ -126,6 +134,9 @@
         align-items: center;
         justify-content: center;
         gap: 16px;
+        @media (max-width: 480px) {
+          flex-direction: column;
+        }
       }
       & > div.events {
         overflow: hidden;
@@ -151,6 +162,10 @@
     display: flex;
     gap: 16px;
     margin-bottom: 16px;
+    @media (max-width: 480px) {
+      flex-direction: column;
+      gap: 8px;
+    }
     &:not(:hover) .close {
       display: none;
     }
@@ -180,6 +195,10 @@
       width: 80px;
       flex-shrink: 0;
       margin-right: 16px;
+      @media (max-width: 480px) {
+        width: auto;
+        margin-right: 0;
+      }
       &.user {
         color: #0099ff;
       }
@@ -200,6 +219,10 @@
     display: flex;
     padding: 0px;
     gap: 16px;
+    @media (max-width: 480px) {
+      flex-direction: column;
+      gap: 8px;
+    }
     .event-timestamp {
       text-align: left;
       gap: 8px;
@@ -207,6 +230,10 @@
       width: 80px;
       flex-shrink: 0;
       margin-right: 16px;
+      @media (max-width: 480px) {
+        width: auto;
+        margin-right: 0;
+      }
     }
     .event-details {
       display: flex;
@@ -257,6 +284,11 @@
     border-radius: 16px;
     z-index: 10;
     gap: 2px;
+    @media (max-width: 768px) {
+      position: static;
+      justify-content: center;
+      margin-top: 16px;
+    }
     .visualization-entry {
       position: relative;
       display: flex;
@@ -276,5 +308,12 @@
         color: currentColor;
       }
     }
+  }
+}
+
+@media (max-width: 768px) {
+  [data-component='ConsolePage'] {
+    font-size: 14px;
+    margin: 0px 4px;
   }
 }
