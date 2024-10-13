@@ -205,7 +205,7 @@
         color: var(--primary-color);
       }
       &.assistant {
-        color: #009900;
+        color: var(--assistant-color);
       }
     }
     .speaker-content {
@@ -262,10 +262,10 @@
             color: var(--primary-color);
           }
           &.server {
-            color: #009900;
+            color: var(--assistant-color);
           }
           &.error {
-            color: #990000;
+            color: var(--error-color);
           }
           svg {
             stroke-width: 3;
@@ -302,7 +302,7 @@
         color: var(--primary-color);
       }
       &.server {
-        color: #009900;
+        color: var(--assistant-color);
       }
       canvas {
         width: 100%;
