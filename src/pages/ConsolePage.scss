@@ -8,6 +8,8 @@
   flex-direction: column;
   overflow: hidden;
   margin: 0px 8px;
+  color: var(--text-color);
+  background-color: var(--bg-color);
   & > div {
     flex-shrink: 0;
   }
@@ -56,7 +58,7 @@
         position: relative;
       }
       .content-block-body {
-        color: #6e6e7f;
+        color: var(--secondary-color);
         position: relative;
         flex-grow: 1;
         padding: 8px 0px;
@@ -95,7 +97,7 @@
           top: 16px;
           left: 16px;
           padding: 4px 16px;
-          background-color: #fff;
+          background-color: var(--bg-color);
           border-radius: 1000px;
           min-height: 32px;
           z-index: 9999;
@@ -112,7 +114,7 @@
         height: 250px;
         max-height: 250px;
         white-space: pre;
-        background-color: #ececf1;
+        background-color: var(--secondary-color);
         .content-block-body {
           padding: 16px;
           margin-top: 56px;
@@ -142,7 +144,7 @@
         overflow: hidden;
       }
       .events {
-        border-top: 1px solid #e7e7e7;
+        border-top: 1px solid var(--border-color);
       }
       .conversation {
         display: flex;
@@ -152,7 +154,7 @@
         height: 200px;
         min-height: 0;
         max-height: 200px;
-        border-top: 1px solid #e7e7e7;
+        border-top: 1px solid var(--border-color);
       }
     }
   }
@@ -173,14 +175,14 @@
       position: absolute;
       top: 0px;
       right: -20px;
-      background: #aaa;
-      color: #fff;
+      background: var(--secondary-color);
+      color: var(--bg-color);
       display: flex;
       border-radius: 16px;
       padding: 2px;
       cursor: pointer;
       &:hover {
-        background: #696969;
+        background: var(--primary-color);
       }
       svg {
         stroke-width: 3;
@@ -200,14 +202,14 @@
         margin-right: 0;
       }
       &.user {
-        color: #0099ff;
+        color: var(--primary-color);
       }
       &.assistant {
         color: #009900;
       }
     }
     .speaker-content {
-      color: #18181b;
+      color: var(--text-color);
       overflow: hidden;
       word-wrap: break-word;
     }
@@ -238,14 +240,14 @@
     .event-details {
       display: flex;
       flex-direction: column;
-      color: #18181b;
+      color: var(--text-color);
       gap: 8px;
       .event-summary {
         padding: 4px 8px;
         margin: 0px -8px;
         &:hover {
           border-radius: 8px;
-          background-color: #f0f0f0;
+          background-color: var(--secondary-color);
         }
         cursor: pointer;
         display: flex;
@@ -257,7 +259,7 @@
           align-items: center;
           gap: 8px;
           &.client {
-            color: #0099ff;
+            color: var(--primary-color);
           }
           &.server {
             color: #009900;
@@ -297,7 +299,7 @@
       width: 100px;
       gap: 4px;
       &.client {
-        color: #0099ff;
+        color: var(--primary-color);
       }
       &.server {
         color: #009900;
