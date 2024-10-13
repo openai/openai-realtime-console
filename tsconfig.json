@@ -14,7 +14,14 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "paths": {
+      "@openai/realtime-api-beta": ["./src/types/openai-realtime-api-beta"],
+      "@openai/realtime-api-beta/dist/lib/client.js": ["./src/types/openai-realtime-api-beta/client"],
+      "react-feather": ["./node_modules/@types/react-feather"],
+      "axios": ["./node_modules/@types/axios"]
+    }
   },
-  "include": ["src", "src/lib"]
+  "include": ["src", "src/lib", "src/types"]
 }
