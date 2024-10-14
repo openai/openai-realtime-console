@@ -66,7 +66,7 @@
       }
     }
     .content-right {
-      width: 300px;
+      width: 60vw;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -138,9 +138,9 @@
         flex-shrink: 0;
         width: 100%;
         overflow: hidden;
-        height: 200px;
+        height: auto;
         min-height: 0;
-        max-height: 200px;
+        max-height: 60vh;
         border-top: 1px solid #e7e7e7;
       }
     }
@@ -277,4 +277,37 @@
       }
     }
   }
+}
+
+.translation-table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 50px;
+}
+
+.translation-header,
+.translation-row {
+  display: flex;
+  width: 100%;
+  color: #18181b;
+  font-size: 16px;
+}
+
+.translation-header {
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+}
+
+.translation-header div,
+.translation-row div {
+  flex: 1;
+  padding: 8px;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  word-break: break-word;
+}
+
+.translation-row:nth-child(even) {
+  background-color: #f8f8f8;
 }

@@ -22,27 +22,8 @@ import { WavRenderer } from '../utils/wav_renderer';
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
-import { Map } from '../components/Map';
 
 import './ConsolePage.scss';
-import { isJsxOpeningLikeElement } from 'typescript';
-
-/**
- * Type for result from get_weather() function call
- */
-interface Coordinates {
-  lat: number;
-  lng: number;
-  location?: string;
-  temperature?: {
-    value: number;
-    units: string;
-  };
-  wind_speed?: {
-    value: number;
-    units: string;
-  };
-}
 
 /**
  * Type for all event logs
@@ -106,8 +87,7 @@ export function ConsolePage() {
   /**
    * All of our variables for displaying application state
    * - items are all conversation items (dialog)
-   * - realtimeEvents are event logs, which can be expanded
-   * - memoryKv is for set_memory() function
+y   * - realtimeEvents are event logs, which can be expanded
    * - coords, marker are for get_weather() function
    */
   const [items, setItems] = useState<ItemType[]>([]);
@@ -118,12 +98,10 @@ export function ConsolePage() {
   const [isConnected, setIsConnected] = useState(false);
   const [canPushToTalk, setCanPushToTalk] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
-  const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
-  const [coords, setCoords] = useState<Coordinates | null>({
-    lat: 37.775593,
-    lng: -122.418137,
-  });
-  const [marker, setMarker] = useState<Coordinates | null>(null);
+  const [translations, setTranslations] = useState<
+    { en: string; ko: string }[]
+  >([]);
+  let lastId = 0;
 
   /**
    * Utility for formatting the timing of logs
@@ -201,12 +179,6 @@ export function ConsolePage() {
     setIsConnected(false);
     setRealtimeEvents([]);
     setItems([]);
-    setMemoryKv({});
-    setCoords({
-      lat: 37.775593,
-      lng: -122.418137,
-    });
-    setMarker(null);
 
     const client = clientRef.current;
     client.disconnect();
@@ -261,7 +233,8 @@ export function ConsolePage() {
       await wavRecorder.pause();
     }
     client.updateSession({
-      turn_detection: value === 'none' ? null : { type: 'server_vad' },
+      turn_detection:
+        value === 'none' ? null : { type: 'server_vad', threshold: 0.4 },
     });
     if (value === 'server_vad' && client.isConnected()) {
       await wavRecorder.record((data) => client.appendInputAudio(data.mono));
@@ -379,81 +352,9 @@ export function ConsolePage() {
     // Set instructions
     client.updateSession({ instructions: instructions });
     // Set transcription, otherwise we don't get user transcriptions back
-    client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
+    // client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
-    // Add tools
-    client.addTool(
-      {
-        name: 'set_memory',
-        description: 'Saves important data about the user into memory.',
-        parameters: {
-          type: 'object',
-          properties: {
-            key: {
-              type: 'string',
-              description:
-                'The key of the memory value. Always use lowercase and underscores, no other characters.',
-            },
-            value: {
-              type: 'string',
-              description: 'Value can be anything represented as a string',
-            },
-          },
-          required: ['key', 'value'],
-        },
-      },
-      async ({ key, value }: { [key: string]: any }) => {
-        setMemoryKv((memoryKv) => {
-          const newKv = { ...memoryKv };
-          newKv[key] = value;
-          return newKv;
-        });
-        return { ok: true };
-      }
-    );
-    client.addTool(
-      {
-        name: 'get_weather',
-        description:
-          'Retrieves the weather for a given lat, lng coordinate pair. Specify a label for the location.',
-        parameters: {
-          type: 'object',
-          properties: {
-            lat: {
-              type: 'number',
-              description: 'Latitude',
-            },
-            lng: {
-              type: 'number',
-              description: 'Longitude',
-            },
-            location: {
-              type: 'string',
-              description: 'Name of the location',
-            },
-          },
-          required: ['lat', 'lng', 'location'],
-        },
-      },
-      async ({ lat, lng, location }: { [key: string]: any }) => {
-        setMarker({ lat, lng, location });
-        setCoords({ lat, lng, location });
-        const result = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
-        );
-        const json = await result.json();
-        const temperature = {
-          value: json.current.temperature_2m as number,
-          units: json.current_units.temperature_2m as string,
-        };
-        const wind_speed = {
-          value: json.current.wind_speed_10m as number,
-          units: json.current_units.wind_speed_10m as string,
-        };
-        setMarker({ lat, lng, location, temperature, wind_speed });
-        return json;
-      }
-    );
+    client.updateSession({ modalities: ['text'] });
 
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
@@ -470,10 +371,12 @@ export function ConsolePage() {
     });
     client.on('error', (event: any) => console.error(event));
     client.on('conversation.interrupted', async () => {
+      console.log('conversation interrupted');
       const trackSampleOffset = await wavStreamPlayer.interrupt();
       if (trackSampleOffset?.trackId) {
         const { trackId, offset } = trackSampleOffset;
-        await client.cancelResponse(trackId, offset);
+        console.log('ignoring cancel on interrupted', { trackId, offset });
+        // await client.cancelResponse(trackId, offset);
       }
     });
     client.on('conversation.updated', async ({ item, delta }: any) => {
@@ -490,6 +393,31 @@ export function ConsolePage() {
         item.formatted.file = wavFile;
       }
       setItems(items);
+
+      console.log(item);
+
+      if (item.role === 'assistant' && item.formatted.text) {
+        try {
+          // check if ID is already in translations
+          if (item.id !== lastId) {
+            // parse the text into JSON-compatible format
+            const text = new String(item.formatted.text)
+              .replaceAll('```json', '')
+              .replaceAll('```', '')
+              // replace all newlines with spaces
+              .replaceAll('\n', ' ');
+            console.log({ text });
+            const translationData = JSON.parse(text);
+
+            lastId = item.id;
+            if (translationData.en && translationData.ko) {
+              setTranslations((prev) => [...prev, translationData]);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to parse translation data:', error);
+        }
+      }
     });
 
     setItems(client.conversation.getItems());
@@ -691,7 +619,28 @@ export function ConsolePage() {
             />
           </div>
         </div>
+
         <div className="content-right">
+          <div className="content-block translations">
+            <div className="content-block-title">translations</div>
+            <div className="content-block-body" data-conversation-content>
+              <div className="translation-table">
+                <div className="translation-header">
+                  <div>English</div>
+                  <div>Korean</div>
+                </div>
+                {translations.map((translation, index) => (
+                  <div key={index} className="translation-row">
+                    <div>{translation.en}</div>
+                    <div>{translation.ko}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* <div className="content-right">
           <div className="content-block map">
             <div className="content-block-title">get_weather()</div>
             <div className="content-block-title bottom">
@@ -724,7 +673,7 @@ export function ConsolePage() {
               {JSON.stringify(memoryKv, null, 2)}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
