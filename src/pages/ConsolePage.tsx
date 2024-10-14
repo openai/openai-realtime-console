@@ -19,9 +19,10 @@ import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
 import { instructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
-import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
+import { X, Edit, Zap, ArrowUp, ArrowDown, Menu } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
+import { Select } from '../components/select/Select'; // Add this import
 
 import './ConsolePage.scss';
 
@@ -98,10 +99,27 @@ y   * - realtimeEvents are event logs, which can be expanded
   const [isConnected, setIsConnected] = useState(false);
   const [canPushToTalk, setCanPushToTalk] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [translations, setTranslations] = useState<
-    { en: string; ko: string }[]
+    { source: string; dest: string }[]
   >([]);
   let lastId = 0;
+
+  const [selectedLanguage, setSelectedLanguage] = useState({
+    code: 'ko',
+    label: '🇰🇷 Korean',
+    text: '번역된 텍스트',
+  });
+
+  const languages = [
+    { code: 'ko', label: '🇰🇷 Korean', text: '번역된 텍스트' },
+    { code: 'ja', label: '🇯🇵 Japanese', text: '翻訳されたテキスト' },
+    { code: 'zh', label: '🇨🇳 Chinese', text: '翻译文本' },
+    { code: 'es', label: '🇪🇸 Spanish', text: 'Texto traducido' },
+    { code: 'fr', label: '🇫🇷 French', text: 'Texte traduit' },
+    { code: 'de', label: '🇩🇪 German', text: 'Übersetzter Text' },
+    // Add more languages as needed
+  ];
 
   /**
    * Utility for formatting the timing of logs
@@ -135,6 +153,11 @@ y   * - realtimeEvents are event logs, which can be expanded
       window.location.reload();
     }
   }, []);
+
+  // toggle the side menu open or closed
+  const toggleSideMenu = () => {
+    setIsSideMenuOpen(!isSideMenuOpen);
+  };
 
   /**
    * Connect to conversation:
@@ -240,6 +263,16 @@ y   * - realtimeEvents are event logs, which can be expanded
       await wavRecorder.record((data) => client.appendInputAudio(data.mono));
     }
     setCanPushToTalk(value === 'none');
+  };
+
+  const changeSelectedLanguage = (language: any) => {
+    setSelectedLanguage(language);
+    clientRef.current.updateSession({
+      instructions: instructions({
+        label: language.label,
+        text: language.text,
+      }),
+    });
   };
 
   /**
@@ -350,7 +383,9 @@ y   * - realtimeEvents are event logs, which can be expanded
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: instructions });
+    client.updateSession({
+      instructions: instructions({ label: '🇰🇷 Korean', text: '번역된 텍스트' }),
+    });
     // Set transcription, otherwise we don't get user transcriptions back
     // client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
@@ -410,7 +445,7 @@ y   * - realtimeEvents are event logs, which can be expanded
             const translationData = JSON.parse(text);
 
             lastId = item.id;
-            if (translationData.en && translationData.ko) {
+            if (translationData.source && translationData.dest) {
               setTranslations((prev) => [...prev, translationData]);
             }
           }
@@ -436,7 +471,7 @@ y   * - realtimeEvents are event logs, which can be expanded
       <div className="content-top">
         <div className="content-title">
           <img src="/openai-logomark.svg" />
-          <span>realtime console</span>
+          <span>translation dictation</span>
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -449,10 +484,16 @@ y   * - realtimeEvents are event logs, which can be expanded
             />
           )}
         </div>
+        <Button
+          icon={Menu}
+          buttonStyle="flush"
+          onClick={toggleSideMenu}
+          label="side menu"
+        />
       </div>
       <div className="content-main">
         <div className="content-logs">
-          <div className="content-block events">
+          <div className="content-block translations">
             <div className="visualization">
               <div className="visualization-entry client">
                 <canvas ref={clientCanvasRef} />
@@ -461,135 +502,32 @@ y   * - realtimeEvents are event logs, which can be expanded
                 <canvas ref={serverCanvasRef} />
               </div>
             </div>
-            <div className="content-block-title">events</div>
-            <div className="content-block-body" ref={eventsScrollRef}>
-              {!realtimeEvents.length && `awaiting connection...`}
-              {realtimeEvents.map((realtimeEvent, i) => {
-                const count = realtimeEvent.count;
-                const event = { ...realtimeEvent.event };
-                if (event.type === 'input_audio_buffer.append') {
-                  event.audio = `[trimmed: ${event.audio.length} bytes]`;
-                } else if (event.type === 'response.audio.delta') {
-                  event.delta = `[trimmed: ${event.delta.length} bytes]`;
-                }
-                return (
-                  <div className="event" key={event.event_id}>
-                    <div className="event-timestamp">
-                      {formatTime(realtimeEvent.time)}
-                    </div>
-                    <div className="event-details">
-                      <div
-                        className="event-summary"
-                        onClick={() => {
-                          // toggle event details
-                          const id = event.event_id;
-                          const expanded = { ...expandedEvents };
-                          if (expanded[id]) {
-                            delete expanded[id];
-                          } else {
-                            expanded[id] = true;
-                          }
-                          setExpandedEvents(expanded);
-                        }}
-                      >
-                        <div
-                          className={`event-source ${
-                            event.type === 'error'
-                              ? 'error'
-                              : realtimeEvent.source
-                          }`}
-                        >
-                          {realtimeEvent.source === 'client' ? (
-                            <ArrowUp />
-                          ) : (
-                            <ArrowDown />
-                          )}
-                          <span>
-                            {event.type === 'error'
-                              ? 'error!'
-                              : realtimeEvent.source}
-                          </span>
-                        </div>
-                        <div className="event-type">
-                          {event.type}
-                          {count && ` (${count})`}
-                        </div>
-                      </div>
-                      {!!expandedEvents[event.event_id] && (
-                        <div className="event-payload">
-                          {JSON.stringify(event, null, 2)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className="content-block conversation">
-            <div className="content-block-title">conversation</div>
+
+            <div className="content-block-title">translations</div>
             <div className="content-block-body" data-conversation-content>
-              {!items.length && `awaiting connection...`}
-              {items.map((conversationItem, i) => {
-                return (
-                  <div className="conversation-item" key={conversationItem.id}>
-                    <div className={`speaker ${conversationItem.role || ''}`}>
-                      <div>
-                        {(
-                          conversationItem.role || conversationItem.type
-                        ).replaceAll('_', ' ')}
-                      </div>
-                      <div
-                        className="close"
-                        onClick={() =>
-                          deleteConversationItem(conversationItem.id)
-                        }
-                      >
-                        <X />
-                      </div>
-                    </div>
-                    <div className={`speaker-content`}>
-                      {/* tool response */}
-                      {conversationItem.type === 'function_call_output' && (
-                        <div>{conversationItem.formatted.output}</div>
-                      )}
-                      {/* tool call */}
-                      {!!conversationItem.formatted.tool && (
-                        <div>
-                          {conversationItem.formatted.tool.name}(
-                          {conversationItem.formatted.tool.arguments})
-                        </div>
-                      )}
-                      {!conversationItem.formatted.tool &&
-                        conversationItem.role === 'user' && (
-                          <div>
-                            {conversationItem.formatted.transcript ||
-                              (conversationItem.formatted.audio?.length
-                                ? '(awaiting transcript)'
-                                : conversationItem.formatted.text ||
-                                  '(item sent)')}
-                          </div>
-                        )}
-                      {!conversationItem.formatted.tool &&
-                        conversationItem.role === 'assistant' && (
-                          <div>
-                            {conversationItem.formatted.transcript ||
-                              conversationItem.formatted.text ||
-                              '(truncated)'}
-                          </div>
-                        )}
-                      {conversationItem.formatted.file && (
-                        <audio
-                          src={conversationItem.formatted.file.url}
-                          controls
-                        />
-                      )}
-                    </div>
+              <div className="translation-table">
+                <div className="translation-header">
+                  <div>English</div>
+                  {!isConnected ? (
+                    <Select
+                      options={languages}
+                      value={selectedLanguage}
+                      onChange={changeSelectedLanguage}
+                    />
+                  ) : (
+                    <div>{selectedLanguage.label}</div>
+                  )}
+                </div>
+                {translations.map((translation, index) => (
+                  <div key={index} className="translation-row">
+                    <div>{translation.source}</div>
+                    <div>{translation.dest}</div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </div>
+          <div className="spacer"></div>
           <div className="content-actions">
             <Toggle
               defaultValue={false}
@@ -605,6 +543,8 @@ y   * - realtimeEvents are event logs, which can be expanded
                 disabled={!isConnected || !canPushToTalk}
                 onMouseDown={startRecording}
                 onMouseUp={stopRecording}
+                onTouchStart={startRecording}
+                onTouchEnd={stopRecording}
               />
             )}
             <div className="spacer" />
@@ -620,60 +560,143 @@ y   * - realtimeEvents are event logs, which can be expanded
           </div>
         </div>
 
-        <div className="content-right">
-          <div className="content-block translations">
-            <div className="content-block-title">translations</div>
-            <div className="content-block-body" data-conversation-content>
-              <div className="translation-table">
-                <div className="translation-header">
-                  <div>English</div>
-                  <div>Korean</div>
-                </div>
-                {translations.map((translation, index) => (
-                  <div key={index} className="translation-row">
-                    <div>{translation.en}</div>
-                    <div>{translation.ko}</div>
-                  </div>
-                ))}
+        {isSideMenuOpen && (
+          <div className="content-right">
+            <div className="content-block events">
+              <div className="content-block-title">events</div>
+              <div className="content-block-body" ref={eventsScrollRef}>
+                {!realtimeEvents.length && `awaiting connection...`}
+                {realtimeEvents.map((realtimeEvent, i) => {
+                  const count = realtimeEvent.count;
+                  const event = { ...realtimeEvent.event };
+                  if (event.type === 'input_audio_buffer.append') {
+                    event.audio = `[trimmed: ${event.audio.length} bytes]`;
+                  } else if (event.type === 'response.audio.delta') {
+                    event.delta = `[trimmed: ${event.delta.length} bytes]`;
+                  }
+                  return (
+                    <div className="event" key={event.event_id}>
+                      <div className="event-timestamp">
+                        {formatTime(realtimeEvent.time)}
+                      </div>
+                      <div className="event-details">
+                        <div
+                          className="event-summary"
+                          onClick={() => {
+                            // toggle event details
+                            const id = event.event_id;
+                            const expanded = { ...expandedEvents };
+                            if (expanded[id]) {
+                              delete expanded[id];
+                            } else {
+                              expanded[id] = true;
+                            }
+                            setExpandedEvents(expanded);
+                          }}
+                        >
+                          <div
+                            className={`event-source ${
+                              event.type === 'error'
+                                ? 'error'
+                                : realtimeEvent.source
+                            }`}
+                          >
+                            {realtimeEvent.source === 'client' ? (
+                              <ArrowUp />
+                            ) : (
+                              <ArrowDown />
+                            )}
+                            <span>
+                              {event.type === 'error'
+                                ? 'error!'
+                                : realtimeEvent.source}
+                            </span>
+                          </div>
+                          <div className="event-type">
+                            {event.type}
+                            {count && ` (${count})`}
+                          </div>
+                        </div>
+                        {!!expandedEvents[event.event_id] && (
+                          <div className="event-payload">
+                            {JSON.stringify(event, null, 2)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="content-block conversation">
+              <div className="content-block-title">conversation</div>
+              <div className="content-block-body" data-conversation-content>
+                {!items.length && `awaiting connection...`}
+                {items.map((conversationItem, i) => {
+                  return (
+                    <div
+                      className="conversation-item"
+                      key={conversationItem.id}
+                    >
+                      <div className={`speaker ${conversationItem.role || ''}`}>
+                        <div>
+                          {(
+                            conversationItem.role || conversationItem.type
+                          ).replaceAll('_', ' ')}
+                        </div>
+                        <div
+                          className="close"
+                          onClick={() =>
+                            deleteConversationItem(conversationItem.id)
+                          }
+                        >
+                          <X />
+                        </div>
+                      </div>
+                      <div className={`speaker-content`}>
+                        {/* tool response */}
+                        {conversationItem.type === 'function_call_output' && (
+                          <div>{conversationItem.formatted.output}</div>
+                        )}
+                        {/* tool call */}
+                        {!!conversationItem.formatted.tool && (
+                          <div>
+                            {conversationItem.formatted.tool.name}(
+                            {conversationItem.formatted.tool.arguments})
+                          </div>
+                        )}
+                        {!conversationItem.formatted.tool &&
+                          conversationItem.role === 'user' && (
+                            <div>
+                              {conversationItem.formatted.transcript ||
+                                (conversationItem.formatted.audio?.length
+                                  ? '(awaiting transcript)'
+                                  : conversationItem.formatted.text ||
+                                    '(item sent)')}
+                            </div>
+                          )}
+                        {!conversationItem.formatted.tool &&
+                          conversationItem.role === 'assistant' && (
+                            <div>
+                              {conversationItem.formatted.transcript ||
+                                conversationItem.formatted.text ||
+                                '(truncated)'}
+                            </div>
+                          )}
+                        {conversationItem.formatted.file && (
+                          <audio
+                            src={conversationItem.formatted.file.url}
+                            controls
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
-        </div>
-
-        {/* <div className="content-right">
-          <div className="content-block map">
-            <div className="content-block-title">get_weather()</div>
-            <div className="content-block-title bottom">
-              {marker?.location || 'not yet retrieved'}
-              {!!marker?.temperature && (
-                <>
-                  <br />
-                  🌡️ {marker.temperature.value} {marker.temperature.units}
-                </>
-              )}
-              {!!marker?.wind_speed && (
-                <>
-                  {' '}
-                  🍃 {marker.wind_speed.value} {marker.wind_speed.units}
-                </>
-              )}
-            </div>
-            <div className="content-block-body full">
-              {coords && (
-                <Map
-                  center={[coords.lat, coords.lng]}
-                  location={coords.location}
-                />
-              )}
-            </div>
-          </div>
-          <div className="content-block kv">
-            <div className="content-block-title">set_memory()</div>
-            <div className="content-block-body content-kv">
-              {JSON.stringify(memoryKv, null, 2)}
-            </div>
-          </div>
-        </div> */}
+        )}
       </div>
     </div>
   );

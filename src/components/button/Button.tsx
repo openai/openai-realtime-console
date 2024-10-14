@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './Button.scss';
 
 import { Icon } from 'react-feather';
@@ -19,8 +19,37 @@ export function Button({
   iconColor = void 0,
   iconFill = false,
   buttonStyle = 'regular',
+  onMouseDown,
+  onMouseUp,
+  onTouchStart,
+  onTouchEnd,
   ...rest
 }: ButtonProps) {
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const touchHandler = () => {
+      setIsTouchDevice(true);
+      window.removeEventListener('touchstart', touchHandler);
+    };
+    window.addEventListener('touchstart', touchHandler);
+    return () => {
+      window.removeEventListener('touchstart', touchHandler);
+    };
+  }, []);
+
+  const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!isTouchDevice && onMouseDown) {
+      onMouseDown(event);
+    }
+  };
+
+  const handleMouseUp = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!isTouchDevice && onMouseUp) {
+      onMouseUp(event);
+    }
+  };
+
   const StartIcon = iconPosition === 'start' ? icon : null;
   const EndIcon = iconPosition === 'end' ? icon : null;
   const classList = [];
@@ -33,7 +62,15 @@ export function Button({
   classList.push(`button-style-${buttonStyle}`);
 
   return (
-    <button data-component="Button" className={classList.join(' ')} {...rest}>
+    <button
+      data-component="Button"
+      className={classList.join(' ')}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      {...rest}
+    >
       {StartIcon && (
         <span className="icon icon-start">
           <StartIcon />

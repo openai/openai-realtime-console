@@ -40,6 +40,7 @@
     display: flex;
     overflow: hidden;
     margin-bottom: 24px;
+
     .content-block {
       position: relative;
       display: flex;
@@ -66,12 +67,26 @@
       }
     }
     .content-right {
-      width: 60vw;
+      width: 50vw;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       margin-left: 24px;
       gap: 24px;
+
+      @media (max-width: 767px) {
+        position: absolute;
+        top: 60px; // Adjust this value to match the height of your top header
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        margin-left: 0;
+        z-index: 100;
+        background-color: #fff;
+        overflow-y: auto;
+      }
+      
       & > div {
         border-radius: 16px;
         flex-grow: 1;
@@ -100,35 +115,9 @@
           }
         }
       }
-      & > div.kv {
-        height: 250px;
-        max-height: 250px;
-        white-space: pre;
-        background-color: #ececf1;
-        .content-block-body {
-          padding: 16px;
-          margin-top: 56px;
-        }
-      }
-    }
-    .content-logs {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      & > div {
-        flex-grow: 1;
-      }
-      & > .content-actions {
-        flex-grow: 0;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-      }
       & > div.events {
         overflow: hidden;
+        max-height: 50vh;
       }
       .events {
         border-top: 1px solid #e7e7e7;
@@ -140,8 +129,50 @@
         overflow: hidden;
         height: auto;
         min-height: 0;
-        max-height: 60vh;
         border-top: 1px solid #e7e7e7;
+      }
+    }
+    .content-logs {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 100%;
+      
+      & > div {
+        flex-grow: 1;
+        overflow: hidden; // Add this
+        display: flex; // Add this
+        flex-direction: column; // Add this
+      }
+      & > .content-actions {
+        flex-grow: 0;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+
+        @media (max-width: 600px) {
+          flex-direction: column;
+          gap: 8px;
+
+          .spacer {
+            display: none;
+          }
+        }
+      }
+      
+      .translations {
+        overflow: hidden; // Add this
+        display: flex; // Add this
+        flex-direction: column; // Add this
+
+        .content-block-body {
+          overflow-y: auto; // Change to auto
+          flex-grow: 1; // Add this
+        }
       }
     }
   }
@@ -283,7 +314,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin-top: 50px;
 }
 
 .translation-header,

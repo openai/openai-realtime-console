@@ -1,0 +1,86 @@
+[data-component='Select'] {
+    position: relative;
+    width: 200px; // Adjust as needed
+  
+    .selected-option {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      background-color: #ececf1;
+      color: #101010;
+      height: 40px;
+      border-radius: 1000px;
+      padding: 0 16px;
+      user-select: none;
+      
+      &:hover {
+        background-color: #d8d8d8;
+      }
+    }
+
+    .options-container {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 8px;
+      z-index: 1000;
+      background-color: #ececf1;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .options {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .option {
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.1s ease-in-out;
+
+      &:hover {
+        background-color: #d8d8d8;
+      }
+    }
+}
+
+.select-container {
+  position: relative;
+  width: 200px; // Adjust as needed
+}
+
+.selected-option {
+  cursor: pointer;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.options-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.options {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.option {
+  padding: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
