@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
+    depends_on:
+      - relay-server
+    command: npm start
+
+  relay-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: relay-server
+    ports:
+      - 8081:8081
+    environment:
+      - OPENAI_API_KEY=API_SECRET
+    command: npm run relay
