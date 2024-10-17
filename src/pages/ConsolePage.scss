@@ -26,9 +26,14 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      font-size: 16px;
+      font-weight: 500;
       img {
-        width: 24px;
-        height: 24px;
+        width: 168px;
+        height: 72px;
+      }
+      span {
+        margin-top: 10px;
       }
     }
   }
