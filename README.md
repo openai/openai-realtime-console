@@ -78,6 +78,8 @@ It will start automatically on `localhost:8081`.
 OPENAI_API_KEY=YOUR_API_KEY
 REACT_APP_LOCAL_RELAY_SERVER_URL=http://localhost:8081
 ```
+_Note: If the `REACT_APP_LOCAL_RELAY_SERVER_URL` above throws an error, make sure to change `http` for `ws`, thus making
+it `ws://localhost:8081`_.
 
 You will need to restart both your React app and relay server for the `.env.` changes
 to take effect. The local server URL is loaded via [`ConsolePage.tsx`](/src/pages/ConsolePage.tsx).
