@@ -118,7 +118,45 @@ export function ConsolePage() {
   const [isConnected, setIsConnected] = useState(false);
   const [canPushToTalk, setCanPushToTalk] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
-  const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
+  const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({"manual": `Law Enforcement Manual
+Organizational Structure and Responsibility
+iii. Cooperating with public schools, other agencies and organizations to provide traffic
+safety education and information
+iv. Preparing reports for the Chief of Police, City Manager, City Council, or others as
+directed
+v. Cooperating with the City Traffic Engineer in developing engineering plans for the
+solution of traffic problems
+vi. Overseeing the police tow contract with private contractors and conducting post
+storage tow hearings
+vii. Reviewing traffic collision reports
+(a) Parking Enforcement is administered by a Parking Manager who is directly responsible
+to the Traffic Bureau Lieutenant. The functions of the Parking Bureau include, but are
+not limited to:
+i. Enforcing local parking regulations
+ii. Overseeing the operation of parking garages
+iii. Maintaining and regulating parking in off street lots
+iv. Enforcing preferential parking regulations
+v. Making routine collections from meters
+vi. Keeping records and accounting for all parking revenues
+200.9 SUCCESSION OF COMMAND
+The Chief of Police exercises command over all personnel in the Department. During planned
+absences, the Chief of Police will designate a division captainto serve as the acting Chief of Police.
+200.10 UNITY OF COMMAND
+The principles of unity of command ensure efficient supervision and control within the Department.
+Generally, each employee shall be accountable to one supervisor at any time for a given
+assignment or responsibility. Except where specifically delegated authority may exist by policy or
+special assignment (e.g., SRT, bike patrol), any supervisor may temporarily direct any subordinate
+if an operational necessity exists.
+200.11 ORDERS
+Members shall respond to and make a good faith and reasonable effort to comply with the lawful
+order of superior officers and other proper authority.
+200.12 DUTY COMMAND OFFICER
+(a) Purpose: The purpose of the Duty Command Officer (DCO) is to provide Command
+Staff level supervision to those persons charged with the operation of the Department
+during those times when no Command Staff is on duty. All Command Staff officers,
+with the exception of the Chief of Police shall serve as DCO.
+Copyright Lexipol, LLC 2023/11/13, All Rights Reserved. Organizational Structure and Responsibility -
+Published with permission by Berkeley Police Department 26Berkeley Police Department"`});
   const [coords, setCoords] = useState<Coordinates | null>({
     lat: 37.775593,
     lng: -122.418137,
@@ -184,10 +222,12 @@ export function ConsolePage() {
     client.sendUserMessageContent([
       {
         type: `input_text`,
-        text: `Hello!`,
+        text: `Hello. Here is some text from my manual, which I will ask you questions about. ${memoryKv.manual}`,
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
       },
     ]);
+
+
 
     if (client.getTurnDetectionType() === 'server_vad') {
       await wavRecorder.record((data) => client.appendInputAudio(data.mono));
@@ -724,6 +764,10 @@ export function ConsolePage() {
               {JSON.stringify(memoryKv, null, 2)}
             </div>
           </div>
+                      <div>
+              Manual
+              {memoryKv.manual}
+            </div>
         </div>
       </div>
     </div>
