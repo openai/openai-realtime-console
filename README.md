@@ -137,7 +137,7 @@ client.on('conversation.updated', ({ item, delta }) => {
 // Connect to Realtime API
 await client.connect();
 
-// Send a item and triggers a generation
+// Send an item and triggers a generation
 client.sendUserMessageContent([{ type: 'text', text: `How are you?` }]);
 ```
 
