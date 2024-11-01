@@ -1,6 +1,8 @@
 import { StreamProcessorSrc } from './worklets/stream_processor.js';
 import { AudioAnalysis } from './analysis/audio_analysis.js';
-
+import { int16ArrayToAudioBuffer, resampleAudioBuffer, audioBufferToInt16Array } from './wav_recorder.js';
+import { systemSampleRate } from '../lib/wav_recorder.js';
+const apiSampleRate = 24000;
 /**
  * Plays audio streams received in raw PCM16 chunks from the browser
  * @class
@@ -119,23 +121,17 @@ export class WavStreamPlayer {
     } else {
       throw new Error(`argument must be Int16Array or ArrayBuffer`);
     }
-  
     // Example: Process smaller chunks of the buffer
     const processChunk = async (startIdx, endIdx) => {
       const chunkBuffer = buffer.slice(startIdx, endIdx);
-  
-      // Convert Int16Array to AudioBuffer
-      const audioBuffer = await int16ArrayToAudioBuffer(chunkBuffer, this.sampleRate);
-  
-      // Resample to 24,000 Hz
-      const resampledBuffer = await resampleAudioBuffer(audioBuffer, 24000);
-  
-      // Convert the resampled AudioBuffer back to Int16Array
+      const audioBuffer = await int16ArrayToAudioBuffer(chunkBuffer, apiSampleRate); // Use apiSampleRate directly
+      const resampledBuffer = await resampleAudioBuffer(audioBuffer, apiSampleRate); 
       const resampledInt16Array = audioBufferToInt16Array(resampledBuffer);
-  
-      // Send the resampled buffer to the stream for playback
       this.stream.port.postMessage({ event: 'write', buffer: resampledInt16Array, trackId });
     };
+    
+  
+
   
     // Process the buffer in smaller chunks
     const chunkSize = 1024;  // Customize the chunk size as needed
