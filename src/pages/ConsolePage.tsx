@@ -15,7 +15,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
-import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
+import { WavRecorder, WavStreamPlayer, systemSampleRate } from '../lib/wavtools/index.js';
 import { instructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
@@ -26,6 +26,7 @@ import { Map } from '../components/Map';
 
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
+
 
 /**
  * Type for result from get_weather() function call
@@ -74,14 +75,23 @@ export function ConsolePage() {
    * - WavStreamPlayer (speech output)
    * - RealtimeClient (API client)
    */
+
+
+
   const getSystemSampleRate = () => new AudioContext().sampleRate;
 
+  const apiSampleRate = 24000;  // For OpenAI API
+
+  // Initialize WavRecorder and WavStreamPlayer with systemSampleRate
   const wavRecorderRef = useRef<WavRecorder>(
-    new WavRecorder({ sampleRate: getSystemSampleRate() })
+    new WavRecorder({ sampleRate: systemSampleRate })
   );
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(
-    new WavStreamPlayer({ sampleRate: getSystemSampleRate() })
-);
+    new WavStreamPlayer({ sampleRate: apiSampleRate })
+  );
+  
+  
+
   const clientRef = useRef<RealtimeClient>(
     new RealtimeClient(
       LOCAL_RELAY_SERVER_URL
