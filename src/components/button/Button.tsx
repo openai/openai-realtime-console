@@ -10,6 +10,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   iconColor?: 'red' | 'green' | 'grey';
   iconFill?: boolean;
   buttonStyle?: 'regular' | 'action' | 'alert' | 'flush';
+  variant?: 'default' | 'ghost' | 'outline';
+  size?: 'sm' | 'lg';
 }
 
 export function Button({
@@ -19,6 +21,8 @@ export function Button({
   iconColor = void 0,
   iconFill = false,
   buttonStyle = 'regular',
+  variant,
+  size,
   ...rest
 }: ButtonProps) {
   const StartIcon = iconPosition === 'start' ? icon : null;

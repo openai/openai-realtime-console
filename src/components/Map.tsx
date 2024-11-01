@@ -1,4 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import React from 'react';
 import { LatLngTuple } from 'leaflet';
 import './Map.scss';
 
