@@ -525,9 +525,9 @@ export class WavRecorder {
       // Convert raw PCM data to AudioBuffer
       const rawBuffer = new Int16Array(chunkBuffer);
       const audioBuffer = await int16ArrayToAudioBuffer(rawBuffer, this.sampleRate);
-  
+      const apiSampleRate = 24000;
       // Resample captured audio to 24,000 Hz
-      const resampledBuffer = await resampleAudioBuffer(audioBuffer, 24000);
+      const resampledBuffer = await resampleAudioBuffer(audioBuffer, apiSampleRate);
   
       // Convert the resampled AudioBuffer back to Int16Array
       const resampledInt16Array = audioBufferToInt16Array(resampledBuffer);
@@ -644,3 +644,7 @@ export class WavRecorder {
 }
 
 globalThis.WavRecorder = WavRecorder;
+
+const systemSampleRate = new AudioContext().sampleRate;
+
+export { systemSampleRate, int16ArrayToAudioBuffer, resampleAudioBuffer, audioBufferToInt16Array };
