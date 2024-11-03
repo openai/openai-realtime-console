@@ -381,6 +381,29 @@ export function ConsolePage() {
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
+
+    // Add tools
+    client.addTool(
+      {
+        name: 'search_document',
+        description: 'Finds information in the document',
+        parameters: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description:
+                'The information you want to search for in the document',
+            },
+          },
+          required: ['query'],
+        },
+      },
+      async ({ query }: { [key: string]: any }) => {
+        
+        return 'its a type of fruit';
+      }
+    );
     // Add tools
     client.addTool(
       {
