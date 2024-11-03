@@ -12,7 +12,7 @@ management in the browser.
 # Starting the console
 
 This is a React project created using `create-react-app` that is bundled via Webpack.
-Install it by extracting the contents of this package and using;
+Install it by extracting the contents of this package and using:
 
 ```shell
 $ npm i
