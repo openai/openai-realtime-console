@@ -17,6 +17,7 @@ export class WavStreamPlayer {
     this.context = null;
     this.stream = null;
     this.analyser = null;
+    this.gainNode = null;
     this.trackSampleOffsets = {};
     this.interruptedTrackIds = {};
   }
@@ -26,20 +27,18 @@ export class WavStreamPlayer {
    * @returns {Promise<true>}
    */
   async connect() {
+    if (this.context) return true;
+    
     this.context = new AudioContext({ sampleRate: this.sampleRate });
-    if (this.context.state === 'suspended') {
-      await this.context.resume();
-    }
-    try {
-      await this.context.audioWorklet.addModule(this.scriptSrc);
-    } catch (e) {
-      console.error(e);
-      throw new Error(`Could not add audioWorklet module: ${this.scriptSrc}`);
-    }
-    const analyser = this.context.createAnalyser();
-    analyser.fftSize = 8192;
-    analyser.smoothingTimeConstant = 0.1;
-    this.analyser = analyser;
+    await this.context.audioWorklet.addModule(this.scriptSrc);
+    
+    this.gainNode = this.context.createGain();
+    this.gainNode.gain.value = 2.0;
+    
+    this.analyser = this.context.createAnalyser();
+    this.analyser.fftSize = 8192;
+    this.analyser.smoothingTimeConstant = 0.1;
+    
     return true;
   }
 
@@ -75,7 +74,14 @@ export class WavStreamPlayer {
    */
   _start() {
     const streamNode = new AudioWorkletNode(this.context, 'stream_processor');
-    streamNode.connect(this.context.destination);
+    
+    streamNode.connect(this.gainNode);
+    this.gainNode.connect(this.context.destination);
+    
+    this.analyser.disconnect();
+    streamNode.connect(this.analyser);
+    this.stream = streamNode;
+    
     streamNode.port.onmessage = (e) => {
       const { event } = e.data;
       if (event === 'stop') {
@@ -87,9 +93,6 @@ export class WavStreamPlayer {
         this.trackSampleOffsets[requestId] = { trackId, offset, currentTime };
       }
     };
-    this.analyser.disconnect();
-    streamNode.connect(this.analyser);
-    this.stream = streamNode;
     return true;
   }
 
@@ -154,6 +157,16 @@ export class WavStreamPlayer {
    */
   async interrupt() {
     return this.getTrackSampleOffset(true);
+  }
+
+  /**
+   * Sets the volume of the audio stream
+   * @param {number} value
+   */
+  setVolume(value) {
+    if (this.gainNode) {
+      this.gainNode.gain.value = value;
+    }
   }
 }
 

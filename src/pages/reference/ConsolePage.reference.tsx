@@ -15,6 +15,7 @@ export default function ConsolePage() {
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [isConversationCollapsed, setIsConversationCollapsed] = useState(false);
+  const [volume, setVolume] = useState(2.0);
 
   const wavRecorderRef = useRef<WavRecorder>(new WavRecorder({ sampleRate: 24000 }));
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(new WavStreamPlayer({ sampleRate: 24000 }));
@@ -57,6 +58,7 @@ export default function ConsolePage() {
       await client.connect();
       
       await wavStreamPlayer.connect();
+      wavStreamPlayer.setVolume(volume);
       
       setIsConnected(true);
       setItems(client.conversation.getItems());
@@ -76,7 +78,7 @@ export default function ConsolePage() {
       console.error('Error connecting:', error);
       setIsConnected(false);
     }
-  }, [selectedDeviceId]);
+  }, [selectedDeviceId, volume]);
 
   const disconnectConversation = useCallback(async () => {
     setIsConnected(false);
@@ -218,17 +220,38 @@ export default function ConsolePage() {
             <Star className="w-8 h-8 text-yellow-300 animate-spin-slow" />
             <h1 className="text-2xl font-bold text-white">English Learning Buddy</h1>
           </div>
-          <select 
-            className="bg-white text-purple-700 rounded-full px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-300"
-            value={selectedDeviceId}
-            onChange={(e) => setSelectedDeviceId(e.target.value)}
-          >
-            {audioDevices.map((device) => (
-              <option key={device.deviceId} value={device.deviceId}>
-                {device.label || `Microphone ${device.deviceId.slice(0, 5)}...`}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-3">
+            <select 
+              className="bg-white text-purple-700 rounded-full px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-300"
+              value={selectedDeviceId}
+              onChange={(e) => setSelectedDeviceId(e.target.value)}
+            >
+              {audioDevices.map((device) => (
+                <option key={device.deviceId} value={device.deviceId}>
+                  {device.label || `Microphone ${device.deviceId.slice(0, 5)}...`}
+                </option>
+              ))}
+            </select>
+            
+            <div className="flex items-center gap-2">
+              <Speaker className="w-4 h-4 text-white" />
+              <input
+                type="range"
+                min="0"
+                max="4"
+                step="0.1"
+                value={volume}
+                onChange={(e) => {
+                  const newVolume = parseFloat(e.target.value);
+                  setVolume(newVolume);
+                  if (wavStreamPlayerRef.current) {
+                    wavStreamPlayerRef.current.setVolume(newVolume);
+                  }
+                }}
+                className="w-24"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="p-4 bg-purple-50 flex items-center justify-between">
