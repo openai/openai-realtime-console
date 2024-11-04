@@ -181,36 +181,54 @@ export default function ConsolePage() {
         }
       });
       client.on('conversation.updated', async ({ item, delta }: any) => {
-        const items = client.conversation.getItems();
+        console.log('Conversation update:', { item, delta });
+        
+        // Handle audio streaming
         if (delta?.audio) {
           wavStreamPlayer.add16BitPCM(delta.audio, item.id);
         }
-        if (delta?.transcript) {
-          console.log('Raw transcription:', delta.transcript);
-          setItems(prevItems => {
-            const updatedItems = [...prevItems];
-            const itemIndex = updatedItems.findIndex(i => i.id === item.id);
-            if (itemIndex !== -1) {
-              updatedItems[itemIndex] = {
-                ...updatedItems[itemIndex],
-                formatted: {
-                  ...updatedItems[itemIndex].formatted,
-                  transcript: delta.transcript
-                }
-              };
-            }
-            return updatedItems;
-          });
-        }
+        
+        // Create a new items array with updates
+        const updatedItems = client.conversation.getItems().map(currentItem => {
+          if (currentItem.id === item.id) {
+            return {
+              ...currentItem,
+              formatted: {
+                ...currentItem.formatted,
+                // For user messages
+                transcript: currentItem.role === 'user' ? 
+                  (delta?.transcript || currentItem.formatted.transcript) : 
+                  currentItem.formatted.transcript,
+                // For assistant messages
+                text: currentItem.role === 'assistant' ? 
+                  (delta?.text || currentItem.formatted.text) : 
+                  (delta?.transcript || currentItem.formatted.text)
+              }
+            };
+          }
+          return currentItem;
+        });
+
+        // Update state with new items
+        setItems(updatedItems);
+        
+        // Handle completed audio messages
         if (item.status === 'completed' && item.formatted.audio?.length) {
           const wavFile = await WavRecorder.decode(
             item.formatted.audio,
             24000,
             24000
           );
-          item.formatted.file = wavFile;
+          
+          // Update the item with the audio file
+          setItems(prevItems => 
+            prevItems.map(prevItem => 
+              prevItem.id === item.id 
+                ? { ...prevItem, formatted: { ...prevItem.formatted, file: wavFile } }
+                : prevItem
+            )
+          );
         }
-        setItems(items);
       });
     } catch (error) {
       console.error('Error setting up client:', error);
@@ -341,19 +359,43 @@ export default function ConsolePage() {
                     <div className={`rounded-2xl p-4 max-w-[80%] ${
                       item.role === 'assistant' ? 'bg-purple-200 text-purple-900' : 'bg-pink-200 text-pink-900'
                     }`}>
-                      <p>{item.formatted.transcript || item.formatted.text || '(processing...)'}</p>
-                      {item.formatted.file && (
-                        <button
-                          className="mt-2 flex items-center gap-2 px-3 py-1 bg-white rounded-full text-sm text-purple-700 hover:bg-purple-100 transition-colors"
-                          onClick={() => {
-                            const audio = new Audio(item.formatted.file.url);
-                            audio.play();
-                          }}
-                        >
-                          <Speaker className="w-4 h-4" />
-                          Play
-                        </button>
+                      {item.role === 'user' && micStatus === 'processing' && (
+                        <div className="text-xs text-purple-600 mb-1">
+                          Transcribing...
+                        </div>
                       )}
+                      <div className="flex flex-col gap-2">
+                        <p>
+                          {item.role === 'user' 
+                            ? (item.formatted.transcript || item.formatted.text || '(processing...)')
+                            : (item.formatted.text || item.formatted?.transcript || '(thinking...)')}
+                        </p>
+                        
+                        {(item.formatted.file || item.formatted.audio) && (
+                          <button
+                            className="self-start flex items-center gap-2 px-3 py-1 bg-white rounded-full text-sm text-purple-700 hover:bg-purple-100 transition-colors"
+                            onClick={() => {
+                              if (item.formatted.file) {
+                                const audio = new Audio(item.formatted.file.url);
+                                audio.play();
+                              } else if (item.formatted.audio) {
+                                // For messages that haven't been decoded yet
+                                WavRecorder.decode(
+                                  item.formatted.audio,
+                                  24000,
+                                  24000
+                                ).then(wavFile => {
+                                  const audio = new Audio(wavFile.url);
+                                  audio.play();
+                                });
+                              }
+                            }}
+                          >
+                            <Speaker className="w-4 h-4" />
+                            Play
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {item.role === 'user' && (
                       <div className="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center text-2xl">
