@@ -16,6 +16,7 @@ export default function ConsolePage() {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [isConversationCollapsed, setIsConversationCollapsed] = useState(false);
   const [volume, setVolume] = useState(2.0);
+  const [micStatus, setMicStatus] = useState<'inactive' | 'listening' | 'processing'>('inactive');
 
   const wavRecorderRef = useRef<WavRecorder>(new WavRecorder({ sampleRate: 24000 }));
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(new WavStreamPlayer({ sampleRate: 24000 }));
@@ -96,6 +97,7 @@ export default function ConsolePage() {
     
     setIsRecording(true);
     setIsProcessing(true);
+    setMicStatus('listening');
     const client = clientRef.current;
     const wavRecorder = wavRecorderRef.current;
     const wavStreamPlayer = wavStreamPlayerRef.current;
@@ -113,6 +115,7 @@ export default function ConsolePage() {
       console.error('Error starting recording:', error);
       setIsRecording(false);
       setIsProcessing(false);
+      setMicStatus('inactive');
     }
   };
 
@@ -120,6 +123,7 @@ export default function ConsolePage() {
     if (!isRecording) return;
     
     setIsRecording(false);
+    setMicStatus('processing');
     const client = clientRef.current;
     const wavRecorder = wavRecorderRef.current;
     
@@ -132,6 +136,7 @@ export default function ConsolePage() {
       console.error('Error stopping recording:', error);
     } finally {
       setIsProcessing(false);
+      setMicStatus('inactive');
     }
   };
 
@@ -179,6 +184,23 @@ export default function ConsolePage() {
         const items = client.conversation.getItems();
         if (delta?.audio) {
           wavStreamPlayer.add16BitPCM(delta.audio, item.id);
+        }
+        if (delta?.transcript) {
+          console.log('Raw transcription:', delta.transcript);
+          setItems(prevItems => {
+            const updatedItems = [...prevItems];
+            const itemIndex = updatedItems.findIndex(i => i.id === item.id);
+            if (itemIndex !== -1) {
+              updatedItems[itemIndex] = {
+                ...updatedItems[itemIndex],
+                formatted: {
+                  ...updatedItems[itemIndex].formatted,
+                  transcript: delta.transcript
+                }
+              };
+            }
+            return updatedItems;
+          });
         }
         if (item.status === 'completed' && item.formatted.audio?.length) {
           const wavFile = await WavRecorder.decode(
@@ -347,10 +369,12 @@ export default function ConsolePage() {
 
         <div className="p-6 bg-purple-50 flex flex-col items-center">
           <motion.button
-            className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl ${
-              isRecording ? 'bg-red-500' : 'bg-purple-500'
+            className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl relative ${
+              micStatus === 'listening' ? 'bg-red-500' : 
+              micStatus === 'processing' ? 'bg-yellow-500' : 
+              'bg-purple-500'
             }`}
-            animate={isRecording ? { scale: [1, 1.1, 1] } : {}}
+            animate={micStatus === 'listening' ? { scale: [1, 1.1, 1] } : {}}
             transition={{ repeat: Infinity, duration: 1 }}
             onMouseDown={startRecording}
             onMouseUp={stopRecording}
@@ -359,26 +383,41 @@ export default function ConsolePage() {
             disabled={!isConnected || !canPushToTalk}
           >
             <Mic className="w-10 h-10" />
+            {micStatus === 'listening' && (
+              <motion.div
+                className="absolute w-full h-full rounded-full border-4 border-red-500"
+                animate={{ scale: [1, 1.5], opacity: [1, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              />
+            )}
           </motion.button>
-          <p className="mt-3 text-sm text-purple-700">
-            {isRecording ? "I'm listening..." : canPushToTalk ? "Press to speak" : "Speak anytime"}
+
+          <p className={`mt-3 text-sm ${
+            micStatus === 'listening' ? 'text-red-500 font-medium' :
+            micStatus === 'processing' ? 'text-yellow-600' :
+            'text-purple-700'
+          }`}>
+            {micStatus === 'listening' ? "I'm listening..." : 
+             micStatus === 'processing' ? "Processing..." :
+             canPushToTalk ? "Press and hold microphone button to speak" :
+             "Speak anytime (Voice Activity Detection enabled)"}
           </p>
         </div>
 
-        <div className="p-4 bg-purple-100  flex justify-center">
-          {isRecording && (
+        <div className="p-4 bg-purple-100 flex justify-center">
+          {micStatus === 'listening' && (
             <div className="flex gap-2">
               {[...Array(5)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="w-2 h-8 bg-purple-500 rounded-full"
+                  className="w-2 h-8 bg-red-500 rounded-full"
                   animate={{ height: [8, 32, 8] }}
                   transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
                 />
               ))}
             </div>
           )}
-          {!isRecording && isProcessing && (
+          {micStatus === 'processing' && (
             <div className="flex items-center gap-2 text-purple-700">
               <Zap className="w-6 h-6 animate-pulse" />
               <span>AI is thinking...</span>
