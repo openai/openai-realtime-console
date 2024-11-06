@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { RealtimeClient } from '@openai/realtime-api-beta';
+import { RealtimeAPI } from '@openai/realtime-api-beta';
 
 export class RealtimeRelay {
   constructor(apiKey) {
@@ -32,14 +32,14 @@ export class RealtimeRelay {
 
     // Instantiate new client
     this.log(`Connecting with key "${this.apiKey.slice(0, 3)}..."`);
-    const client = new RealtimeClient({ apiKey: this.apiKey });
+    const client = new RealtimeAPI({ apiKey: this.apiKey });
 
     // Relay: OpenAI Realtime API Event -> Browser Event
-    client.realtime.on('server.*', (event) => {
+    client.on('server.*', (event) => {
       this.log(`Relaying "${event.type}" to Client`);
       ws.send(JSON.stringify(event));
     });
-    client.realtime.on('close', () => ws.close());
+    client.on('close', () => ws.close());
 
     // Relay: Browser Event -> OpenAI Realtime API Event
     // We need to queue data waiting for the OpenAI connection
@@ -48,7 +48,7 @@ export class RealtimeRelay {
       try {
         const event = JSON.parse(data);
         this.log(`Relaying "${event.type}" to OpenAI`);
-        client.realtime.send(event.type, event);
+        client.send(event.type, event);
       } catch (e) {
         console.error(e.message);
         this.log(`Error parsing event from client: ${data}`);
