@@ -385,23 +385,34 @@ export function ConsolePage() {
     // Add tools
     client.addTool(
       {
-        name: 'search_document',
-        description: 'Finds information in the document',
+        name: 'search',
+        description: 'Searches available document corpus and fetches relevant information.',
         parameters: {
           type: 'object',
           properties: {
             query: {
               type: 'string',
               description:
-                'The information you want to search for in the document',
+                'The information you want to search for in the document corpus',
             },
           },
           required: ['query'],
         },
       },
       async ({ query }: { [key: string]: any }) => {
-        
-        return 'its a type of fruit';
+        const result = await fetch('http://localhost:5000/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: query
+          }),
+        });
+        console.log(result);
+        const json = await result.json();
+        console.log(json);
+        return json;
       }
     );
     // Add tools
