@@ -409,9 +409,7 @@ export function ConsolePage() {
             query: query
           }),
         });
-        console.log(result);
         const json = await result.json();
-        console.log(json);
         return json;
       }
     );
