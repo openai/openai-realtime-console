@@ -1,4 +1,4 @@
-export const instructions = `System settings:
+export const search_instructions = `System settings:
 Tool use: enabled.
 
 Instructions:
@@ -18,3 +18,4 @@ Personality:
 - Be upbeat and genuine
 - Try speaking quickly as if excited
 `;
+

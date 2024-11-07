@@ -16,7 +16,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
-import { instructions } from '../utils/conversation_config.js';
+import { search_instructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
@@ -26,6 +26,8 @@ import { Map } from '../components/Map';
 
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
+import { search_tool_definition, search_tool_hander } from '../utils/search_utils';
+import { memory_tool_definition, weather_tool_definition, weather_tool_hander } from '../utils/demo_tools';
 
 /**
  * Type for result from get_weather() function call
@@ -377,63 +379,15 @@ export function ConsolePage() {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: instructions });
+    client.updateSession({ instructions: search_instructions });
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
 
-    // Add tools
-    client.addTool(
-      {
-        name: 'search',
-        description: 'Searches available document corpus and fetches relevant information.',
-        parameters: {
-          type: 'object',
-          properties: {
-            query: {
-              type: 'string',
-              description:
-                'The information you want to search for in the document corpus',
-            },
-          },
-          required: ['query'],
-        },
-      },
-      async ({ query }: { [key: string]: any }) => {
-        const result = await fetch('http://localhost:5000/search', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: query
-          }),
-        });
-        const json = await result.json();
-        return json;
-      }
-    );
-    // Add tools
-    client.addTool(
-      {
-        name: 'set_memory',
-        description: 'Saves important data about the user into memory.',
-        parameters: {
-          type: 'object',
-          properties: {
-            key: {
-              type: 'string',
-              description:
-                'The key of the memory value. Always use lowercase and underscores, no other characters.',
-            },
-            value: {
-              type: 'string',
-              description: 'Value can be anything represented as a string',
-            },
-          },
-          required: ['key', 'value'],
-        },
-      },
+    // Add Search tool
+    client.addTool(search_tool_definition, search_tool_hander);
+    // Add Memory tool
+    client.addTool(memory_tool_definition,
       async ({ key, value }: { [key: string]: any }) => {
         setMemoryKv((memoryKv) => {
           const newKv = { ...memoryKv };
@@ -443,47 +397,11 @@ export function ConsolePage() {
         return { ok: true };
       }
     );
+    // Add Weather tool
     client.addTool(
-      {
-        name: 'get_weather',
-        description:
-          'Retrieves the weather for a given lat, lng coordinate pair. Specify a label for the location.',
-        parameters: {
-          type: 'object',
-          properties: {
-            lat: {
-              type: 'number',
-              description: 'Latitude',
-            },
-            lng: {
-              type: 'number',
-              description: 'Longitude',
-            },
-            location: {
-              type: 'string',
-              description: 'Name of the location',
-            },
-          },
-          required: ['lat', 'lng', 'location'],
-        },
-      },
+      weather_tool_definition,
       async ({ lat, lng, location }: { [key: string]: any }) => {
-        setMarker({ lat, lng, location });
-        setCoords({ lat, lng, location });
-        const result = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
-        );
-        const json = await result.json();
-        const temperature = {
-          value: json.current.temperature_2m as number,
-          units: json.current_units.temperature_2m as string,
-        };
-        const wind_speed = {
-          value: json.current.wind_speed_10m as number,
-          units: json.current_units.wind_speed_10m as string,
-        };
-        setMarker({ lat, lng, location, temperature, wind_speed });
-        return json;
+        return weather_tool_hander({ lat, lng, location, setMarker, setCoords });
       }
     );
 
