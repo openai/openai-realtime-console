@@ -13,6 +13,7 @@ if (!OPENAI_API_KEY) {
 }
 
 const PORT = parseInt(process.env.PORT) || 8081;
+const HOST = '0.0.0.0';
 
 const relay = new RealtimeRelay(OPENAI_API_KEY);
-relay.listen(PORT);
+relay.listen(PORT, HOST);
