@@ -62,8 +62,8 @@ export function ConsolePage() {
   const apiKey = LOCAL_RELAY_SERVER_URL
     ? ''
     : localStorage.getItem('tmp::voice_api_key') ||
-      prompt('OpenAI API Key') ||
-      '';
+    prompt('OpenAI API Key') ||
+    '';
   if (apiKey !== '') {
     localStorage.setItem('tmp::voice_api_key', apiKey);
   }
@@ -85,9 +85,9 @@ export function ConsolePage() {
       LOCAL_RELAY_SERVER_URL
         ? { url: LOCAL_RELAY_SERVER_URL }
         : {
-            apiKey: apiKey,
-            dangerouslyAllowAPIKeyInBrowser: true,
-          }
+          apiKey: apiKey,
+          dangerouslyAllowAPIKeyInBrowser: true,
+        }
     )
   );
 
@@ -237,7 +237,17 @@ export function ConsolePage() {
       const { trackId, offset } = trackSampleOffset;
       await client.cancelResponse(trackId, offset);
     }
-    await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+
+    try {
+      // Check if already recording
+      if (wavRecorder.getStatus() === 'recording') {
+        await wavRecorder.pause();
+      }
+      // Now safe to start recording
+      await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+    } catch (error) {
+      console.error('Recording error:', error);
+    }
   };
 
   /**
@@ -247,7 +257,15 @@ export function ConsolePage() {
     setIsRecording(false);
     const client = clientRef.current;
     const wavRecorder = wavRecorderRef.current;
-    await wavRecorder.pause();
+    try {
+      // Check if actually recording before trying to pause
+      if (wavRecorder.getStatus() === 'recording') {
+        await wavRecorder.pause();
+      }
+      // If already paused, do nothing
+    } catch (error) {
+      console.error('Recording stop error:', error);
+    }
     client.createResponse();
   };
 
@@ -565,11 +583,10 @@ export function ConsolePage() {
                         }}
                       >
                         <div
-                          className={`event-source ${
-                            event.type === 'error'
-                              ? 'error'
-                              : realtimeEvent.source
-                          }`}
+                          className={`event-source ${event.type === 'error'
+                            ? 'error'
+                            : realtimeEvent.source
+                            }`}
                         >
                           {realtimeEvent.source === 'client' ? (
                             <ArrowUp />
@@ -639,7 +656,7 @@ export function ConsolePage() {
                               (conversationItem.formatted.audio?.length
                                 ? '(awaiting transcript)'
                                 : conversationItem.formatted.text ||
-                                  '(item sent)')}
+                                '(item sent)')}
                           </div>
                         )}
                       {!conversationItem.formatted.tool &&
