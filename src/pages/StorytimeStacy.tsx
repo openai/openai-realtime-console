@@ -12,8 +12,7 @@ const LOCAL_RELAY_SERVER_URL: string =
   process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import React from 'react';
-import { Link } from 'react-router-dom';
+
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
@@ -25,7 +24,7 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map.js';
 
-import './ConsolePage.scss';
+import './StorytimeStacy.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
 /**
@@ -55,7 +54,7 @@ interface RealtimeEvent {
   event: { [key: string]: any };
 }
 
-export function ConsolePage() {
+export function StorytimeStacy () {
   /**
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
@@ -510,9 +509,7 @@ export function ConsolePage() {
       <div className="content-top">
         <div className="content-title">
           <img src="/ollie.png" />
-          <div className="content-block-title">
-              <h1 className="rainbow-text">Oliver's Magical Friends</h1>
-            </div>
+          <span> Oliver's Magical Friends </span>
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -730,17 +727,10 @@ export function ConsolePage() {
               
             </div>
           </div>
-          <div className="content-block">
-            <Link to="/storytimestacy">Go to Storytime Stacy Page</Link>
-          </div>
-          <div className="content-block">
-            <Link to="/comradecharlie">Go to Comrade Charlie Page</Link>
-          </div>
-          <div className="content-block">
-            <Link to="/buddyboba"> Go to Buddy Boba Page</Link>
-          </div>
         </div>
       </div>
     </div>
   );
 }
+
+export default StorytimeStacy;

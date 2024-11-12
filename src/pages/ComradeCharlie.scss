@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
-
 [data-component='ConsolePage'] {
   font-family: 'Roboto Mono', monospace;
   font-weight: 400;
@@ -12,15 +10,6 @@
   margin: 0px 8px;
   & > div {
     flex-shrink: 0;
-  }
-
-  .rainbow-text {
-    font-family: 'Comic Neue';
-    font-size: 4em; /* Adjust the size as needed */
-    background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
-    -webkit-background-clip: text;
-    color: transparent;
-    display: inline-block;
   }
 
   .spacer {

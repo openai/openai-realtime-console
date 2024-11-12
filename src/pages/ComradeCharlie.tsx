@@ -12,12 +12,11 @@ const LOCAL_RELAY_SERVER_URL: string =
   process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import React from 'react';
-import { Link } from 'react-router-dom';
+
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
-import { instructions } from '../utils/storytimestacy_config.js';
+import { instructions } from '../utils/comradecharlie_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
@@ -25,7 +24,7 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map.js';
 
-import './ConsolePage.scss';
+import './ComradeCharlie.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
 /**
@@ -55,7 +54,7 @@ interface RealtimeEvent {
   event: { [key: string]: any };
 }
 
-export function ConsolePage() {
+export function ComradeCharlie () {
   /**
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
@@ -510,9 +509,7 @@ export function ConsolePage() {
       <div className="content-top">
         <div className="content-title">
           <img src="/ollie.png" />
-          <div className="content-block-title">
-              <h1 className="rainbow-text">Oliver's Magical Friends</h1>
-            </div>
+          <span> Oliver's Magical Friends </span>
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -697,7 +694,7 @@ export function ConsolePage() {
         </div>
         <div className="content-right">
           <div className="content-block map">
-            <div className="content-block-title">Storytime Stacy</div>
+            <div className="content-block-title">Comrade Charlie</div>
             {/* <div className="content-block-title bottom">
               {marker?.location || 'not yet retrieved'}
               {!!marker?.temperature && (
@@ -715,8 +712,8 @@ export function ConsolePage() {
             </div> */}
             <div className="content-block-body full">
             <img
-                src="/storytime_stacy.png"
-                alt="Storytime Stacy"
+                src="/comrade_charlie.png"
+                alt="Comrade Charlie"
                 style={{ width: '100%', height: 'auto' }}
               />
               
@@ -724,23 +721,16 @@ export function ConsolePage() {
           </div>
           <div className="content-block kv">
            
-            <div className="content-block-title"> <h1> Hello, my name is Storytime Stacy! Press "push to talk" to chat with me! </h1></div>
+            <div className="content-block-title"> <h1> 你好，我是查理同志。我来教你们普通话！</h1></div>
             <div className="content-block-body content-kv">
               {/* {JSON.stringify(memoryKv, null, 2)} */}
               
             </div>
-          </div>
-          <div className="content-block">
-            <Link to="/storytimestacy">Go to Storytime Stacy Page</Link>
-          </div>
-          <div className="content-block">
-            <Link to="/comradecharlie">Go to Comrade Charlie Page</Link>
-          </div>
-          <div className="content-block">
-            <Link to="/buddyboba"> Go to Buddy Boba Page</Link>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+export default ComradeCharlie;
