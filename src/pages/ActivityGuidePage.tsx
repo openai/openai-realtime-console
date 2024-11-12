@@ -25,7 +25,7 @@ const ActivityGuidePage: React.FC = () => {
   }, [location.state]);
 
   const handleActivityClick = (activity: Activity) => {
-    navigate('/console', { state: { context: `Activity: ${activity.name} in ${location.state.location}` } });
+    navigate('/console', { state: { context: `${activity.name} in ${location.state.location}` } });
   };
 
   return (
