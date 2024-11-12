@@ -11,6 +11,7 @@
 const LOCAL_RELAY_SERVER_URL: string =
   process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
+import { useLocation } from 'react-router-dom';
 import { useEffect, useRef, useCallback, useState } from 'react';
 
 import { RealtimeClient } from '@openai/realtime-api-beta';
@@ -55,18 +56,19 @@ interface RealtimeEvent {
 }
 
 export function ConsolePage() {
+
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const selectedLocation = searchParams.get('location');
+  const selectedTheme = searchParams.get('theme');
+
+
   /**
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
    */
-  const apiKey = LOCAL_RELAY_SERVER_URL
-    ? ''
-    : localStorage.getItem('tmp::voice_api_key') ||
-      prompt('OpenAI API Key') ||
-      '';
-  if (apiKey !== '') {
-    localStorage.setItem('tmp::voice_api_key', apiKey);
-  }
+  const apiKey = process.env.OPENAI_API_KEY;
 
   /**
    * Instantiate:
@@ -85,9 +87,9 @@ export function ConsolePage() {
       LOCAL_RELAY_SERVER_URL
         ? { url: LOCAL_RELAY_SERVER_URL }
         : {
-            apiKey: apiKey,
-            dangerouslyAllowAPIKeyInBrowser: true,
-          }
+          apiKey: apiKey,
+          dangerouslyAllowAPIKeyInBrowser: true,
+        }
     )
   );
 
@@ -146,17 +148,6 @@ export function ConsolePage() {
     return `${pad(m)}:${pad(s)}.${pad(hs)}`;
   }, []);
 
-  /**
-   * When you click the API key
-   */
-  const resetAPIKey = useCallback(() => {
-    const apiKey = prompt('OpenAI API Key');
-    if (apiKey !== null) {
-      localStorage.clear();
-      localStorage.setItem('tmp::voice_api_key', apiKey);
-      window.location.reload();
-    }
-  }, []);
 
   /**
    * Connect to conversation:
@@ -377,7 +368,8 @@ export function ConsolePage() {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: instructions });
+    client.updateSession({ instructions: `You are an AI travel guide assistant for ${selectedLocation}, France. 
+      Focus on providing information and recommendations related to ${selectedTheme}.` + instructions });
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
@@ -510,17 +502,6 @@ export function ConsolePage() {
           <img src="/openai-logomark.svg" />
           <span>realtime console</span>
         </div>
-        <div className="content-api-key">
-          {!LOCAL_RELAY_SERVER_URL && (
-            <Button
-              icon={Edit}
-              iconPosition="end"
-              buttonStyle="flush"
-              label={`api key: ${apiKey.slice(0, 3)}...`}
-              onClick={() => resetAPIKey()}
-            />
-          )}
-        </div>
       </div>
       <div className="content-main">
         <div className="content-logs">
@@ -565,11 +546,10 @@ export function ConsolePage() {
                         }}
                       >
                         <div
-                          className={`event-source ${
-                            event.type === 'error'
-                              ? 'error'
-                              : realtimeEvent.source
-                          }`}
+                          className={`event-source ${event.type === 'error'
+                            ? 'error'
+                            : realtimeEvent.source
+                            }`}
                         >
                           {realtimeEvent.source === 'client' ? (
                             <ArrowUp />
@@ -639,7 +619,7 @@ export function ConsolePage() {
                               (conversationItem.formatted.audio?.length
                                 ? '(awaiting transcript)'
                                 : conversationItem.formatted.text ||
-                                  '(item sent)')}
+                                '(item sent)')}
                           </div>
                         )}
                       {!conversationItem.formatted.tool &&

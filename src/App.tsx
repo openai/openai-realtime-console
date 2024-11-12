@@ -1,12 +1,17 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import HomePage from './pages/HomePage';
 import { ConsolePage } from './pages/ConsolePage';
-import './App.scss';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div data-component="App">
-      <ConsolePage />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/console" element={<ConsolePage />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
