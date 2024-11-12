@@ -63,15 +63,17 @@
         &.full {
           padding: 0px;
         }
+        
       }
     }
     .content-right {
-      width: 300px;
+      width: 600px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       margin-left: 24px;
       gap: 24px;
+      overflow: hidden;
       & > div {
         border-radius: 16px;
         flex-grow: 1;
@@ -92,11 +94,12 @@
           min-height: 32px;
           z-index: 9999;
           text-align: center;
-          white-space: pre;
+          white-space: normal;
           &.bottom {
             top: auto;
             bottom: 16px;
             right: 16px;
+          
           }
         }
       }
@@ -108,7 +111,9 @@
         .content-block-body {
           padding: 16px;
           margin-top: 56px;
+          
         }
+   
       }
     }
     .content-logs {

@@ -508,8 +508,8 @@ export function ConsolePage() {
     <div data-component="ConsolePage">
       <div className="content-top">
         <div className="content-title">
-          <img src="/openai-logomark.svg" />
-          <span>realtime console</span>
+          <img src="/ollie.png" />
+          <span> Oliver's Magical Friends </span>
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -712,17 +712,19 @@ export function ConsolePage() {
             </div> */}
             <div className="content-block-body full">
             <img
-                src="/assets/storytime_stacy.png"
-                alt="Dino Image"
+                src="/storytime_stacy.png"
+                alt="Storytime Stacy"
                 style={{ width: '100%', height: 'auto' }}
               />
               
             </div>
           </div>
           <div className="content-block kv">
-            <div className="content-block-title">set_memory()</div>
+           
+            <div className="content-block-title"> <h1> Hello, my name is Storytime Stacy! Press "push to talk" to chat with me! </h1></div>
             <div className="content-block-body content-kv">
-              {JSON.stringify(memoryKv, null, 2)}
+              {/* {JSON.stringify(memoryKv, null, 2)} */}
+              
             </div>
           </div>
         </div>
