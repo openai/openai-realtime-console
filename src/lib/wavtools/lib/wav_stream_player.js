@@ -26,7 +26,8 @@ export class WavStreamPlayer {
    * @returns {Promise<true>}
    */
   async connect() {
-    this.context = new AudioContext({ sampleRate: this.sampleRate });
+    const sampleRate = this.sampleRate || 44100; // Ensure the sample rate is consistent
+    this.context = new AudioContext({ sampleRate });
     if (this.context.state === 'suspended') {
       await this.context.resume();
     }

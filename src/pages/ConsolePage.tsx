@@ -59,16 +59,26 @@ export function ConsolePage() {
 
 
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const selectedLocation = searchParams.get('location');
-  const selectedTheme = searchParams.get('theme');
+  const context = location.state?.context || '';
+
+  useEffect(() => {
+    const sampleRate = 44100; // Set a consistent sample rate
+    const audioContext = new AudioContext({ sampleRate });
+
+    // Your existing code to create and connect AudioNodes
+    // Ensure all AudioContexts use the same sample rate
+
+    return () => {
+      audioContext.close();
+    };
+  }, []);
 
 
   /**
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
    */
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
 
   /**
    * Instantiate:
@@ -175,7 +185,7 @@ export function ConsolePage() {
     client.sendUserMessageContent([
       {
         type: `input_text`,
-        text: `Hello!`,
+        text: `Parle-moi de ${context}.`,
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
       },
     ]);
@@ -368,8 +378,7 @@ export function ConsolePage() {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: `You are an AI travel guide assistant for ${selectedLocation}, France. 
-      Focus on providing information and recommendations related to ${selectedTheme}.` + instructions });
+    client.updateSession({ instructions: `You are an AI travel guide assistant. ${context}.` + instructions });
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
