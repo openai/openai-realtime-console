@@ -712,7 +712,7 @@ export function BuddyBoba () {
             </div> */}
             <div className="content-block-body full">
             <img
-                src="/Buddy Boba.png"
+                src="/buddy_boba.png"
                 alt="Buddy Boba"
                 style={{ width: '100%', height: 'auto' }}
               />

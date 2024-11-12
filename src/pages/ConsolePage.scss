@@ -13,6 +13,50 @@
   & > div {
     flex-shrink: 0;
   }
+  body {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    font-family: 'Comic Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ollie-image {
+    width: 100px; /* Adjust the size as needed */
+    height: auto; /* Maintain the aspect ratio */
+    display: block;
+  }
+
+  .title-page {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .content-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .image-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    flex-wrap: wrap; /* Ensure images wrap to the next line if needed */
+  }
+  
+  .image-links img {
+    max-width: 100%; /* Ensure the image fits within the container */
+    height: auto; /* Maintain the aspect ratio */
+    width: 300px; /* Set a fixed width for the images */
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  
+  .image-links img:hover {
+    transform: scale(1.1);
+  }
 
   .rainbow-text {
     font-family: 'Comic Neue';
