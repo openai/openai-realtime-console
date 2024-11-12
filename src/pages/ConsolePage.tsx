@@ -184,8 +184,9 @@ export function ConsolePage() {
     client.sendUserMessageContent([
       {
         type: `input_text`,
-        text: `Hello!`,
+        // text: `Hello!`,
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
+        text: "Hello! I am a child interested in learning about the world. Please assist me."
       },
     ]);
 
@@ -693,8 +694,8 @@ export function ConsolePage() {
         </div>
         <div className="content-right">
           <div className="content-block map">
-            <div className="content-block-title">get_weather()</div>
-            <div className="content-block-title bottom">
+            <div className="content-block-title">Storytime Stacy</div>
+            {/* <div className="content-block-title bottom">
               {marker?.location || 'not yet retrieved'}
               {!!marker?.temperature && (
                 <>
@@ -708,14 +709,14 @@ export function ConsolePage() {
                   🍃 {marker.wind_speed.value} {marker.wind_speed.units}
                 </>
               )}
-            </div>
+            </div> */}
             <div className="content-block-body full">
-              {coords && (
-                <Map
-                  center={[coords.lat, coords.lng]}
-                  location={coords.location}
-                />
-              )}
+            <img
+                src="/assets/storytime_stacy.png"
+                alt="Dino Image"
+                style={{ width: '100%', height: 'auto' }}
+              />
+              
             </div>
           </div>
           <div className="content-block kv">
