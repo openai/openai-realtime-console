@@ -144,8 +144,8 @@ export const getAreaCoordinates = async (location: string) => {
     ],
     response_format: { type: 'json_object' },
   });
-    const { content } = response.choices[0].message;
-    const coordinates = JSON.parse(content || '{}');
-    console.log('Coordinates:', coordinates);
-    return coordinates;
+  const { content } = response.choices[0].message;
+  const coordinates = JSON.parse(content || '{}');
+  console.log('Coordinates:', coordinates);
+  return coordinates;
 };
