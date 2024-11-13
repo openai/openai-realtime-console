@@ -19,6 +19,11 @@ const LocationPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     const locations = await getSuggestedLocations(locationDescription);
+
+    if (locations.length === 1) {
+      navigate('/themes', { state: { location: locations[0].name } });
+    }
+
     setSuggestedLocations(locations);
     setLoading(false);
   };
@@ -40,7 +45,7 @@ const LocationPage: React.FC = () => {
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6 text-center">Discover France with the power of AI
       </h1>
-      
+
       <form onSubmit={handleSubmit} className="mb-8">
         <div className="flex gap-2">
           <input
@@ -50,8 +55,8 @@ const LocationPage: React.FC = () => {
             placeholder="Where in France do you want to travel?"
             className="flex-grow border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
           >
@@ -68,6 +73,8 @@ const LocationPage: React.FC = () => {
         {surpriseLoading ? "Loading..." : "Surprise Me 💫"}
       </button>
 
+      {suggestedLocations.length > 1 && <h2 className="text-2xl font-bold mb-6 text-center">Any specific place you want to explore?</h2>}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {suggestedLocations.map((location, index) => (
           <div
@@ -77,14 +84,20 @@ const LocationPage: React.FC = () => {
           >
             <h2 className="text-xl font-semibold">{location.name}</h2>
             <p className="text-sm mt-2">{location.description}</p>
-            <img 
-              src={location.image_url} 
-              alt={location.name} 
+            <img
+              src={location.image_url}
+              alt={location.name}
               className="w-full h-[150px] object-cover mt-4 rounded-md"
             />
           </div>
         ))}
       </div>
+      <button
+        onClick={() => handleLocationSelect(locationDescription)}
+        className="bg-black text-white px-4 py-2 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 mx-auto block mt-10"
+      >
+        Keep it vague
+      </button>
     </div>
   );
 };

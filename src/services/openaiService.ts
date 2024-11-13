@@ -30,7 +30,7 @@ export const getSuggestedLocations = async (locationDescription: string, numberO
       },
       {
         role: 'user',
-        content: `Suggest ${numberOfSuggestions} locations in France that match this description: ${locationDescription}.`,
+        content: `Suggest ${numberOfSuggestions} locations in France that match this description: ${locationDescription}. If the description is already the name of a city and something more specific, just return the city in the response and limit the array to 1 item.`,
       },
     ],
     response_format: { type: 'json_object' },
