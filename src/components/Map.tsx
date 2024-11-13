@@ -11,20 +11,22 @@ function ChangeView({ center, zoom }: { center: LatLngTuple; zoom: number }) {
 export function Map({
   center,
   location = 'My Location',
+  zoom = 5,
 }: {
   center: LatLngTuple;
-  location?: string;
+    location?: string;
+    zoom?: number;
 }) {
   return (
     <div data-component="Map">
       <MapContainer
         center={center}
-        zoom={5}
+        zoom={zoom}
         scrollWheelZoom={false}
         zoomControl={false}
         attributionControl={false}
       >
-        <ChangeView center={center} zoom={5} />
+        <ChangeView center={center} zoom={zoom} />
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <Marker position={center}>
           <Popup>{location}</Popup>

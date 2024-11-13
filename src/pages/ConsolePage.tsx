@@ -56,8 +56,6 @@ interface RealtimeEvent {
 }
 
 export function ConsolePage() {
-
-
   const location = useLocation();
   const context = location.state?.context || '';
 
@@ -72,7 +70,6 @@ export function ConsolePage() {
       audioContext.close();
     };
   }, []);
-
 
   /**
    * Ask user for API Key
@@ -97,9 +94,9 @@ export function ConsolePage() {
       LOCAL_RELAY_SERVER_URL
         ? { url: LOCAL_RELAY_SERVER_URL }
         : {
-          apiKey: apiKey,
-          dangerouslyAllowAPIKeyInBrowser: true,
-        }
+            apiKey: apiKey,
+            dangerouslyAllowAPIKeyInBrowser: true,
+          }
     )
   );
 
@@ -134,7 +131,7 @@ export function ConsolePage() {
   const [coords, setCoords] = useState<Coordinates | null>({
     lat: 46.603354,
     lng: 1.888334,
-    location: "center of France"
+    location: 'center of France',
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
 
@@ -158,7 +155,6 @@ export function ConsolePage() {
     };
     return `${pad(m)}:${pad(s)}.${pad(hs)}`;
   }, []);
-
 
   /**
    * Connect to conversation:
@@ -378,7 +374,11 @@ export function ConsolePage() {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: `You are an AI travel guide assistant. ${context}.` + instructions });
+    client.updateSession({
+      instructions:
+        `You are an AI travel guide assistant. ${context}.` + instructions,
+    });
+    console.log('context: ', context);
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
