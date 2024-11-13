@@ -29,8 +29,8 @@ export function Map({
       <MapContainer
         center={center}
         zoom={zoom}
-        scrollWheelZoom={false}
-        zoomControl={false}
+        scrollWheelZoom={true}
+        zoomControl={true}
         attributionControl={false}
       >
         <ChangeView center={center} zoom={zoom} />
