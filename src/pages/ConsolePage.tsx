@@ -424,13 +424,13 @@ export function ConsolePage() {
     client.addTool(
       {
         name: 'generate_image',
-        description: 'Génère une image pour un lieu spécifique en utilisant DALL-E.',
+        description: 'Generates an image for a specific location using DALL-E.',
         parameters: {
           type: 'object',
           properties: {
             location: {
               type: 'string',
-              description: 'Description de la localisation pour l\'image',
+              description: 'Description of the location for the image',
             },
           },
           required: ['location'],
@@ -438,7 +438,7 @@ export function ConsolePage() {
       },
       async ({ location }: { [key: string]: any }) => {
         try {
-          const prompt = `Une image représentant ${location} avec un style tres réaliste.`;
+          const prompt = `An image representing ${location} in a very realistic style.`;
           const response = await fetch("https://api.openai.com/v1/images/generations", {
             method: "POST",
             headers: {
@@ -581,6 +581,16 @@ export function ConsolePage() {
                   </div>
                 </div>
               ))}
+              {imageUrl && (
+                <div className="conversation-item">
+                  <div className="speaker assistant">
+                    <div>Assistant</div>
+                  </div>
+                  <div className="speaker-content">
+                    <img src={imageUrl ?? undefined} alt="Image générée par DALL-E" className="generated-image" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="content-actions">
