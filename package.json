@@ -1,5 +1,5 @@
 {
-  "name": "openai-realtime-console",
+  "name": "openai-hackathon-heritage",
   "version": "0.0.0",
   "type": "module",
   "private": true,
@@ -13,6 +13,7 @@
     "@types/node": "^16.18.108",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
+    "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "leaflet": "^1.9.4",
     "openai": "^4.72.0",

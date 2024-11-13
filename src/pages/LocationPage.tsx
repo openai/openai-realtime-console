@@ -2,9 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSuggestedLocations } from '../services/openaiService';
 
+interface Location {
+  name: string;
+  description: string;
+  image_url: string;
+}
+
 const LocationPage: React.FC = () => {
   const [locationDescription, setLocationDescription] = useState('');
-  const [suggestedLocations, setSuggestedLocations] = useState<Array<{ name: string; description: string }>>([]);
+  const [suggestedLocations, setSuggestedLocations] = useState<Array<Location>>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -48,10 +54,17 @@ const LocationPage: React.FC = () => {
           <div
             key={index}
             onClick={() => handleLocationSelect(location.name)}
-            className="bg-blue-500 text-white rounded-full p-6 text-center hover:bg-blue-600 transition-colors cursor-pointer"
+            className="bg-blue-500 text-white rounded-lg p-6 text-center hover:bg-blue-600 transition-colors cursor-pointer" // Changed from rounded-full to rounded-lg
           >
             <h2 className="text-xl font-semibold">{location.name}</h2>
             <p className="text-sm mt-2">{location.description}</p>
+            
+            {/* Standardized image size */}
+            <img 
+              src={location.image_url} 
+              alt={location.name} 
+              className="w-full h-[150px] object-cover mt-4 rounded-md" // Set fixed height and object-cover for consistent image size
+            />
           </div>
         ))}
       </div>
