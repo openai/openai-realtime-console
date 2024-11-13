@@ -1,0 +1,28 @@
+[data-component="Character"] {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    height: 200px;
+    z-index: 10;
+  
+    .character-animation {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  
+    // Optional: Add entrance animation
+    animation: character-entrance 0.5s ease-out;
+  
+    @keyframes character-entrance {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  }

@@ -5,467 +5,506 @@ import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../../lib/wavtools/index.js';
 import { instructions } from '../../utils/conversation_config.js';
+import { Character } from '../../components/character/Character';
+
+interface DeviceSelectorProps {
+  devices: Array<MediaDeviceInfo & { default: boolean }>;
+  selectedDeviceId: string;
+  onDeviceSelect: (deviceId: string) => void;
+  disabled?: boolean;
+  isLoading?: boolean;
+}
+
+const DeviceSelector: React.FC<DeviceSelectorProps> = ({
+  devices,
+  selectedDeviceId,
+  onDeviceSelect,
+  disabled,
+  isLoading
+}) => {
+  if (isLoading) {
+    return (
+      <select
+        disabled={true}
+        className="px-3 py-2 bg-white rounded-lg shadow-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+      >
+        <option>Loading microphones...</option>
+      </select>
+    );
+  }
+
+  if (devices.length === 0) {
+    return (
+      <select
+        disabled={true}
+        className="px-3 py-2 bg-white rounded-lg shadow-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+      >
+        <option>No microphones found</option>
+      </select>
+    );
+  }
+
+  return (
+    <select
+      value={selectedDeviceId}
+      onChange={(e) => onDeviceSelect(e.target.value)}
+      disabled={disabled}
+      className="px-3 py-2 bg-white rounded-lg shadow-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+    >
+      {devices.map((device) => (
+        <option key={device.deviceId} value={device.deviceId}>
+          {device.label || `Microphone ${device.deviceId}`}
+          {device.default ? ' (Default)' : ''}
+        </option>
+      ))}
+    </select>
+  );
+};
 
 export default function ConsolePage() {
   const [isConnected, setIsConnected] = useState(false);
-  const [canPushToTalk, setCanPushToTalk] = useState(true);
-  const [isRecording, setIsRecording] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [items, setItems] = useState<ItemType[]>([]);
-  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
-  const [isConversationCollapsed, setIsConversationCollapsed] = useState(false);
-  const [volume, setVolume] = useState(2.0);
+  const [isVADMode, setIsVADMode] = useState(false);
   const [micStatus, setMicStatus] = useState<'inactive' | 'listening' | 'processing'>('inactive');
-
-  const wavRecorderRef = useRef<WavRecorder>(new WavRecorder({ sampleRate: 24000 }));
-  const wavStreamPlayerRef = useRef<WavStreamPlayer>(new WavStreamPlayer({ sampleRate: 24000 }));
-  const clientRef = useRef<RealtimeClient>(
-    new RealtimeClient({ 
-      apiKey: process.env.REACT_APP_OPENAI_API_KEY || '', 
-      dangerouslyAllowAPIKeyInBrowser: true 
-    })
+  const [currentMessage, setCurrentMessage] = useState<string>('');
+  const [items, setItems] = useState<ItemType[]>([]);
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [audioDevices, setAudioDevices] = useState<Array<MediaDeviceInfo & { default: boolean }>>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+  const [isLoadingDevices, setIsLoadingDevices] = useState(false);
+  const [apiKey, setApiKey] = useState<string>(
+    localStorage.getItem('tmp::voice_api_key') || ''
   );
+  const [currentResponse, setCurrentResponse] = useState<string>('');
 
-  const getAudioDevices = useCallback(async () => {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
-      setAudioDevices(audioInputDevices);
-      
-      if (!selectedDeviceId && audioInputDevices.length > 0) {
-        setSelectedDeviceId(audioInputDevices[0].deviceId);
-      }
-    } catch (error) {
-      console.error('Error getting audio devices:', error);
+  const LOCAL_RELAY_SERVER_URL = process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
+
+  const handleApiKeySubmit = (key: string) => {
+    if (key) {
+      localStorage.setItem('tmp::voice_api_key', key);
+      setApiKey(key);
     }
-  }, [selectedDeviceId]);
+  };
 
   useEffect(() => {
-    getAudioDevices();
-    navigator.mediaDevices.addEventListener('devicechange', getAudioDevices);
-    return () => {
-      navigator.mediaDevices.removeEventListener('devicechange', getAudioDevices);
-    };
-  }, [getAudioDevices]);
-
-  const connectConversation = useCallback(async () => {
-    const client = clientRef.current;
-    const wavRecorder = wavRecorderRef.current;
-    const wavStreamPlayer = wavStreamPlayerRef.current;
-
-    try {
-      await client.connect();
-      
-      await wavStreamPlayer.connect();
-      wavStreamPlayer.setVolume(volume);
-      
-      setIsConnected(true);
-      setItems(client.conversation.getItems());
-      
-      if (client.getTurnDetectionType() === 'server_vad') {
-        await wavRecorder.begin(selectedDeviceId);
-        await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+    const storedKey = localStorage.getItem('tmp::voice_api_key');
+    if (!storedKey) {
+      const key = prompt('Please enter your OpenAI API Key:');
+      if (key) {
+        handleApiKeySubmit(key);
       }
-
-      await client.sendUserMessageContent([
-        {
-          type: 'input_text',
-          text: "Hello! I'm ready to learn English!",
-        },
-      ]);
-    } catch (error) {
-      console.error('Error connecting:', error);
-      setIsConnected(false);
     }
-  }, [selectedDeviceId, volume]);
-
-  const disconnectConversation = useCallback(async () => {
-    setIsConnected(false);
-    setItems([]);
-    clientRef.current.disconnect();
-    const wavRecorder = wavRecorderRef.current;
-    if (wavRecorder.getStatus() === 'recording') {
-      await wavRecorder.end();
-    }
-    await wavStreamPlayerRef.current.interrupt();
   }, []);
 
-  const startRecording = async () => {
-    if (!isConnected || !canPushToTalk || isRecording) return;
-    
-    setIsRecording(true);
-    setIsProcessing(true);
-    setMicStatus('listening');
-    const client = clientRef.current;
-    const wavRecorder = wavRecorderRef.current;
-    const wavStreamPlayer = wavStreamPlayerRef.current;
-    
+  // Create refs for audio context and stream player
+  const audioContextRef = useRef<AudioContext>();
+  const wavStreamPlayerRef = useRef<WavStreamPlayer>();
+  const wavRecorderRef = useRef<WavRecorder>();
+  const clientRef = useRef<RealtimeClient>();
+  const [isAudioInitialized, setIsAudioInitialized] = useState(false);
+  const initializingRef = useRef<boolean>(false);
+
+  const initializeAudio = async () => {
     try {
-      const trackSampleOffset = await wavStreamPlayer.interrupt();
-      if (trackSampleOffset?.trackId) {
-        const { trackId, offset } = trackSampleOffset;
-        await client.cancelResponse(trackId, offset);
+      // Create AudioContext only if it doesn't exist
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContext({ sampleRate: 24000 });
+        await audioContextRef.current.resume();
       }
-      
-      await wavRecorder.begin(selectedDeviceId);
-      await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+
+      // Initialize WavStreamPlayer with AudioContext
+      wavStreamPlayerRef.current = new WavStreamPlayer({ 
+        sampleRate: 24000 
+      });
+
+      await wavStreamPlayerRef.current.connect();
+      setIsAudioInitialized(true);
     } catch (error) {
-      console.error('Error starting recording:', error);
-      setIsRecording(false);
-      setIsProcessing(false);
+      console.error('Failed to initialize audio:', error);
+    }
+  };
+
+  const handleConnect = async () => {
+    if (!apiKey) {
+      const key = prompt('Please enter your OpenAI API Key:');
+      if (!key) return;
+      handleApiKeySubmit(key);
+    }
+
+    try {
+      if (!isAudioInitialized) {
+        await initializeAudio();
+      }
+
+      // Initialize client with stored API key
+      if (!clientRef.current) {
+        clientRef.current = new RealtimeClient({
+          apiKey: apiKey,
+          dangerouslyAllowAPIKeyInBrowser: true
+        });
+
+        // Initialize conversation items
+        setItems(clientRef.current.conversation.getItems());
+
+        clientRef.current.on('conversation.updated', async ({ item, delta }: any) => {
+          console.log('Conversation update:', { item, delta });
+
+          // Handle audio playback
+          if (delta?.audio) {
+            setIsAISpeaking(true);
+            await wavStreamPlayerRef.current?.add16BitPCM(delta.audio, item.id);
+          }
+
+          // Handle assistant messages
+          if (item?.role === 'assistant') {
+            // Handle streaming transcript from delta
+            if (delta?.transcript) {
+              setCurrentResponse(prev => prev + delta.transcript);
+              console.log('Adding delta transcript:', delta.transcript);
+            }
+            // Handle streaming transcript from formatted
+            else if (item.formatted?.transcript && item.status === 'in_progress') {
+              // Only update if the new transcript is longer
+              setCurrentResponse(prev => 
+                item.formatted.transcript.length > prev.length ? item.formatted.transcript : prev
+              );
+              console.log('Setting formatted transcript:', item.formatted.transcript);
+            }
+          }
+
+          // Handle turn end
+          if (delta?.turn_end || item.status === 'completed') {
+            console.log('Turn ended, final message:', currentResponse);
+            // Store the final message
+            const finalMessage = currentResponse || item.formatted?.transcript || item.formatted?.text;
+            if (finalMessage) {
+              setCurrentMessage(finalMessage);
+              // Keep the message visible for a moment before clearing
+              setTimeout(() => {
+                setCurrentResponse('');
+                setIsAISpeaking(false);
+              }, 1000); // 1 second delay
+            }
+          }
+
+          // Only clear responses when explicitly starting a new user turn
+          if (item?.role === 'user' && delta?.transcript && delta.transcript.trim() !== '') {
+            console.log('New user turn, clearing responses');
+            setCurrentResponse('');
+            setCurrentMessage('');
+          }
+        });
+
+        // Initialize session settings separately
+        await clientRef.current.updateSession({
+          instructions: instructions
+        });
+        
+        await clientRef.current.updateSession({
+          input_audio_transcription: { model: 'whisper-1' }
+        });
+        
+        await clientRef.current.updateSession({
+          turn_detection: null
+        });
+      }
+
+      // Connect client before initializing audio recording
+      await clientRef.current.connect();
+
+      // Initialize WavRecorder after client is connected
+      wavRecorderRef.current = new WavRecorder({
+        sampleRate: 24000,
+      });
+
+      // Request permission and initialize device
+      await wavRecorderRef.current.requestPermission();
+      await wavRecorderRef.current.begin(selectedDeviceId);
+
+      // Reset states
+      setCurrentResponse('');
+      setCurrentMessage('');
+      setIsAISpeaking(false);
+      
+      setIsConnected(true);
+
+    } catch (error) {
+      console.error('Failed to connect:', error);
+      setIsConnected(false);
+      if (wavRecorderRef.current?.getStatus() !== 'ended') {
+        await wavRecorderRef.current?.end();
+      }
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      // End recording first
+      if (wavRecorderRef.current?.getStatus() !== 'ended') {
+        await wavRecorderRef.current?.end();
+      }
+
+      // Reset VAD mode
+      if (isVADMode) {
+        setIsVADMode(false);
+        setMicStatus('inactive');
+      }
+
+      // Disconnect client
+      if (clientRef.current?.isConnected()) {
+        await clientRef.current?.disconnect();
+      }
+
+      setIsConnected(false);
+    } catch (error) {
+      console.error('Failed to disconnect:', error);
+      // Force reset states even if there's an error
+      setIsConnected(false);
+      setIsVADMode(false);
       setMicStatus('inactive');
     }
   };
 
-  const stopRecording = async () => {
-    if (!isRecording) return;
-    
-    setIsRecording(false);
-    setMicStatus('processing');
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      handleDisconnect();
+      audioContextRef.current?.close();
+    };
+  }, []);
+
+  // Handle mic click
+  const handleMicClick = async () => {
+    if (isVADMode) {
+      console.log('Push-to-talk disabled in VAD mode');
+      return;
+    }
+
+    if (micStatus === 'inactive') {
+      try {
+        if (!clientRef.current?.isConnected()) {
+          throw new Error('Client not connected');
+        }
+
+        if (wavRecorderRef.current?.getStatus() !== 'ended') {
+          await wavRecorderRef.current?.end();
+        }
+        
+        await wavRecorderRef.current?.begin();
+        setMicStatus('listening');
+        
+        await wavRecorderRef.current?.record((audioData: { mono: Int16Array }) => {
+          if (clientRef.current?.isConnected()) {
+            clientRef.current?.appendInputAudio(audioData.mono);
+          }
+        });
+      } catch (error) {
+        console.error('Failed to start recording:', error);
+        setMicStatus('inactive');
+      }
+    } else {
+      setMicStatus('inactive');
+      await wavRecorderRef.current?.end();
+      clientRef.current?.createResponse();
+    }
+  };
+
+  const changeTurnEndType = async (isVADMode: boolean) => {
+    if (!clientRef.current || !wavRecorderRef.current) return;
+
     const client = clientRef.current;
     const wavRecorder = wavRecorderRef.current;
-    
+
     try {
+      // First, check if we need to end the current recording
       if (wavRecorder.getStatus() === 'recording') {
         await wavRecorder.end();
       }
-      await client.createResponse();
-    } catch (error) {
-      console.error('Error stopping recording:', error);
-    } finally {
-      setIsProcessing(false);
-      setMicStatus('inactive');
-    }
-  };
 
-  const changeTurnEndType = useCallback(
-    async (type: 'none' | 'server_vad') => {
-      const client = clientRef.current;
-      const wavRecorder = wavRecorderRef.current;
+      // Update VAD mode state
+      setIsVADMode(isVADMode);
       
-      try {
+      if (isVADMode) {
+        // Enable VAD mode in client first
+        await client.updateSession({
+          turn_detection: { type: 'server_vad' }
+        });
+        
+        // Only start recording if client is connected
+        if (client.isConnected()) {
+          try {
+            await wavRecorder.begin(selectedDeviceId);
+            setMicStatus('listening');
+            
+            await wavRecorder.record((data) => {
+              if (client.isConnected()) {
+                client.appendInputAudio(data.mono);
+              }
+            });
+          } catch (error) {
+            console.error('Failed to start recording:', error);
+            setMicStatus('inactive');
+            setIsVADMode(false);
+          }
+        }
+      } else {
+        // Disable VAD mode
+        await client.updateSession({
+          turn_detection: null
+        });
+        setMicStatus('inactive');
+        // Only try to end if we're recording
         if (wavRecorder.getStatus() === 'recording') {
           await wavRecorder.end();
         }
-
-        client.updateSession({ turn_detection: type === 'none' ? null : { type: 'server_vad' } });
-        setCanPushToTalk(type === 'none');
-
-        if (type === 'server_vad' && isConnected) {
-          await wavRecorder.begin(selectedDeviceId);
-          await wavRecorder.record((data) => client.appendInputAudio(data.mono));
-        }
-      } catch (error) {
-        console.error('Error changing turn end type:', error);
       }
-    },
-    [isConnected, selectedDeviceId]
-  );
-
-  useEffect(() => {
-    const client = clientRef.current;
-    const wavStreamPlayer = wavStreamPlayerRef.current;
-
-    try {
-      client.updateSession({ instructions: instructions });
-      client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
-
-      client.on('error', (event: any) => console.error(event));
-      client.on('conversation.interrupted', async () => {
-        const trackSampleOffset = await wavStreamPlayer.interrupt();
-        if (trackSampleOffset?.trackId) {
-          const { trackId, offset } = trackSampleOffset;
-          await client.cancelResponse(trackId, offset);
-        }
-      });
-      client.on('conversation.updated', async ({ item, delta }: any) => {
-        console.log('Conversation update:', { item, delta });
-        
-        // Handle audio streaming
-        if (delta?.audio) {
-          wavStreamPlayer.add16BitPCM(delta.audio, item.id);
-        }
-        
-        // Create a new items array with updates
-        const updatedItems = client.conversation.getItems().map(currentItem => {
-          if (currentItem.id === item.id) {
-            return {
-              ...currentItem,
-              formatted: {
-                ...currentItem.formatted,
-                // For user messages
-                transcript: currentItem.role === 'user' ? 
-                  (delta?.transcript || currentItem.formatted.transcript) : 
-                  currentItem.formatted.transcript,
-                // For assistant messages
-                text: currentItem.role === 'assistant' ? 
-                  (delta?.text || currentItem.formatted.text) : 
-                  (delta?.transcript || currentItem.formatted.text)
-              }
-            };
-          }
-          return currentItem;
-        });
-
-        // Update state with new items
-        setItems(updatedItems);
-        
-        // Handle completed audio messages
-        if (item.status === 'completed' && item.formatted.audio?.length) {
-          const wavFile = await WavRecorder.decode(
-            item.formatted.audio,
-            24000,
-            24000
-          );
-          
-          // Update the item with the audio file
-          setItems(prevItems => 
-            prevItems.map(prevItem => 
-              prevItem.id === item.id 
-                ? { ...prevItem, formatted: { ...prevItem.formatted, file: wavFile } }
-                : prevItem
-            )
-          );
-        }
-      });
     } catch (error) {
-      console.error('Error setting up client:', error);
+      console.error('Error changing turn end type:', error);
+      setIsVADMode(false);
+      setMicStatus('inactive');
+      // Only try to end if we're recording
+      if (wavRecorder.getStatus() === 'recording') {
+        await wavRecorder.end();
+      }
     }
+  };
 
-    return () => {
-      client.reset();
-    };
-  }, []);
+  // Update the VAD toggle handler
+  const handleVADToggle = async () => {
+    await changeTurnEndType(!isVADMode);
+  };
+
+  const getAudioDevices = async () => {
+    if (initializingRef.current) return;
+    initializingRef.current = true;
+    setIsLoadingDevices(true);
+    
+    try {
+      // Initialize WavRecorder if not exists
+      if (!wavRecorderRef.current) {
+        wavRecorderRef.current = new WavRecorder({
+          sampleRate: 24000,
+        });
+      }
+      
+      // Request permission to see device labels
+      await wavRecorderRef.current.requestPermission();
+      
+      const devices = await wavRecorderRef.current.listDevices();
+      setAudioDevices(devices);
+      
+      // Set default device if none selected
+      if (!selectedDeviceId && devices.length > 0) {
+        const defaultDevice = devices.find(device => device.default) || devices[0];
+        setSelectedDeviceId(defaultDevice.deviceId);
+      }
+    } catch (error) {
+      console.error('Failed to get audio devices:', error);
+    } finally {
+      setIsLoadingDevices(false);
+      initializingRef.current = false;
+    }
+  };
 
   useEffect(() => {
-    const client = clientRef.current;
+    getAudioDevices();
     
-    const unsubscribe = client.on('itemCreated', () => {
-      setIsProcessing(false);
-      setItems(client.conversation.getItems());
-    });
-
+    // Listen for device changes
+    navigator.mediaDevices.addEventListener('devicechange', getAudioDevices);
+    
     return () => {
-      unsubscribe();
+      navigator.mediaDevices.removeEventListener('devicechange', getAudioDevices);
     };
   }, []);
+
+  const handleDeviceSelect = async (deviceId: string) => {
+    try {
+      // Store the new device ID
+      setSelectedDeviceId(deviceId);
+      
+      // If we're not connected, just update the ID
+      if (!isConnected) return;
+      
+      // If we're in VAD mode, we need to restart the recording
+      if (isVADMode) {
+        await changeTurnEndType(false); // Disable VAD first
+        await wavRecorderRef.current?.end();
+        await wavRecorderRef.current?.begin(deviceId);
+        await changeTurnEndType(true); // Re-enable VAD with new device
+      } else {
+        // For push-to-talk, just end current recording if active
+        if (micStatus === 'listening') {
+          await wavRecorderRef.current?.end();
+          setMicStatus('inactive');
+        }
+        // Next push-to-talk will use the new device automatically
+      }
+    } catch (error) {
+      console.error('Failed to switch device:', error);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 p-4 font-sans">
-      <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-purple-300">
-        <div className="p-6 bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Star className="w-8 h-8 text-yellow-300 animate-spin-slow" />
-            <h1 className="text-2xl font-bold text-white">English Learning Buddy</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <select 
-              className="bg-white text-purple-700 rounded-full px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-300"
-              value={selectedDeviceId}
-              onChange={(e) => setSelectedDeviceId(e.target.value)}
-            >
-              {audioDevices.map((device) => (
-                <option key={device.deviceId} value={device.deviceId}>
-                  {device.label || `Microphone ${device.deviceId.slice(0, 5)}...`}
-                </option>
-              ))}
-            </select>
-            
-            <div className="flex items-center gap-2">
-              <Speaker className="w-4 h-4 text-white" />
-              <input
-                type="range"
-                min="0"
-                max="4"
-                step="0.1"
-                value={volume}
-                onChange={(e) => {
-                  const newVolume = parseFloat(e.target.value);
-                  setVolume(newVolume);
-                  if (wavStreamPlayerRef.current) {
-                    wavStreamPlayerRef.current.setVolume(newVolume);
-                  }
-                }}
-                className="w-24"
-              />
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 p-4">
+      <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-screen py-8">
+        <div className="mb-4 z-50">
+          <DeviceSelector
+            devices={audioDevices}
+            selectedDeviceId={selectedDeviceId}
+            onDeviceSelect={handleDeviceSelect}
+            disabled={false}
+            isLoading={isLoadingDevices}
+          />
         </div>
-
-        <div className="p-4 bg-purple-50 flex items-center justify-between">
-          <div className="flex gap-2">
-            <button
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                canPushToTalk ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-700'
-              }`}
-              onClick={() => changeTurnEndType('none')}
-            >
-              Manual
-            </button>
-            <button
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                !canPushToTalk ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-700'
-              }`}
-              onClick={() => changeTurnEndType('server_vad')}
-            >
-              VAD
-            </button>
-          </div>
-          <button
-            className={`px-4 py-2 rounded-full text-sm font-medium ${
-              isConnected ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-            }`}
-            onClick={isConnected ? disconnectConversation : connectConversation}
-          >
-            {isConnected ? 'Disconnect' : 'Connect'}
-          </button>
-        </div>
-
-        <div className="p-4 bg-purple-100 flex justify-center">
-          <button
-            className="flex items-center gap-2 px-4 py-2 bg-purple-300 text-purple-800 rounded-full text-sm font-medium hover:bg-purple-400 transition-colors"
-            onClick={() => setIsConversationCollapsed(!isConversationCollapsed)}
-          >
-            {isConversationCollapsed ? 'Show Chat' : 'Hide Chat'}
-            {isConversationCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-          </button>
-        </div>
-
-        <AnimatePresence>
-          {!isConversationCollapsed && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              <div className="h-96 overflow-y-auto p-6 space-y-4">
-                {items.map((item, index) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className={`flex gap-3 ${item.role === 'assistant' ? '' : 'justify-end'}`}
-                  >
-                    {item.role === 'assistant' && (
-                      <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center text-2xl">
-                        🤖
-                      </div>
-                    )}
-                    <div className={`rounded-2xl p-4 max-w-[80%] ${
-                      item.role === 'assistant' ? 'bg-purple-200 text-purple-900' : 'bg-pink-200 text-pink-900'
-                    }`}>
-                      {item.role === 'user' && micStatus === 'processing' && (
-                        <div className="text-xs text-purple-600 mb-1">
-                          Transcribing...
-                        </div>
-                      )}
-                      <div className="flex flex-col gap-2">
-                        <p>
-                          {item.role === 'user' 
-                            ? (item.formatted.transcript || item.formatted.text || '(processing...)')
-                            : (item.formatted.text || item.formatted?.transcript || '(thinking...)')}
-                        </p>
-                        
-                        {(item.formatted.file || item.formatted.audio) && (
-                          <button
-                            className="self-start flex items-center gap-2 px-3 py-1 bg-white rounded-full text-sm text-purple-700 hover:bg-purple-100 transition-colors"
-                            onClick={() => {
-                              if (item.formatted.file) {
-                                const audio = new Audio(item.formatted.file.url);
-                                audio.play();
-                              } else if (item.formatted.audio) {
-                                // For messages that haven't been decoded yet
-                                WavRecorder.decode(
-                                  item.formatted.audio,
-                                  24000,
-                                  24000
-                                ).then(wavFile => {
-                                  const audio = new Audio(wavFile.url);
-                                  audio.play();
-                                });
-                              }
-                            }}
-                          >
-                            <Speaker className="w-4 h-4" />
-                            Play
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    {item.role === 'user' && (
-                      <div className="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center text-2xl">
-                        😊
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="p-6 bg-purple-50 flex flex-col items-center">
-          <motion.button
-            className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl relative ${
-              micStatus === 'listening' ? 'bg-red-500' : 
-              micStatus === 'processing' ? 'bg-yellow-500' : 
-              'bg-purple-500'
-            }`}
-            animate={micStatus === 'listening' ? { scale: [1, 1.1, 1] } : {}}
-            transition={{ repeat: Infinity, duration: 1 }}
-            onMouseDown={startRecording}
-            onMouseUp={stopRecording}
-            onTouchStart={startRecording}
-            onTouchEnd={stopRecording}
-            disabled={!isConnected || !canPushToTalk}
-          >
-            <Mic className="w-10 h-10" />
-            {micStatus === 'listening' && (
-              <motion.div
-                className="absolute w-full h-full rounded-full border-4 border-red-500"
-                animate={{ scale: [1, 1.5], opacity: [1, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              />
+        <Character 
+          isListening={micStatus === 'listening'}
+          isSpeaking={isAISpeaking}
+          isConnected={isConnected}
+          message={currentMessage}
+          currentResponse={currentResponse}
+          onMicClick={handleMicClick}
+          isVADMode={isVADMode}
+          onVADToggle={handleVADToggle}
+          disableMic={isVADMode}
+        />
+        <button
+          onClick={isConnected ? handleDisconnect : handleConnect}
+          className={`
+            mt-4 px-6 py-3 
+            rounded-full
+            font-medium
+            flex items-center gap-2
+            transition-all duration-300
+            ${isConnected ? 
+              'bg-purple-500 hover:bg-purple-600 text-white animate-pulse-slow' : 
+              'bg-white hover:bg-purple-50 text-purple-500 border-2 border-purple-500'
+            }
+            shadow-lg hover:shadow-xl
+            transform hover:scale-105
+            disabled:opacity-50 disabled:cursor-not-allowed
+          `}
+          disabled={false}
+        >
+          <div className={`
+            w-2 h-2 
+            rounded-full 
+            transition-all duration-300
+            ${isConnected ? 'bg-green-400 animate-ping' : 'bg-red-400'}
+          `} />
+          
+          <span className="relative">
+            {isConnected ? (
+              <span className="flex items-center gap-2">
+                Connected
+                <X className="w-4 h-4 animate-spin-slow" />
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                Connect
+                <Zap className="w-4 h-4 animate-bounce-slow" />
+              </span>
             )}
-          </motion.button>
-
-          <p className={`mt-3 text-sm ${
-            micStatus === 'listening' ? 'text-red-500 font-medium' :
-            micStatus === 'processing' ? 'text-yellow-600' :
-            'text-purple-700'
-          }`}>
-            {micStatus === 'listening' ? "I'm listening..." : 
-             micStatus === 'processing' ? "Processing..." :
-             canPushToTalk ? "Press and hold microphone button to speak" :
-             "Speak anytime (Voice Activity Detection enabled)"}
-          </p>
-        </div>
-
-        <div className="p-4 bg-purple-100 flex justify-center">
-          {micStatus === 'listening' && (
-            <div className="flex gap-2">
-              {[...Array(5)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="w-2 h-8 bg-red-500 rounded-full"
-                  animate={{ height: [8, 32, 8] }}
-                  transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
-                />
-              ))}
-            </div>
-          )}
-          {micStatus === 'processing' && (
-            <div className="flex items-center gap-2 text-purple-700">
-              <Zap className="w-6 h-6 animate-pulse" />
-              <span>AI is thinking...</span>
-            </div>
-          )}
-        </div>
+          </span>
+        </button>
       </div>
     </div>
   );

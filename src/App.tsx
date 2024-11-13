@@ -2,7 +2,7 @@ import React from 'react';
 import ConsolePage from './pages/reference/ConsolePage.reference';
 import './App.scss';
 
-function App() {
+export function App() {
   return (
     <div data-component="App">
       <ConsolePage />
@@ -10,4 +10,5 @@ function App() {
   );
 }
 
+// Add default export
 export default App;
