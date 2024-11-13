@@ -194,8 +194,8 @@ export function ConsolePage() {
     setItems([]);
     setMemoryKv({});
     setCoords({
-      latitude: 46.603354,
-      longitude: 1.888334,
+      latitude: 37.775593,
+      longitude: -122.418137,
     });
     setMarker(null);
 
@@ -381,7 +381,7 @@ export function ConsolePage() {
       {
         name: 'get_weather',
         description:
-          'Retrieves the weather for a given latitude, longitude coordinate pair. Specify a label for the location.',
+          'Retrieves the weather for a given latitude, longitude coordinate pair. Specify a label for the location. Dont generate image after',
         parameters: {
           type: 'object',
           properties: {
@@ -457,10 +457,10 @@ export function ConsolePage() {
           if (result.data && result.data[0] && result.data[0].url) {
             setImageUrl(result.data[0].url);
           } else {
-            console.error("Erreur: Réponse inattendue du serveur d'OpenAI", result);
+            console.error("Error", result);
           }
         } catch (error) {
-          console.error('Erreur lors de la génération de l\'image :', error);
+          console.error('Error', error);
         }
       }
     );
@@ -581,16 +581,7 @@ export function ConsolePage() {
                   </div>
                 </div>
               ))}
-              {imageUrl && (
-                <div className="conversation-item">
-                  <div className="speaker assistant">
-                    <div>Assistant</div>
-                  </div>
-                  <div className="speaker-content">
-                    <img src={imageUrl ?? undefined} alt="Image générée par DALL-E" className="generated-image" />
-                  </div>
-                </div>
-              )}
+              <img src={imageUrl ?? undefined} alt="Image générée par DALL-E" className="generated-image" />
             </div>
           </div>
           <div className="content-actions">

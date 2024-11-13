@@ -25,6 +25,13 @@
     }
   }
 
+  .generated-image {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+
   .content-main {
     display: flex;
     flex-direction: row;
@@ -170,14 +177,6 @@
     }
   }
 
-  /* Additional styles */
-  .content-block.map {
-    /* Specific styles for the map block if needed */
-  }
-
-  .content-block.memo {
-    /* Specific styles for the memo box if needed */
-  }
 
   /* Buttons and Toggles */
   .content-actions {
