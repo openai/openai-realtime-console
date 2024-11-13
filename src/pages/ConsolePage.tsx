@@ -193,8 +193,8 @@ export function ConsolePage() {
     setItems([]);
     setMemoryKv({});
     setCoords({
-      latitude: 37.775593,
-      longitude: -122.418137,
+      latitude: 46.603354,
+      longitude: 1.888334,
     });
     setMarker(null);
 
