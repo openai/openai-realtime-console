@@ -53,7 +53,7 @@ const ActivityGuidePage: React.FC = () => {
               <div
                 key={index}
                 onClick={() => handleActivityClick(activity)}
-                className="bg-blue-500 text-white rounded-full p-6 text-center hover:bg-blue-600 transition-colors cursor-pointer"
+                className="bg-blue-500 text-white rounded-lg p-6 text-center hover:bg-blue-600 transition-colors cursor-pointer"
               >
                 <h2 className="text-xl font-semibold">{activity.name}</h2>
                 <p className="text-sm mt-2">{activity.description}</p>

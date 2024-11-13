@@ -40,8 +40,9 @@ const ThemePage: React.FC = () => {
             <div
               key={index}
               onClick={() => handleThemeSelect(theme.name)}
-              className="bg-blue-500 text-white rounded-full p-6 text-center hover:bg-blue-600 transition-colors cursor-pointer"
+              className="bg-blue-500 text-white rounded-lg p-6 text-center hover:bg-blue-600 transition-colors cursor-pointer"
             >
+              <p>{theme.emoji}</p>
               <h2 className="text-xl font-semibold">{theme.name}</h2>
               <p className="text-sm mt-2">{theme.description}</p>
             </div>
