@@ -19,12 +19,12 @@ export function Map({
     <div data-component="Map">
       <MapContainer
         center={center}
-        zoom={11}
+        zoom={5}
         scrollWheelZoom={false}
         zoomControl={false}
         attributionControl={false}
       >
-        <ChangeView center={center} zoom={11} />
+        <ChangeView center={center} zoom={5} />
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <Marker position={center}>
           <Popup>{location}</Popup>

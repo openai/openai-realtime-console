@@ -132,8 +132,9 @@ export function ConsolePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
   const [coords, setCoords] = useState<Coordinates | null>({
-    lat: 37.775593,
-    lng: -122.418137,
+    lat: 46.603354,
+    lng: 1.888334,
+    location: "center of France"
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
 
@@ -554,10 +555,11 @@ export function ConsolePage() {
                         }}
                       >
                         <div
-                          className={`event-source ${event.type === 'error'
-                            ? 'error'
-                            : realtimeEvent.source
-                            }`}
+                          className={`event-source ${
+                            event.type === 'error'
+                              ? 'error'
+                              : realtimeEvent.source
+                          }`}
                         >
                           {realtimeEvent.source === 'client' ? (
                             <ArrowUp />
@@ -627,7 +629,7 @@ export function ConsolePage() {
                               (conversationItem.formatted.audio?.length
                                 ? '(awaiting transcript)'
                                 : conversationItem.formatted.text ||
-                                '(item sent)')}
+                                  '(item sent)')}
                           </div>
                         )}
                       {!conversationItem.formatted.tool &&
