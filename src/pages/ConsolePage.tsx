@@ -20,7 +20,7 @@ import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
 import { instructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
-import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
+import { X, Edit, Zap, ArrowUp, ArrowDown, Activity } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map';
@@ -136,6 +136,7 @@ export function ConsolePage() {
     lng: -122.418137,
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   /**
    * Utility for formatting the timing of logs
@@ -455,6 +456,50 @@ export function ConsolePage() {
       }
     );
 
+    client.addTool(
+      {
+        name: 'generate_image',
+        description: 'Génère une image pour un lieu spécifique en utilisant DALL-E.',
+        parameters: {
+          type: 'object',
+          properties: {
+            location: {
+              type: 'string',
+              description: 'Description de la localisation pour l\'image',
+            },
+          },
+          required: ['location'],
+        },
+      },
+      async ({ location }: { [key: string]: any }) => {
+        try {
+          const prompt = `Une image représentant ${location} ou ${Activity} avec un style tres réaliste.`;
+          const response = await fetch("https://api.openai.com/v1/images/generations", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: "dall-e-3",
+              prompt: prompt,
+              n: 1,
+              size: "1024x1024",
+            }),
+          });
+    
+          const result = await response.json();
+          if (result.data && result.data[0] && result.data[0].url) {
+            setImageUrl(result.data[0].url);
+          } else {
+            console.error("Erreur: Réponse inattendue du serveur d'OpenAI", result);
+          }
+        } catch (error) {
+          console.error('Erreur lors de la génération de l\'image :', error);
+        }
+      }
+    );
+    
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
       setRealtimeEvents((realtimeEvents) => {
@@ -499,6 +544,14 @@ export function ConsolePage() {
       client.reset();
     };
   }, []);
+
+  useEffect(() => {
+    if (imageUrl) {
+      console.log("Image URL:", imageUrl); // Vérification de l'URL de l'image
+    } else {
+      console.log("imageUrl is null or undefined");
+    }
+  }, [imageUrl]);
 
   /**
    * Render the application
@@ -584,6 +637,15 @@ export function ConsolePage() {
                   </div>
                 );
               })}
+              {/* Display generated image in events if available */}
+              {imageUrl && (
+                <div className="event">
+                  <div className="event-timestamp">Generated Image</div>
+                  <div className="event-details">
+                    <img src={imageUrl} alt="Image générée par DALL-E" className="generated-image" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="content-block conversation">

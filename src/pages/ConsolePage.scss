@@ -193,6 +193,12 @@
       word-wrap: break-word;
     }
   }
+  .generated-image {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
 
   .event {
     border-radius: 3px;
@@ -277,4 +283,5 @@
       }
     }
   }
+
 }
