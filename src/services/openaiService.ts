@@ -8,7 +8,12 @@ const openai = new OpenAI({
 
 const unsplashAccessKey = process.env.REACT_APP_UNSPLASH_ACCESS_KEY;
 
-export const getSuggestedLocations = async (locationDescription: string) => {
+export const getSuggestedLocations = async (locationDescription: string, numberOfSuggestions = 4, with_images = true) => {
+
+  if (!locationDescription) {
+    locationDescription = 'popular places to discover French heritage';
+  }
+
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
@@ -21,11 +26,11 @@ export const getSuggestedLocations = async (locationDescription: string) => {
           "description": "string"
         }
         And the JSON array should be wrapped in an object with a 'suggestions' key.
-        Provide exactly 4 suggestions.`,
+        Provide exactly ${numberOfSuggestions} suggestions.`,
       },
       {
         role: 'user',
-        content: `Suggest 4 locations in France that match this description: ${locationDescription}.`,
+        content: `Suggest ${numberOfSuggestions} locations in France that match this description: ${locationDescription}. If the description is already the name of a city and something more specific, just return the city in the response and limit the array to 1 item.`,
       },
     ],
     response_format: { type: 'json_object' },
@@ -36,36 +41,38 @@ export const getSuggestedLocations = async (locationDescription: string) => {
   )?.suggestions;
 
   // Fetch images for each location
-  for (let location of locations) {
-    try {
-      const imageResponse = await axios.get(
-        `https://api.unsplash.com/search/photos`,
-        {
-          params: {
-            query: `${location.name} France`,
-            per_page: 1,
-          },
-          headers: {
-            Authorization: `Client-ID ${unsplashAccessKey}`,
-          },
-        }
-      );
+  if (with_images) {
+    for (let location of locations) {
+      try {
+        const imageResponse = await axios.get(
+          `https://api.unsplash.com/search/photos`,
+          {
+            params: {
+              query: `${location.name} France`,
+              per_page: 1,
+            },
+            headers: {
+              Authorization: `Client-ID ${unsplashAccessKey}`,
+            },
+          }
+        );
 
-      if (imageResponse.data.results && imageResponse.data.results.length > 0) {
-        location.image_url = imageResponse.data.results[0].urls.regular;
-      } else {
+        if (imageResponse.data.results && imageResponse.data.results.length > 0) {
+          location.image_url = imageResponse.data.results[0].urls.regular;
+        } else {
+          location.image_url = '/city.webp';
+        }
+      } catch (error) {
+        console.error('Error fetching image:', error);
         location.image_url = '/city.webp';
       }
-    } catch (error) {
-      console.error('Error fetching image:', error);
-      location.image_url = '/city.webp';
     }
   }
 
   return locations;
 };
 
-export const getSuggestedThemes = async (locations: string[]) => {
+export const getSuggestedThemes = async (locations: string[], numberOfSuggestions = 5) => {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
@@ -79,11 +86,11 @@ export const getSuggestedThemes = async (locations: string[]) => {
           "description": "string"
         }
         And the JSON array should be wrapped in an object with a 'themes' key.
-        Provide at least 5 suggestions.`,
+        Provide ${numberOfSuggestions} suggestions.`,
       },
       {
         role: 'user',
-        content: `Suggest at least 5 travel themes that would be suitable for these locations: ${locations.join(
+        content: `Suggest ${numberOfSuggestions} travel themes that would be suitable for these locations: ${locations.join(
           ', '
         )}. Return the result as a JSON array of strings.`,
       },
@@ -112,6 +119,7 @@ export const getSuggestedActivities = async (
           "name": "string",
           "description": "string"
         }
+        And the JSON array should be wrapped in an object with a 'activities' key.
         Provide at least 5 suggestions.`,
       },
       {
@@ -124,7 +132,7 @@ export const getSuggestedActivities = async (
     response_format: { type: 'json_object' },
   });
 
-  return JSON.parse(response.choices[0].message.content || '{}')?.suggestions;
+  return JSON.parse(response.choices[0].message.content || '{}')?.activities;
 };
 
 export const getAreaCoordinates = async (location: string) => {
