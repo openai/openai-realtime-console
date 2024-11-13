@@ -1,8 +1,15 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { LatLngTuple } from 'leaflet';
 import './Map.scss';
 
-function ChangeView({ center, zoom }: { center: LatLngTuple; zoom: number }) {
+type LatlongitudeTuple = [number, number]; // Define the 'LatlongitudeTuple' type
+
+function ChangeView({
+  center,
+  zoom,
+}: {
+  center: LatlongitudeTuple;
+  zoom: number;
+}) {
   const map = useMap();
   map.setView(center, zoom);
   return null;
@@ -13,9 +20,9 @@ export function Map({
   location = 'My Location',
   zoom = 5,
 }: {
-  center: LatLngTuple;
-    location?: string;
-    zoom?: number;
+  center: LatlongitudeTuple;
+  location?: string;
+  zoom?: number;
 }) {
   return (
     <div data-component="Map">

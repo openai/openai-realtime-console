@@ -27,13 +27,15 @@ import { Map } from '../components/Map';
 
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
+import { getAreaCoordinates } from '../services/openaiService';
+import { get } from 'http';
 
 /**
  * Type for result from get_weather() function call
  */
 interface Coordinates {
-  lat: number;
-  lng: number;
+  latitude: number;
+  longitude: number;
   location?: string;
   temperature?: {
     value: number;
@@ -129,8 +131,8 @@ export function ConsolePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
   const [coords, setCoords] = useState<Coordinates | null>({
-    lat: 46.603354,
-    lng: 1.888334,
+    latitude: 46.603354,
+    longitude: 1.888334,
     location: 'center of France',
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
@@ -200,8 +202,8 @@ export function ConsolePage() {
     setItems([]);
     setMemoryKv({});
     setCoords({
-      lat: 37.775593,
-      lng: -122.418137,
+      latitude: 37.775593,
+      longitude: -122.418137,
     });
     setMarker(null);
 
@@ -307,7 +309,7 @@ export function ConsolePage() {
     const wavStreamPlayer = wavStreamPlayerRef.current;
     const serverCanvas = serverCanvasRef.current;
     let serverCtx: CanvasRenderingContext2D | null = null;
-
+    getAreaCoordinates(context).then((data) => { setCoords(data); });
     const render = () => {
       if (isLoaded) {
         if (clientCanvas) {
@@ -416,15 +418,15 @@ export function ConsolePage() {
       {
         name: 'get_weather',
         description:
-          'Retrieves the weather for a given lat, lng coordinate pair. Specify a label for the location.',
+          'Retrieves the weather for a given latitude, longitude coordinate pair. Specify a label for the location.',
         parameters: {
           type: 'object',
           properties: {
-            lat: {
+            latitude: {
               type: 'number',
               description: 'Latitude',
             },
-            lng: {
+            longitude: {
               type: 'number',
               description: 'Longitude',
             },
@@ -433,14 +435,14 @@ export function ConsolePage() {
               description: 'Name of the location',
             },
           },
-          required: ['lat', 'lng', 'location'],
+          required: ['latitude', 'longitude', 'location'],
         },
       },
-      async ({ lat, lng, location }: { [key: string]: any }) => {
-        setMarker({ lat, lng, location });
-        setCoords({ lat, lng, location });
+      async ({ latitude, longitude, location }: { [key: string]: any }) => {
+        setMarker({ latitude, longitude, location });
+        setCoords({ latitude, longitude, location });
         const result = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,wind_speed_10m`
         );
         const json = await result.json();
         const temperature = {
@@ -451,7 +453,7 @@ export function ConsolePage() {
           value: json.current.wind_speed_10m as number,
           units: json.current_units.wind_speed_10m as string,
         };
-        setMarker({ lat, lng, location, temperature, wind_speed });
+        setMarker({ latitude, longitude, location, temperature, wind_speed });
         return json;
       }
     );
@@ -702,8 +704,9 @@ export function ConsolePage() {
             <div className="content-block-body full">
               {coords && (
                 <Map
-                  center={[coords.lat, coords.lng]}
+                  center={[coords.latitude, coords.longitude]}
                   location={coords.location}
+                  zoom={11}
                 />
               )}
             </div>
