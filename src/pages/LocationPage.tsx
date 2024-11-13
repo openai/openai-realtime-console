@@ -36,7 +36,7 @@ const LocationPage: React.FC = () => {
             type="text"
             value={locationDescription}
             onChange={(e) => setLocationDescription(e.target.value)}
-            placeholder="Where do you want to travel?"
+            placeholder="Where in France do you want to travel?"
             className="flex-grow border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
           />
           <button 
@@ -58,8 +58,6 @@ const LocationPage: React.FC = () => {
           >
             <h2 className="text-xl font-semibold">{location.name}</h2>
             <p className="text-sm mt-2">{location.description}</p>
-            
-            {/* Standardized image size */}
             <img 
               src={location.image_url} 
               alt={location.name} 
