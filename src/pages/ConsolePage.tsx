@@ -24,6 +24,7 @@ import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 
+
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 

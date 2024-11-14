@@ -5,7 +5,6 @@ import { ConsolePage } from './pages/ConsolePage';
 import { StorytimeStacy } from './pages/StorytimeStacy';
 import { ComradeCharlie } from './pages/ComradeCharlie';
 import { BuddyBoba } from './pages/BuddyBoba';
-import './App.scss';
 
 function App() {
   // return (
