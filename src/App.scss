@@ -3,3 +3,11 @@
   width: 100%;
   position: relative;
 }
+
+body {
+  background: url('/background.jpg') no-repeat center center fixed;
+  background-size: cover;
+  font-family: 'Comic Neue', sans-serif;
+  margin: 0;
+  padding: 0;
+}

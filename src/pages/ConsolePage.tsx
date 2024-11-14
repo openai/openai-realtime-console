@@ -23,7 +23,6 @@ import { WavRenderer } from '../utils/wav_renderer';
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
-import { Map } from '../components/Map.js';
 
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
