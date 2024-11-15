@@ -28,7 +28,6 @@ import { Toggle } from '../components/toggle/Toggle';
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
-
 export function ConsolePage() {
   /**
    * Ask user for API Key
@@ -55,25 +54,32 @@ export function ConsolePage() {
     }
   }, []);
 
+  useEffect(() => {
+    // Load the Google Analytics script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=G-6JJNNQ1LLT';
+    document.head.appendChild(script);
 
-
+    // Initialize Google Analytics after the script loads
+    script.onload = () => {
+      // @ts-ignore
+      window.dataLayer = window.dataLayer || [];
+      function gtag(...args: any[]) {
+        // @ts-ignore
+        window.dataLayer.push(args);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-6JJNNQ1LLT');
+    };
+  }, []);
 
   /**
    * Render the application
    */
   return (
     <div data-component="ConsolePage">
-            {/* <!-- Google tag (gtag.js) --> */}
-      <script async src="https://www.googletagmanager.com/gtag/js?id=G-6JJNNQ1LLT"></script>
-      <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-6JJNNQ1LLT');
-      </script>
-
-
+    
       <div className="content-top">
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
