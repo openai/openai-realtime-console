@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
 
 [data-component='ConsolePage'] {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Comic Neue', monospace;
   font-weight: 400;
   font-style: normal;
   font-size: 12px;
@@ -36,7 +36,7 @@
   .image-links {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 40px;
     padding: 20px;
     flex-wrap: wrap; /* Ensure images wrap to the next line if needed */
   }
@@ -44,8 +44,8 @@
   .image-links img {
     max-width: 100%; /* Ensure the image fits within the container */
     height: auto; /* Maintain the aspect ratio */
-    width: 300px; /* Set a fixed width for the images */
-    border-radius: 10px;
+    width: 250px; /* Set a fixed width for the images */
+    border-radius: 40px;
     cursor: pointer;
     transition: transform 0.3s;
   }
@@ -53,6 +53,16 @@
   .image-links img:hover {
     transform: scale(1.1);
   }
+
+  .image-container {
+    text-align: center;
+  }
+.caption {
+  font-family: 'Pacifico', cursive; /* Use the Pacifico font */
+  margin-top: 10px;
+  font-size: 2em;
+  color: #333;
+}
 
   .rainbow-text 
   {
@@ -373,4 +383,19 @@
       }
     }
   }
+
+  .footer {
+    background-color: rgb(205, 210, 212);
+    padding: 10px;
+    text-align: center;
+    width: 50%;       /* Shrink the footer to half the page width */
+    margin: 0 auto;   /* Center the footer */
+    p {
+      font-family: 'Open Sans', Arial, sans-serif;
+      font-size: 0.8em;
+      margin: 0;
+      line-height: 1.4;
+    }
+  }
+
 }

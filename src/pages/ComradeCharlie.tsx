@@ -695,21 +695,6 @@ export function ComradeCharlie () {
         <div className="content-right">
           <div className="content-block map">
             <div className="content-block-title">Comrade Charlie</div>
-            {/* <div className="content-block-title bottom">
-              {marker?.location || 'not yet retrieved'}
-              {!!marker?.temperature && (
-                <>
-                  <br />
-                  🌡️ {marker.temperature.value} {marker.temperature.units}
-                </>
-              )}
-              {!!marker?.wind_speed && (
-                <>
-                  {' '}
-                  🍃 {marker.wind_speed.value} {marker.wind_speed.units}
-                </>
-              )}
-            </div> */}
             <div className="content-block-body full">
             <img
                 src="/comrade_charlie.png"

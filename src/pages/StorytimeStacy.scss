@@ -1,72 +1,177 @@
-[data-component='ConsolePage'] {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 400;
-  font-style: normal;
-  font-size: 12px;
-  height: 100%;
+[data-component='StorytimeStacy'] {
+  font-family: 'Comic Neue', sans-serif;
   display: flex;
   flex-direction: column;
+  height: 100vh;
   overflow: hidden;
-  margin: 0px 8px;
-  & > div {
-    flex-shrink: 0;
-  }
+  margin: 0;
+  padding: 0;
 
   .spacer {
     flex-grow: 1;
   }
 
+  .grid-container {
+    display: grid;
+    grid-template-columns: 30% 40% 30%;
+    height: 100%;
+  }
+
+  .column {
+    padding: 20px;
+    overflow-y: auto;
+    position: relative; /* Ensure positioning context for absolute positioning */
+  }
+
+  .column-1 {
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr; /* Three rows of equal height */
+    padding: 20px;
+    height: 100%; /* Ensure the column fills the available vertical space */
+  }
+
+  .connect {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 20px 0;
+  
+    /* Style the button */
+    // Button {
+    //   width: 80%; /* Make button wider */
+    //   height: 50px; /* Increase height */
+    //   font-size: 1.2em; /* Larger text */
+    //   border-radius: 25px; /* Rounded corners */
+    //   text-transform: uppercase; /* Optional: make text uppercase */
+    //   font-weight: bold; /* Optional: make text bold */
+    // }
+  }
+
+  .manual-vad {
+    margin-bottom: 20px;
+    align-self: flex-start; /* Ensure left alignment */
+    width: auto; /* Allow content width */tom: 20px; /* Add some margin from the bottom */
+  }
+
+  .column-2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Ensure positioning context for absolute positioning */
+  }
+
+  .centre-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 80vh;
+    gap: 10px; // Reduced gap
+  }
+  
+  .centre-image {
+    width: 100%;
+    height: 80%; // Increased from previous value
+    border-radius: 10px;
+    max-height: 65vh; // Increased max-height
+    object-fit: contain;
+  }
+
+  .centre-image-text {
+    width: 60%;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #e9e6e6;
+    height: calc(20% - 10px); // Adjusted for new proportions
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
   .content-top {
     display: flex;
     align-items: center;
+    justify-content: center; /* Center the content horizontally */
     padding: 8px 16px;
     min-height: 80px;
+    text-align: center; /* Center the text */
+
     .content-title {
-      flex-grow: 1;
       display: flex;
       align-items: center;
+      justify-content: center;
+      text-align: center; /* Center the text */
       gap: 12px;
+      
       img {
-        width: 120px;
-        height: 120px;
+        width: 50px;
+        height: auto;
         display: block;
       }
     }
-  }
 
-  .content-main {
-    flex-grow: 1;
-    flex-shrink: 1 !important;
-    margin: 0px 16px;
-    display: flex;
-    overflow: hidden;
-    margin-bottom: 24px;
-    .content-block {
-      position: relative;
+    .column-3 {
       display: flex;
       flex-direction: column;
-      max-height: 100%;
-      width: 100%;
-      .content-block-title {
-        flex-shrink: 0;
-        padding-top: 16px;
-        padding-bottom: 4px;
-        position: relative;
-      }
-      .content-block-body {
-        color: #6e6e7f;
-        position: relative;
-        flex-grow: 1;
-        padding: 8px 0px;
-        padding-top: 4px;
-        line-height: 1.2em;
-        overflow: auto;
-        &.full {
-          padding: 0px;
-        }
-        
-      }
+      align-items: flex-start; // Align children (buttons) to the left
+      padding: 2px;
+      width: 100%; /* Ensure the column takes up the full width */
+
     }
+
+    .rainbow-text {
+    // margin-left: 2%;
+    margin-bottom: 5%;
+    background: linear-gradient(to right, #ff6600 10%, #800000 70%, #cc0000 100%);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2vw;
+    font-family: 'Comic Neue', sans-serif;
+    text-align: center;
+      color: #000;
+    text-align: center;
+    background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+
+  // background: -webkit-linear-gradient(right, #ff6600 0%, #800000 25%, #cc0000 50%, yellow 100%) repeat;
+    -webkit-background-clip: text;
+    -ms-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -ms-text-fill-color: transparent;
+    -moz-text-fill-color: transparent;
+    text-fill-color: transparent;
+    -webkit-animation-name: shimmer;
+    -webkit-animation-duration: 50s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+
+}
+  }
+  
+  .content-block-title {
+    flex-shrink: 0;
+    padding-top: 16px;
+    padding-bottom: 4px;
+    position: relative;
+  }
+  .content-block-body {
+    color: #6e6e7f;
+    position: relative;
+    flex-grow: 1;
+    padding: 8px 0px;
+    padding-top: 4px;
+    line-height: 1.2em;
+    overflow: auto;
+    &.full {
+      padding: 0px;
+    }
+  }
+  
     .content-right {
       width: 600px;
       flex-shrink: 0;
@@ -117,40 +222,41 @@
    
       }
     }
-    .content-logs {
+
+  .content-logs {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    & > div {
       flex-grow: 1;
+    }
+    & > .content-actions {
+      flex-grow: 0;
+      flex-shrink: 0;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    & > div.events {
       overflow: hidden;
-      & > div {
-        flex-grow: 1;
-      }
-      & > .content-actions {
-        flex-grow: 0;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-      }
-      & > div.events {
-        overflow: hidden;
-      }
-      .events {
-        border-top: 1px solid #e7e7e7;
-      }
-      .conversation {
-        display: flex;
-        flex-shrink: 0;
-        width: 100%;
-        overflow: hidden;
-        height: 200px;
-        min-height: 0;
-        max-height: 200px;
-        border-top: 1px solid #e7e7e7;
-      }
+    }
+    .events {
+      border-top: 1px solid #e7e7e7;
+    }
+    .conversation {
+      display: flex;
+      flex-shrink: 0;
+      width: 100%;
+      overflow: hidden;
+      height: 200px;
+      min-height: 0;
+      max-height: 200px;
+      border-top: 1px solid #e7e7e7;
     }
   }
+
 
   .conversation-item {
     position: relative;

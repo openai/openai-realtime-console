@@ -63,6 +63,17 @@ export function ConsolePage() {
    */
   return (
     <div data-component="ConsolePage">
+            {/* <!-- Google tag (gtag.js) --> */}
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-6JJNNQ1LLT"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-6JJNNQ1LLT');
+      </script>
+
+
       <div className="content-top">
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -86,18 +97,35 @@ export function ConsolePage() {
         </div>
         
         <div className="image-links">
-          <Link to="/storytimestacy">
-            <img src="/storytime_stacy.png" alt="Storytime Stacy" />
-          </Link>
-          <Link to="/comradecharlie">
-            <img src="/comrade_charlie.png" alt="Comrade Charlie" />
-          </Link>
-          <Link to="/buddyboba">
-            <img src="/buddy_boba.png" alt="Buddy Boba" />
-          </Link>
+          <div className="image-container">
+            <Link to="/storytimestacy">
+              <img src="/storytime_stacy.png" alt="Storytime Stacy" />
+            </Link>
+            <p className="caption">Storytime Stacy</p>
+          </div>
+
+          <div className="image-container">
+            <Link to="/comradecharlie">
+             <img src="/comrade_charlie.png" alt="Comrade Charlie" />
+            </Link>
+           <p className="caption">Comrade Charlie</p>
+          </div>
+
+          <div className="image-container">
+            <Link to="/buddyboba">
+             <img src="/buddy_boba.png" alt="Buddy Boba" />
+           </Link>
+            <p className="caption">Buddy Boba</p>
+          </div>
         </div>
       </div>
-      
+
+      <footer className="footer">
+        <p>
+          Disclaimer: This website is created for learning purposes only. The information provided here should not be considered professional advice. Please note that we make no guarantees regarding the accuracy, completeness, or reliability of the contents of this website. Any actions you take based on the contents of this website are at your own risk. We are not liable for any losses or damages incurred from the use of this website.
+        </p>
+      </footer>
     </div>
+
   );
 }
