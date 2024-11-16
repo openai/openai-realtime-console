@@ -27,6 +27,7 @@ import { Map } from '../components/Map.js';
 import './StorytimeStacy.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
+
 /**
  * Type for result from get_weather() function call
  */
@@ -195,19 +196,56 @@ export function StorytimeStacy () {
     }
   }, []);
 
+
+
+  /* Push data to the database */
+  const pushToDatabase = async (items: ItemType[]) => {
+    const dateTime = new Date().toISOString(); // Get current date and time inline
+    items = clientRef.current.conversation.getItems();
+    console.log(items)
+    console.log(dateTime);
+    console.log(process.env.DATABASE_URL)
+    try {
+      const response = await fetch(`${process.env.DATABASE_URL}/push`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.RENDER_API_KEY}`, // Optional: Use if your backend requires authentication
+        },
+        body: JSON.stringify({ dateTime, items }),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to push data to the database: ${errorText}`);
+      }
+  
+      const data = await response.json();
+      console.log('Data pushed successfully:', data);
+    } catch (error) {
+      console.error('Error pushing data to the database:', error);
+    }
+  };
+  
+
   /**
    * Disconnect and reset conversation state
    */
   const disconnectConversation = useCallback(async () => {
+    console.log(process.env.REACT_APP_BACKEND_API_URL)
+    console.log(process.env.REACT_APP_API_KEY)
+    console.log("client convo", clientRef.current.conversation.getItems());
+    await pushToDatabase(items);
+
     setIsConnected(false);
     setRealtimeEvents([]);
     setItems([]);
-    setMemoryKv({});
-    setCoords({
-      lat: 37.775593,
-      lng: -122.418137,
-    });
-    setMarker(null);
+    // setMemoryKv({});
+    // setCoords({
+    //   lat: 37.775593,
+    //   lng: -122.418137,
+    // });
+    // setMarker(null);
 
     const client = clientRef.current;
     client.disconnect();
@@ -378,7 +416,7 @@ export function StorytimeStacy () {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: instructions });
+    client.updateSession({ instructions: instructions, voice: "shimmer" });
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
@@ -507,6 +545,7 @@ export function StorytimeStacy () {
   return (
     
     <div data-component="StorytimeStacy">
+      
       <div className="content-top">
         <div className="content-title">
           <img src="/ollie.png" />
@@ -523,7 +562,7 @@ export function StorytimeStacy () {
           )}
         </div> */}
       </div>
-
+    
       <div className="grid-container">
 
 
@@ -580,9 +619,9 @@ export function StorytimeStacy () {
       </div>
 
       <div className="column column-2"> {/* conversation block */}
-      
+        <div className="content-block-title">conversation</div>
+
       <div className="content-block conversation">
-            <div className="content-block-title">conversation</div>
             <div className="content-block-body" data-conversation-content>
               {!items.length && `awaiting connection...`}
               {items.map((conversationItem, i) => {

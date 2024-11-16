@@ -24,8 +24,7 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map.js';
 
-import './StorytimeStacy.scss';
-// import './BuddyBoba.scss';
+import './BuddyBoba.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
 /**
@@ -187,7 +186,7 @@ export function BuddyBoba () {
         type: `input_text`,
         // text: `Hello!`,
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
-        text: "Hello! You are my best friend, and we are growing up together."
+        text: "Hello! I am a child interested in learning about the world. Please assist me."
       },
     ]);
 
@@ -379,7 +378,7 @@ export function BuddyBoba () {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: instructions, voice:"alloy" });
+    client.updateSession({ instructions: instructions });
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
@@ -506,47 +505,165 @@ export function BuddyBoba () {
    * Render the application
    */
   return (
-
-    <div data-component="StorytimeStacy">
-      
-    <div className="content-top">
-      <div className="content-title">
-        <img src="/ollie.png" />
-        <h1 className="rainbow-text">Oliver's Magical Friends</h1>        </div>
-      {/* <div className="content-api-key">
-        {!LOCAL_RELAY_SERVER_URL && (
-          <Button
-            icon={Edit}
-            iconPosition="end"
-            buttonStyle="flush"
-            label={`api key: ${apiKey.slice(0, 3)}...`}
-            onClick={() => resetAPIKey()}
-          />
-        )}
-      </div> */}
-    </div>
-  
-    <div className="grid-container">
-
-
-    <div className="column column-1">
-      <div className="centre-image-container">
-        <img
-          src="/buddy_boba.png"
-          className="centre-image"
-          alt="Buddy Boba"
-        />
-        <div className="visualization">
-          <div className="visualization-entry client">
-            <canvas ref={clientCanvasRef} />
-          </div>
-          <div className="visualization-entry server">
-            <canvas ref={serverCanvasRef} />
-          </div>
+    <div data-component="ConsolePage">
+      <div className="content-top">
+        <div className="content-title">
+          <img src="/ollie.png" />
+          <span> Oliver's Magical Friends </span>
         </div>
-
-    </div>
-      <div className="content-actions">
+        <div className="content-api-key">
+          {!LOCAL_RELAY_SERVER_URL && (
+            <Button
+              icon={Edit}
+              iconPosition="end"
+              buttonStyle="flush"
+              label={`api key: ${apiKey.slice(0, 3)}...`}
+              onClick={() => resetAPIKey()}
+            />
+          )}
+        </div>
+      </div>
+      <div className="content-main">
+        <div className="content-logs">
+          <div className="content-block events">
+            <div className="visualization">
+              <div className="visualization-entry client">
+                <canvas ref={clientCanvasRef} />
+              </div>
+              <div className="visualization-entry server">
+                <canvas ref={serverCanvasRef} />
+              </div>
+            </div>
+            <div className="content-block-title">events</div>
+            <div className="content-block-body" ref={eventsScrollRef}>
+              {!realtimeEvents.length && `awaiting connection...`}
+              {realtimeEvents.map((realtimeEvent, i) => {
+                const count = realtimeEvent.count;
+                const event = { ...realtimeEvent.event };
+                if (event.type === 'input_audio_buffer.append') {
+                  event.audio = `[trimmed: ${event.audio.length} bytes]`;
+                } else if (event.type === 'response.audio.delta') {
+                  event.delta = `[trimmed: ${event.delta.length} bytes]`;
+                }
+                return (
+                  <div className="event" key={event.event_id}>
+                    <div className="event-timestamp">
+                      {formatTime(realtimeEvent.time)}
+                    </div>
+                    <div className="event-details">
+                      <div
+                        className="event-summary"
+                        onClick={() => {
+                          // toggle event details
+                          const id = event.event_id;
+                          const expanded = { ...expandedEvents };
+                          if (expanded[id]) {
+                            delete expanded[id];
+                          } else {
+                            expanded[id] = true;
+                          }
+                          setExpandedEvents(expanded);
+                        }}
+                      >
+                        <div
+                          className={`event-source ${
+                            event.type === 'error'
+                              ? 'error'
+                              : realtimeEvent.source
+                          }`}
+                        >
+                          {realtimeEvent.source === 'client' ? (
+                            <ArrowUp />
+                          ) : (
+                            <ArrowDown />
+                          )}
+                          <span>
+                            {event.type === 'error'
+                              ? 'error!'
+                              : realtimeEvent.source}
+                          </span>
+                        </div>
+                        <div className="event-type">
+                          {event.type}
+                          {count && ` (${count})`}
+                        </div>
+                      </div>
+                      {!!expandedEvents[event.event_id] && (
+                        <div className="event-payload">
+                          {JSON.stringify(event, null, 2)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="content-block conversation">
+            <div className="content-block-title">conversation</div>
+            <div className="content-block-body" data-conversation-content>
+              {!items.length && `awaiting connection...`}
+              {items.map((conversationItem, i) => {
+                return (
+                  <div className="conversation-item" key={conversationItem.id}>
+                    <div className={`speaker ${conversationItem.role || ''}`}>
+                      <div>
+                        {(
+                          conversationItem.role || conversationItem.type
+                        ).replaceAll('_', ' ')}
+                      </div>
+                      <div
+                        className="close"
+                        onClick={() =>
+                          deleteConversationItem(conversationItem.id)
+                        }
+                      >
+                        <X />
+                      </div>
+                    </div>
+                    <div className={`speaker-content`}>
+                      {/* tool response */}
+                      {conversationItem.type === 'function_call_output' && (
+                        <div>{conversationItem.formatted.output}</div>
+                      )}
+                      {/* tool call */}
+                      {!!conversationItem.formatted.tool && (
+                        <div>
+                          {conversationItem.formatted.tool.name}(
+                          {conversationItem.formatted.tool.arguments})
+                        </div>
+                      )}
+                      {!conversationItem.formatted.tool &&
+                        conversationItem.role === 'user' && (
+                          <div>
+                            {conversationItem.formatted.transcript ||
+                              (conversationItem.formatted.audio?.length
+                                ? '(awaiting transcript)'
+                                : conversationItem.formatted.text ||
+                                  '(item sent)')}
+                          </div>
+                        )}
+                      {!conversationItem.formatted.tool &&
+                        conversationItem.role === 'assistant' && (
+                          <div>
+                            {conversationItem.formatted.transcript ||
+                              conversationItem.formatted.text ||
+                              '(truncated)'}
+                          </div>
+                        )}
+                      {conversationItem.formatted.file && (
+                        <audio
+                          src={conversationItem.formatted.file.url}
+                          controls
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="content-actions">
             <Toggle
               defaultValue={false}
               labels={['manual', 'vad']}
@@ -574,85 +691,45 @@ export function BuddyBoba () {
               }
             />
           </div>
-
-      <div className="centre-image-text"> I am Boba, your same-age best friend, here to experience life together with you! What shall we talk about today? 
-
-      </div>
-        
-    </div>
-
-    <div className="column column-2"> {/* conversation block */}
-      <div className="content-block-title">conversation</div>
-
-    <div className="content-block conversation">
-          <div className="content-block-body" data-conversation-content>
-            {!items.length && `awaiting connection...`}
-            {items.map((conversationItem, i) => {
-              return (
-                <div className="conversation-item" key={conversationItem.id}>
-                  <div className={`speaker ${conversationItem.role || ''}`}>
-                    <div>
-                      {(
-                        conversationItem.role || conversationItem.type
-                      ).replaceAll('_', ' ')}
-                    </div>
-                    <div
-                      className="close"
-                      onClick={() =>
-                        deleteConversationItem(conversationItem.id)
-                      }
-                    >
-                      <X />
-                    </div>
-                  </div>
-                  <div className={`speaker-content`}>
-                    {/* tool response */}
-                    {conversationItem.type === 'function_call_output' && (
-                      <div>{conversationItem.formatted.output}</div>
-                    )}
-                    {/* tool call */}
-                    {!!conversationItem.formatted.tool && (
-                      <div>
-                        {conversationItem.formatted.tool.name}(
-                        {conversationItem.formatted.tool.arguments})
-                      </div>
-                    )}
-                    {!conversationItem.formatted.tool &&
-                      conversationItem.role === 'user' && (
-                        <div>
-                          {conversationItem.formatted.transcript ||
-                            (conversationItem.formatted.audio?.length
-                              ? '(awaiting transcript)'
-                              : conversationItem.formatted.text ||
-                                '(item sent)')}
-                        </div>
-                      )}
-                    {!conversationItem.formatted.tool &&
-                      conversationItem.role === 'assistant' && (
-                        <div>
-                          {conversationItem.formatted.transcript ||
-                            conversationItem.formatted.text ||
-                            '(truncated)'}
-                        </div>
-                      )}
-                    {conversationItem.formatted.file && (
-                      <audio
-                        src={conversationItem.formatted.file.url}
-                        controls
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+        </div>
+        <div className="content-right">
+          <div className="content-block map">
+            <div className="content-block-title">Buddy Boba </div>
+            {/* <div className="content-block-title bottom">
+              {marker?.location || 'not yet retrieved'}
+              {!!marker?.temperature && (
+                <>
+                  <br />
+                  🌡️ {marker.temperature.value} {marker.temperature.units}
+                </>
+              )}
+              {!!marker?.wind_speed && (
+                <>
+                  {' '}
+                  🍃 {marker.wind_speed.value} {marker.wind_speed.units}
+                </>
+              )}
+            </div> */}
+            <div className="content-block-body full">
+            <img
+                src="/buddy_boba.png"
+                alt="Buddy Boba"
+                style={{ width: '100%', height: 'auto' }}
+              />
+              
+            </div>
+          </div>
+          <div className="content-block kv">
+           
+            <div className="content-block-title"> <h1> I am Boba, your real-life best friend！</h1></div>
+            <div className="content-block-body content-kv">
+              {/* {JSON.stringify(memoryKv, null, 2)} */}
+              
+            </div>
           </div>
         </div>
+      </div>
     </div>
-
-    </div>
-  </div>
-
-  
   );
 }
 

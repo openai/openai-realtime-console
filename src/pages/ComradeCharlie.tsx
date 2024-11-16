@@ -24,7 +24,8 @@ import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map.js';
 
-import './ComradeCharlie.scss';
+// import './ComradeCharlie.scss';
+import './StorytimeStacy.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
 /**
@@ -186,7 +187,7 @@ export function ComradeCharlie () {
         type: `input_text`,
         // text: `Hello!`,
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
-        text: "Hello! I am a child interested in learning about the world. Please assist me."
+        text: "Hello! Please teach me how to speak basic Chinese. I am a beginner."
       },
     ]);
 
@@ -378,7 +379,7 @@ export function ComradeCharlie () {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: instructions });
+    client.updateSession({ instructions: instructions, voice:"echo" });
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
@@ -505,13 +506,14 @@ export function ComradeCharlie () {
    * Render the application
    */
   return (
-    <div data-component="ConsolePage">
+
+    <div data-component="StorytimeStacy">
+
       <div className="content-top">
         <div className="content-title">
           <img src="/ollie.png" />
-          <span> Oliver's Magical Friends </span>
-        </div>
-        <div className="content-api-key">
+          <h1 className="rainbow-text">Oliver's Magical Friends</h1>        </div>
+        {/* <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
             <Button
               icon={Edit}
@@ -521,86 +523,67 @@ export function ComradeCharlie () {
               onClick={() => resetAPIKey()}
             />
           )}
-        </div>
+        </div> */}
       </div>
-      <div className="content-main">
-        <div className="content-logs">
-          <div className="content-block events">
-            <div className="visualization">
-              <div className="visualization-entry client">
-                <canvas ref={clientCanvasRef} />
-              </div>
-              <div className="visualization-entry server">
-                <canvas ref={serverCanvasRef} />
-              </div>
+
+      <div className="grid-container">
+
+      <div className="column column-1">
+        <div className="centre-image-container">
+          <img
+            src="/comrade_charlie.png"
+            className="centre-image"
+            alt="Comrade Charlie"
+          />
+          <div className="visualization">
+            <div className="visualization-entry client">
+              <canvas ref={clientCanvasRef} />
             </div>
-            <div className="content-block-title">events</div>
-            <div className="content-block-body" ref={eventsScrollRef}>
-              {!realtimeEvents.length && `awaiting connection...`}
-              {realtimeEvents.map((realtimeEvent, i) => {
-                const count = realtimeEvent.count;
-                const event = { ...realtimeEvent.event };
-                if (event.type === 'input_audio_buffer.append') {
-                  event.audio = `[trimmed: ${event.audio.length} bytes]`;
-                } else if (event.type === 'response.audio.delta') {
-                  event.delta = `[trimmed: ${event.delta.length} bytes]`;
-                }
-                return (
-                  <div className="event" key={event.event_id}>
-                    <div className="event-timestamp">
-                      {formatTime(realtimeEvent.time)}
-                    </div>
-                    <div className="event-details">
-                      <div
-                        className="event-summary"
-                        onClick={() => {
-                          // toggle event details
-                          const id = event.event_id;
-                          const expanded = { ...expandedEvents };
-                          if (expanded[id]) {
-                            delete expanded[id];
-                          } else {
-                            expanded[id] = true;
-                          }
-                          setExpandedEvents(expanded);
-                        }}
-                      >
-                        <div
-                          className={`event-source ${
-                            event.type === 'error'
-                              ? 'error'
-                              : realtimeEvent.source
-                          }`}
-                        >
-                          {realtimeEvent.source === 'client' ? (
-                            <ArrowUp />
-                          ) : (
-                            <ArrowDown />
-                          )}
-                          <span>
-                            {event.type === 'error'
-                              ? 'error!'
-                              : realtimeEvent.source}
-                          </span>
-                        </div>
-                        <div className="event-type">
-                          {event.type}
-                          {count && ` (${count})`}
-                        </div>
-                      </div>
-                      {!!expandedEvents[event.event_id] && (
-                        <div className="event-payload">
-                          {JSON.stringify(event, null, 2)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="visualization-entry server">
+              <canvas ref={serverCanvasRef} />
             </div>
           </div>
-          <div className="content-block conversation">
-            <div className="content-block-title">conversation</div>
+
+      </div>
+        <div className="content-actions">
+              <Toggle
+                defaultValue={false}
+                labels={['manual', 'vad']}
+                values={['none', 'server_vad']}
+                onChange={(_, value) => changeTurnEndType(value)}
+              />
+              <div className="spacer" />
+              {isConnected && canPushToTalk && (
+                <Button
+                  label={isRecording ? 'release to send' : 'push to talk'}
+                  buttonStyle={isRecording ? 'alert' : 'regular'}
+                  disabled={!isConnected || !canPushToTalk}
+                  onMouseDown={startRecording}
+                  onMouseUp={stopRecording}
+                />
+              )}
+              <div className="spacer" />
+              <Button
+                label={isConnected ? 'disconnect' : 'connect'}
+                iconPosition={isConnected ? 'end' : 'start'}
+                icon={isConnected ? X : Zap}
+                buttonStyle={isConnected ? 'regular' : 'action'}
+                onClick={
+                  isConnected ? disconnectConversation : connectConversation
+                }
+              />
+            </div>
+
+        <div className="centre-image-text"> 你好，我是查理同志。我来教你们普通话！ 
+
+        </div>
+          
+      </div>
+
+            <div className="column column-2"> {/* conversation block */}
+        <div className="content-block-title">conversation</div>
+
+      <div className="content-block conversation">
             <div className="content-block-body" data-conversation-content>
               {!items.length && `awaiting connection...`}
               {items.map((conversationItem, i) => {
@@ -663,58 +646,13 @@ export function ComradeCharlie () {
               })}
             </div>
           </div>
-          <div className="content-actions">
-            <Toggle
-              defaultValue={false}
-              labels={['manual', 'vad']}
-              values={['none', 'server_vad']}
-              onChange={(_, value) => changeTurnEndType(value)}
-            />
-            <div className="spacer" />
-            {isConnected && canPushToTalk && (
-              <Button
-                label={isRecording ? 'release to send' : 'push to talk'}
-                buttonStyle={isRecording ? 'alert' : 'regular'}
-                disabled={!isConnected || !canPushToTalk}
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-              />
-            )}
-            <div className="spacer" />
-            <Button
-              label={isConnected ? 'disconnect' : 'connect'}
-              iconPosition={isConnected ? 'end' : 'start'}
-              icon={isConnected ? X : Zap}
-              buttonStyle={isConnected ? 'regular' : 'action'}
-              onClick={
-                isConnected ? disconnectConversation : connectConversation
-              }
-            />
-          </div>
-        </div>
-        <div className="content-right">
-          <div className="content-block map">
-            <div className="content-block-title">Comrade Charlie</div>
-            <div className="content-block-body full">
-            <img
-                src="/comrade_charlie.png"
-                alt="Comrade Charlie"
-                style={{ width: '100%', height: 'auto' }}
-              />
-              
-            </div>
-          </div>
-          <div className="content-block kv">
-           
-            <div className="content-block-title"> <h1> 你好，我是查理同志。我来教你们普通话！</h1></div>
-            <div className="content-block-body content-kv">
-              {/* {JSON.stringify(memoryKv, null, 2)} */}
-              
-            </div>
-          </div>
-        </div>
       </div>
+
+            
     </div>
+
+  </div>
+      
   );
 }
 

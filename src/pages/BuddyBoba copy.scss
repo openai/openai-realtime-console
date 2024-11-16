@@ -1,7 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
-
 [data-component='ConsolePage'] {
-  font-family: 'Comic Neue', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-weight: 400;
   font-style: normal;
   font-size: 12px;
@@ -13,104 +11,6 @@
   & > div {
     flex-shrink: 0;
   }
-
-  .ollie-image {
-    width: 150px; /* Adjust the size as needed */
-    height: auto; /* Maintain the aspect ratio */
-    display: block;
-    margin-right: 20px;
-    margin-bottom: 20px;
-  }
-
-  .title-page {
-    text-align: center;
-    padding: 20px;
-  }
-  
-  .content-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .image-links {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    padding: 20px;
-    flex-wrap: wrap; /* Ensure images wrap to the next line if needed */
-  }
-  
-  .image-links img {
-    max-width: 100%; /* Ensure the image fits within the container */
-    height: auto; /* Maintain the aspect ratio */
-    width: 250px; /* Set a fixed width for the images */
-    border-radius: 40px;
-    cursor: pointer;
-    transition: transform 0.3s;
-  }
-  
-  .image-links img:hover {
-    transform: scale(1.1);
-  }
-
-  .image-container {
-    text-align: center;
-  }
-.caption {
-  font-family: 'Pacifico', cursive; /* Use the Pacifico font */
-  margin-top: 10px;
-  font-size: 2em;
-  color: #333;
-}
-
-  .rainbow-text 
-  {
-    // margin-left: 2%;
-    margin-bottom: 5%;
-    background: linear-gradient(to right, #ff6600 10%, #800000 70%, #cc0000 100%);
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-size: 3vw;
-    font-family: 'Comic Neue', sans-serif;
-    text-align: center;
-      color: #000;
-    text-align: center;
-    background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
-
-  // background: -webkit-linear-gradient(right, #ff6600 0%, #800000 25%, #cc0000 50%, yellow 100%) repeat;
-    -webkit-background-clip: text;
-    -ms-background-clip: text;
-    -moz-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -ms-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
-    text-fill-color: transparent;
-    -webkit-animation-name: shimmer;
-    -webkit-animation-duration: 50s;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: linear;
-
-}
-  // {
-  //   font-family: 'Comic Neue';
-  //   font-size: 4em; /* Adjust the size as needed */
-  //   -webkit-background-clip: text;
-  //   color: transparent;
-  //   display: inline-block;
-  //   animation: shimmer 2s linear infinite;
-  // }
-
-  @keyframes shimmer {
-    0% {
-        background-position: 0,0;
-    }
-
-    100% {
-       background-position: 8000px 3000px;
-    }
-}
 
   .spacer {
     flex-grow: 1;
@@ -383,19 +283,4 @@
       }
     }
   }
-
-  .footer {
-    background-color: rgb(205, 210, 212);
-    padding: 10px;
-    text-align: center;
-    width: 50%;       /* Shrink the footer to half the page width */
-    margin: 0 auto;   /* Center the footer */
-    p {
-      font-family: 'Open Sans', Arial, sans-serif;
-      font-size: 0.8em;
-      margin: 0;
-      line-height: 1.4;
-    }
-  }
-
 }
