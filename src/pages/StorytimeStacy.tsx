@@ -526,31 +526,43 @@ export function StorytimeStacy () {
 
       <div className="grid-container">
 
+
       <div className="column column-1">
-        <div className="row">
-          <div className="visualization-entry client">
-                  <canvas ref={clientCanvasRef} />
-                </div>
-                <div className="visualization-entry server">
-                  <canvas ref={serverCanvasRef} />
-                </div>
-        </div>
-        <div className="row">
-        <div className="push-to-talk">
-          {isConnected && canPushToTalk && (
-              <Button
-                label={isRecording ? 'release to send' : 'push to talk'}
-                buttonStyle={isRecording ? 'alert' : 'regular'}
-                disabled={!isConnected || !canPushToTalk}
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
+        <div className="centre-image-container">
+          <img
+            src="/storytime_stacy.png"
+            className="centre-image"
+            alt="Storytime Stacy"
+          />
+          <div className="visualization">
+            <div className="visualization-entry client">
+              <canvas ref={clientCanvasRef} />
+            </div>
+            <div className="visualization-entry server">
+              <canvas ref={serverCanvasRef} />
+            </div>
+          </div>
+
+      </div>
+        <div className="content-actions">
+              <Toggle
+                defaultValue={false}
+                labels={['manual', 'vad']}
+                values={['none', 'server_vad']}
+                onChange={(_, value) => changeTurnEndType(value)}
               />
-            )}
-        </div>
-        </div>
-        <div className="row">
-          <div className = "connect">
+              <div className="spacer" />
+              {isConnected && canPushToTalk && (
                 <Button
+                  label={isRecording ? 'release to send' : 'push to talk'}
+                  buttonStyle={isRecording ? 'alert' : 'regular'}
+                  disabled={!isConnected || !canPushToTalk}
+                  onMouseDown={startRecording}
+                  onMouseUp={stopRecording}
+                />
+              )}
+              <div className="spacer" />
+              <Button
                 label={isConnected ? 'disconnect' : 'connect'}
                 iconPosition={isConnected ? 'end' : 'start'}
                 icon={isConnected ? X : Zap}
@@ -558,43 +570,16 @@ export function StorytimeStacy () {
                 onClick={
                   isConnected ? disconnectConversation : connectConversation
                 }
-              /> 
+              />
             </div>
-          <div className="manual-vad">
-          <Toggle
-            defaultValue={false}
-            labels={['manual', 'vad']}
-            values={['none', 'server_vad']}
-            onChange={(_, value) => changeTurnEndType(value)}
-          />   
+
+        <div className="centre-image-text"> Hello, my name is Storytime Stacy, your friendly dino-tutor! Ask me anything about the world today. 
+
         </div>
-        {/* events block */}
-
-        
-
-        
-     
-
           
-
-         
-         
-                
-        </div>
       </div>
 
-      <div className="column column-2">
-        <div className="centre-content">
-          <img
-              src="/storytime_stacy.png"
-              className ="centre-image"
-              alt="Storytime Stacy"
-            />
-          <div className="centre-image-text"> Hello, my name is Storytime Stacy, your friendly dino-tutor! Ask me anything about the world today. </div>
-        </div>
-      </div>
-
-      <div className="column column-3"> {/* conversation block */}
+      <div className="column column-2"> {/* conversation block */}
       
       <div className="content-block conversation">
             <div className="content-block-title">conversation</div>
