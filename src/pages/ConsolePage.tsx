@@ -160,7 +160,7 @@ export function ConsolePage() {
 
   /**
    * Connect to conversation:
-   * WavRecorder taks speech input, WavStreamPlayer output, client is API client
+   * WavRecorder takes speech input, WavStreamPlayer output, client is API client
    */
   const connectConversation = useCallback(async () => {
     const client = clientRef.current;
