@@ -27,7 +27,6 @@ import { Map } from '../components/Map.js';
 import './StorytimeStacy.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
-
 /**
  * Type for result from get_weather() function call
  */
@@ -168,6 +167,18 @@ export function StorytimeStacy () {
     const wavRecorder = wavRecorderRef.current;
     const wavStreamPlayer = wavStreamPlayerRef.current;
 
+    try {
+      const response = await fetch(`${process.env.REACT_APP_DATABASE_URL}/conversations`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to get data from database: ${errorText}`);
+      }
+      const data = await response.json();
+      console.log('Data retrieved successfully:', data);
+    } catch (error) {
+      console.error('Error pushing data to the database:', error);
+    }
+
     // Set state variables
     startTimeRef.current = new Date().toISOString();
     setIsConnected(true);
@@ -202,17 +213,21 @@ export function StorytimeStacy () {
   const pushToDatabase = async (items: ItemType[]) => {
     const dateTime = new Date().toISOString(); // Get current date and time inline
     items = clientRef.current.conversation.getItems();
-    console.log(items)
-    console.log(dateTime);
-    console.log(process.env.DATABASE_URL)
+    const filteredItems = items.map(item => {
+      return {
+          role: item.role,
+          content: item.formatted.transcript || item.formatted.text
+      };
+  });
+    const summary = "hello this is a summary"
     try {
-      const response = await fetch(`${process.env.DATABASE_URL}/push`, {
+      const response = await fetch(`${process.env.REACT_APP_DATABASE_URL}/conversations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.RENDER_API_KEY}`, // Optional: Use if your backend requires authentication
+          // Authorization: `Bearer ${process.env.REACT_APP_RENDER_API_KEY}`, // Optional: Use if your backend requires authentication
         },
-        body: JSON.stringify({ dateTime, items }),
+        body: JSON.stringify({items : filteredItems, summary }),
       });
   
       if (!response.ok) {
