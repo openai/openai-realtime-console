@@ -1,1 +1,0 @@
-export { KidsPage } from './KidsPage';
