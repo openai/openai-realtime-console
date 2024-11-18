@@ -199,8 +199,8 @@ export function ConsolePage() {
    */
   const disconnectConversation = useCallback(async () => {
     setIsConnected(false);
-    setRealtimeEvents([]);
-    setItems([]);
+    //setRealtimeEvents([]);
+    //setItems([]);
     setMemoryKv({});
 
     const client = clientRef.current;
@@ -590,7 +590,7 @@ export function ConsolePage() {
       >
         <HamburgerMenuIcon />
       </IconButton>
-      <div className={`fixed top-0 left-0 h-full bg-gray-200 transition-transform duration-300 ease-in-out w-[300px] ${showSettings ? 'transform translate-x-0' : 'transform -translate-x-full'
+      <div className={`fixed top-0 bottom-0 left-0 max-h-screen !overflow-scroll h-full bg-gray-200 transition-transform duration-300 ease-in-out w-[300px] ${showSettings ? 'transform translate-x-0' : 'transform -translate-x-full'
         }`}
       >
         <IconButton
@@ -604,7 +604,7 @@ export function ConsolePage() {
 
         <div className="content-main pt-4">
 
-          <div className="content-logs">
+          <div className="content-logs !overflow-scroll">
 
             {
               // api key
@@ -620,7 +620,7 @@ export function ConsolePage() {
             {
               // events
             }
-            <div className="content-block events">
+            <div className="content-block events !overflow-scroll">
               {/* <div className="visualization">
               <div className="visualization-entry client">
                 <canvas ref={clientCanvasRef} />
@@ -696,7 +696,7 @@ export function ConsolePage() {
             {
               // conversations
             }
-            <div className="content-block conversation">
+            <div className="content-block conversation !overflow-scroll">
               <div className="content-block-title">conversation</div>
               <div className="content-block-body" data-conversation-content>
                 {!items.length && `awaiting connection...`}

@@ -29,7 +29,7 @@ const SoundVisualization = ({ wavStreamPlayer, isActive = false }: { wavStreamPl
 
     const updateFrequencyData = () => {
       if (!wavStreamPlayer || !isActive){
-        resetFrequencies
+        resetFrequencies()
         return; // Guard clause
       }
       try {
@@ -63,6 +63,9 @@ const SoundVisualization = ({ wavStreamPlayer, isActive = false }: { wavStreamPl
       setLowFreq(lowFreq);
       setMidFreq(midFreq);
       setHighFreq(highFreq);
+    }
+    else {
+      resetFrequencies();
     }
   }, [frequencyData]);
 

@@ -14,6 +14,7 @@ interface ICloudAppProps {
   seed4?: number;
 }
 
+// https://codesandbox.io/p/sandbox/gwthnh?file=%2Fsrc%2FApp.js%3A1%2C1-78%2C1
 export default function CloudApp({ seed1 = 0, seed2 = 0, seed3 = 0, seed4 = 0 }: ICloudAppProps) {
   const shake = useRef<any>(null)
 
@@ -21,22 +22,24 @@ export default function CloudApp({ seed1 = 0, seed2 = 0, seed3 = 0, seed4 = 0 }:
     <Canvas>
       <DynamicAmbientLight 
           seed={seed1} 
-          intensity={Math.PI / 2} 
+          intensity={Math.PI / 3} 
           
           />
 
 
       <PerspectiveCamera makeDefault position={[0, -4, 18]} fov={90} onUpdate={(self) => self.lookAt(0, 0, 0)}>
-        <spotLight position={[0, 40, 2]} angle={0.5} decay={1} distance={45} penumbra={1} intensity={2000} />
+        <DynamicSpotLight 
+          saturationMultiplier={seed3*2}
+          color="#C0E500" position={[0, 40, 2]} angle={0.5} decay={1} distance={45} penumbra={1} intensity={2000} />
         <DynamicSpotLight
-          seed={seed2}
+          intensityMultiplier={seed2*2}
           position={[-19, 0, -8]}
           color="#ff00d6"
           angle={0.25}
           decay={0.75}
           distance={185}
           penumbra={-1}
-          intensity={600} // Initial intensity
+          intensity={300} // Initial intensity
         /> {/* Move spotlight into a separate component */}
 
       </PerspectiveCamera>
@@ -118,30 +121,42 @@ function Puffycloud({ seed, vec = new THREE.Vector3(), seed1 = 0, ...props }: Pu
   )
 }
 
-function DynamicSpotLight({ seed, ...props }: { seed: number, [key: string]: any }) {
+function DynamicSpotLight({intensityMultiplier=0, saturationMultiplier=1, color, intensity, ...props }: { intensityMultiplier?: number, saturationMultiplier?: number, color: string,
+   intensity:number, [key: string]: any }) {
   const lightRef = useRef<any>(null);
 
   useFrame(() => {
     if (lightRef.current) {
-      lightRef.current.intensity = lightRef.current.intensity * (1 + seed); // Dynamically update intensity
+      // Dynamically adjust the intensity
+      lightRef.current.intensity = intensity * (1 + intensityMultiplier);
+
+      // Adjust the color saturation
+      const baseColor = new THREE.Color(color);
+      const { h, s, l } = baseColor.getHSL({ h: 0, s: 0, l: 0 });
+      const adjustedSaturation = THREE.MathUtils.clamp(s * saturationMultiplier, 0, 1); // Clamp between 0 and 1
+      baseColor.setHSL(h, adjustedSaturation, l); // Set adjusted saturation
+      lightRef.current.color = baseColor;
     }
   });
 
   return (
     <spotLight
       ref={lightRef}
+      color={color}
       {...props}
 
     />
   );
 }
 
-function DynamicAmbientLight({ seed, ...props }: { seed: number, [key: string]: any }) {
+function DynamicAmbientLight({ seed, intensity, ...props }: { seed: number, intensity:number, [key: string]: any }) {
   const lightRef = useRef<any>(null);
 
+  
+
   useFrame(() => {
-    if (lightRef.current) {
-      lightRef.current.intensity = lightRef.current.intensity + seed/3; // Dynamically update intensity
+    if (lightRef.current && seed >0) {
+      lightRef.current.intensity = intensity * (1 - seed/2); // Dynamically update intensity
     }
   });
 
