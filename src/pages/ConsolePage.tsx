@@ -31,6 +31,7 @@ import { Cross2Icon, HamburgerMenuIcon, Pencil2Icon, SwitchIcon } from '@radix-u
 import { Button, IconButton } from '@radix-ui/themes';
 import { is } from '@react-three/fiber/dist/declarations/src/core/utils.js';
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
+import CloudApp from '../components/viz/Cloud.js';
 
 /**
  * Type for all event logs
@@ -572,6 +573,7 @@ export function ConsolePage() {
         <div 
         className='fixed inset-0 bg-black'
         >
+          <CloudApp />
         {isPlayerReady && (
           
             <SoundVisualizationCanvas wavStreamPlayer={wavStreamPlayerRef.current} />
