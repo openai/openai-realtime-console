@@ -22,12 +22,11 @@ import { WavRenderer } from '../utils/wav_renderer';
 import { X, ArrowUp, ArrowDown, Power } from 'react-feather';
 
 import './ConsolePage.scss';
-import SoundVisualizationCanvas from '../components/viz/SoundVisualization';
+import SoundVisualization from '../components/viz/SoundVisualization';
 import { Cross2Icon, HamburgerMenuIcon, Pencil2Icon, SwitchIcon } from '@radix-ui/react-icons';
 import { Button, IconButton } from '@radix-ui/themes';
 import { is } from '@react-three/fiber/dist/declarations/src/core/utils.js';
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
-import CloudApp from '../components/viz/Cloud';
 
 /**
  * Type for all event logs
@@ -569,12 +568,15 @@ export function ConsolePage() {
         <div 
         className='fixed inset-0 bg-black'
         >
-          <CloudApp />
-        {isPlayerReady && (
+          {/* <CloudApp /> */}
+        {/* {isPlayerReady && ( */}
           
-            <SoundVisualizationCanvas wavStreamPlayer={wavStreamPlayerRef.current} />
+            <SoundVisualization 
+              wavStreamPlayer={wavStreamPlayerRef.current} 
+              isActive={isPlayerReady}
+              />
           
-        )}
+        {/* )} */}
         </div>
       </div>
       {

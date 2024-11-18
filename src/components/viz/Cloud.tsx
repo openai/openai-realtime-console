@@ -7,34 +7,60 @@ import { random } from "maath"
 
 const context = createContext<MutableRefObject<any> | null>(null)
 
-export default function CloudApp() {
+interface ICloudAppProps {
+  seed1?: number;
+  seed2?: number;
+  seed3?: number;
+  seed4?: number;
+}
+
+export default function CloudApp({ seed1 = 0, seed2 = 0, seed3 = 0, seed4 = 0 }: ICloudAppProps) {
   const shake = useRef<any>(null)
+
   return (
     <Canvas>
-      <ambientLight intensity={Math.PI / 2} />
+      <DynamicAmbientLight 
+          seed={seed1} 
+          intensity={Math.PI / 2} 
+          
+          />
+
+
       <PerspectiveCamera makeDefault position={[0, -4, 18]} fov={90} onUpdate={(self) => self.lookAt(0, 0, 0)}>
         <spotLight position={[0, 40, 2]} angle={0.5} decay={1} distance={45} penumbra={1} intensity={2000} />
-        <spotLight position={[-19, 0, -8]} color="red" angle={0.25} decay={0.75} distance={185} penumbra={-1} intensity={400} />
+        <DynamicSpotLight
+          seed={seed2}
+          position={[-19, 0, -8]}
+          color="#ff00d6"
+          angle={0.25}
+          decay={0.75}
+          distance={185}
+          penumbra={-1}
+          intensity={600} // Initial intensity
+        /> {/* Move spotlight into a separate component */}
+
       </PerspectiveCamera>
+
       <context.Provider value={shake}>
-        <CameraShake ref={shake} decay decayRate={0.95} maxYaw={0.05} maxPitch={0.01} yawFrequency={4} pitchFrequency={2} rollFrequency={2} intensity={0} />
+        {/* <CameraShake ref={shake} decay decayRate={0.95} maxYaw={0.05} maxPitch={0.01} yawFrequency={4} pitchFrequency={2} rollFrequency={2} intensity={0} /> */}
         <Clouds limit={400} material={THREE.MeshLambertMaterial}>
           <Physics gravity={[0, 0, 0]}>
-            <Pointer />
-            <Puffycloud seed={10} position={[50, 0, 0]} />
-            <Puffycloud seed={20} position={[0, 50, 0]} />
+            {/* <Pointer /> */}
+            <Puffycloud seed1={seed1} seed={10} position={[0, 0, 0]} />
+            {/* <Puffycloud seed={20} position={[0, 50, 0]} />
             <Puffycloud seed={30} position={[50, 0, 50]} />
-            <Puffycloud seed={40} position={[0, 0, -50]} />
-            <CuboidCollider position={[0, -15, 0]} args={[400, 10, 400]} />
+            <Puffycloud seed={40} position={[0, 0, -50]} /> */}
+            {/* <CuboidCollider position={[0, -15, 0]} args={[400, 10, 400]} /> */}
           </Physics>
         </Clouds>
       </context.Provider>
+
       <mesh scale={200}>
         <sphereGeometry />
         <meshStandardMaterial color="#999" roughness={0.7} side={THREE.BackSide} />
       </mesh>
-      <ContactShadows opacity={0.25} color="black" position={[0, -10, 0]} scale={50} blur={2.5} far={40} />
-      <OrbitControls makeDefault autoRotate enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 1.7} maxPolarAngle={Math.PI / 1.7} />
+      {/* <ContactShadows opacity={0.25} color="black" position={[0, -10, 0]} scale={50} blur={2.5} far={40} /> */}
+      {/* <OrbitControls makeDefault autoRotate enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 1.7} maxPolarAngle={Math.PI / 1.7} /> */}
       <Environment files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/blue_lagoon_night_1k.hdr" />
     </Canvas>
   )
@@ -43,47 +69,106 @@ export default function CloudApp() {
 interface PuffycloudProps {
   seed: number
   vec?: THREE.Vector3
+  seed1?: number
   [key: string]: any
 }
 
-function Puffycloud({ seed, vec = new THREE.Vector3(), ...props }: PuffycloudProps) {
-  const api = useRef<any>(null)
+function Puffycloud({ seed, vec = new THREE.Vector3(), seed1 = 0, ...props }: PuffycloudProps) {
+
   const light = useRef<any>(null)
   const rig = useContext(context)
-  const [flash] = useState(() => new random.FlashGen({ count: 10, minDuration: 40, maxDuration: 200 }))
-  const contact = (payload: any) => payload.other.rigidBodyObject.userData?.cloud && payload.totalForceMagnitude / 1000 > 100 && flash.burst()
-  useFrame((state, delta) => {
-    const impulse = flash.update(state.clock.elapsedTime, delta)
-    light.current.intensity = impulse * 15000
-    if (impulse === 1) rig?.current?.setIntensity(1)
-    api.current?.applyImpulse(vec.copy(api.current.translation()).negate().multiplyScalar(10))
-  })
+  const cloudRef = useRef<any>(null);
+  const cloudRef2 = useRef<any>(null);
+
+  useFrame(() => {
+    if (cloudRef.current && cloudRef2.current) {
+      const targetScale = 0.5 + seed1;
+      cloudRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+      cloudRef2.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+    }
+  });
+
   return (
-    <RigidBody ref={api} userData={{ cloud: true }} onContactForce={contact} linearDamping={4} angularDamping={1} friction={0.1} {...props} colliders={false}>
+    <RigidBody userData={{ cloud: true }} linearDamping={4} angularDamping={1} friction={0.1} {...props} colliders={false}>
       <BallCollider args={[4]} />
-      <Cloud seed={seed} fade={30} speed={0.1} growth={4} segments={40} volume={6} opacity={0.6} bounds={[4, 3, 1]} />
-      <Cloud seed={seed + 1} fade={30} position={[0, 1, 0]} speed={0.5} growth={4} volume={10} opacity={1} bounds={[6, 2, 1]} />
-      <pointLight position={[0, 0, 0.5]} ref={light} color="blue" />
+      <Cloud
+        segments={40}
+        seed={seed}
+        fade={30}
+        speed={0.1}
+        growth={16}
+        volume={12}
+        opacity={0.6}
+        bounds={[8, 6, 2]}
+        ref={cloudRef}
+      />
+      <Cloud
+        position={[0, 1, 0]}
+        seed={seed + 1}
+        fade={30}
+        speed={0.5}
+        growth={16}
+        volume={20}
+        opacity={1}
+        bounds={[12, 4, 2]}
+        ref={cloudRef2}
+      />
+      <pointLight position={[0, 0, 0]} ref={light} color="blue" />
     </RigidBody>
   )
 }
 
-interface PointerProps {
-  vec?: THREE.Vector3
-  dir?: THREE.Vector3
+function DynamicSpotLight({ seed, ...props }: { seed: number, [key: string]: any }) {
+  const lightRef = useRef<any>(null);
+
+  useFrame(() => {
+    if (lightRef.current) {
+      lightRef.current.intensity = lightRef.current.intensity * (1 + seed); // Dynamically update intensity
+    }
+  });
+
+  return (
+    <spotLight
+      ref={lightRef}
+      {...props}
+
+    />
+  );
 }
 
-function Pointer({ vec = new THREE.Vector3(), dir = new THREE.Vector3() }: PointerProps) {
-  const ref = useRef<any>(null)
-  useFrame(({ pointer, viewport, camera }) => {
-    vec.set(pointer.x, pointer.y, 0.5).unproject(camera)
-    dir.copy(vec).sub(camera.position).normalize()
-    vec.add(dir.multiplyScalar(camera.position.length()))
-    ref.current?.setNextKinematicTranslation(vec)
-  })
+function DynamicAmbientLight({ seed, ...props }: { seed: number, [key: string]: any }) {
+  const lightRef = useRef<any>(null);
+
+  useFrame(() => {
+    if (lightRef.current) {
+      lightRef.current.intensity = lightRef.current.intensity + seed/3; // Dynamically update intensity
+    }
+  });
+
   return (
-    <RigidBody userData={{ cloud: true }} type="kinematicPosition" colliders={false} ref={ref}>
-      <BallCollider args={[4]} />
-    </RigidBody>
-  )
+    <ambientLight
+      ref={lightRef}
+      {...props}
+    />
+  );
 }
+
+// interface PointerProps {
+//   vec?: THREE.Vector3
+//   dir?: THREE.Vector3
+// }
+
+// function Pointer({ vec = new THREE.Vector3(), dir = new THREE.Vector3() }: PointerProps) {
+//   const ref = useRef<any>(null)
+//   useFrame(({ pointer, viewport, camera }) => {
+//     vec.set(pointer.x, pointer.y, 0.5).unproject(camera)
+//     dir.copy(vec).sub(camera.position).normalize()
+//     vec.add(dir.multiplyScalar(camera.position.length()))
+//     ref.current?.setNextKinematicTranslation(vec)
+//   })
+//   return (
+//     <RigidBody userData={{ cloud: true }} type="kinematicPosition" colliders={false} ref={ref}>
+//       <BallCollider args={[4]} />
+//     </RigidBody>
+//   )
+// }
