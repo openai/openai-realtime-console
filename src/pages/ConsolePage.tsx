@@ -19,19 +19,15 @@ import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
 import { instructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
-import { X, Edit, Zap, ArrowUp, ArrowDown, Power } from 'react-feather';
-import { CustomButton } from '../components/button/Button';
-import { Toggle } from '../components/toggle/Toggle';
-import { Map } from '../components/Map';
+import { X, ArrowUp, ArrowDown, Power } from 'react-feather';
 
 import './ConsolePage.scss';
-import { isJsxOpeningLikeElement } from 'typescript';
 import SoundVisualizationCanvas from '../components/viz/SoundVisualization';
 import { Cross2Icon, HamburgerMenuIcon, Pencil2Icon, SwitchIcon } from '@radix-ui/react-icons';
 import { Button, IconButton } from '@radix-ui/themes';
 import { is } from '@react-three/fiber/dist/declarations/src/core/utils.js';
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
-import CloudApp from '../components/viz/Cloud.js';
+import CloudApp from '../components/viz/Cloud';
 
 /**
  * Type for all event logs

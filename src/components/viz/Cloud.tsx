@@ -1,14 +1,14 @@
 import * as THREE from "three"
-import { createContext, useContext, useRef, useState } from "react"
+import { createContext, useContext, useRef, useState, MutableRefObject } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Clouds, Cloud, CameraShake, Environment, OrbitControls, ContactShadows, PerspectiveCamera } from "@react-three/drei"
 import { CuboidCollider, BallCollider, Physics, RigidBody } from "@react-three/rapier"
 import { random } from "maath"
 
-const context = createContext(null)
+const context = createContext<MutableRefObject<any> | null>(null)
 
 export default function CloudApp() {
-  const shake = useRef()
+  const shake = useRef<any>(null)
   return (
     <Canvas>
       <ambientLight intensity={Math.PI / 2} />
@@ -40,12 +40,18 @@ export default function CloudApp() {
   )
 }
 
-function Puffycloud({ seed, vec = new THREE.Vector3(), ...props }) {
-  const api = useRef()
-  const light = useRef()
+interface PuffycloudProps {
+  seed: number
+  vec?: THREE.Vector3
+  [key: string]: any
+}
+
+function Puffycloud({ seed, vec = new THREE.Vector3(), ...props }: PuffycloudProps) {
+  const api = useRef<any>(null)
+  const light = useRef<any>(null)
   const rig = useContext(context)
   const [flash] = useState(() => new random.FlashGen({ count: 10, minDuration: 40, maxDuration: 200 }))
-  const contact = (payload) => payload.other.rigidBodyObject.userData?.cloud && payload.totalForceMagnitude / 1000 > 100 && flash.burst()
+  const contact = (payload: any) => payload.other.rigidBodyObject.userData?.cloud && payload.totalForceMagnitude / 1000 > 100 && flash.burst()
   useFrame((state, delta) => {
     const impulse = flash.update(state.clock.elapsedTime, delta)
     light.current.intensity = impulse * 15000
@@ -62,8 +68,13 @@ function Puffycloud({ seed, vec = new THREE.Vector3(), ...props }) {
   )
 }
 
-function Pointer({ vec = new THREE.Vector3(), dir = new THREE.Vector3() }) {
-  const ref = useRef()
+interface PointerProps {
+  vec?: THREE.Vector3
+  dir?: THREE.Vector3
+}
+
+function Pointer({ vec = new THREE.Vector3(), dir = new THREE.Vector3() }: PointerProps) {
+  const ref = useRef<any>(null)
   useFrame(({ pointer, viewport, camera }) => {
     vec.set(pointer.x, pointer.y, 0.5).unproject(camera)
     dir.copy(vec).sub(camera.position).normalize()
