@@ -26,6 +26,7 @@ import { Map } from '../components/Map';
 
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
+import SoundVisualizationCanvas from '../components/viz/SoundVisualization';
 
 /**
  * Type for result from get_weather() function call
@@ -62,11 +63,13 @@ export function ConsolePage() {
   const apiKey = LOCAL_RELAY_SERVER_URL
     ? ''
     : localStorage.getItem('tmp::voice_api_key') ||
-      prompt('OpenAI API Key') ||
-      '';
+    prompt('OpenAI API Key') ||
+    '';
   if (apiKey !== '') {
     localStorage.setItem('tmp::voice_api_key', apiKey);
   }
+
+
 
   /**
    * Instantiate:
@@ -85,9 +88,9 @@ export function ConsolePage() {
       LOCAL_RELAY_SERVER_URL
         ? { url: LOCAL_RELAY_SERVER_URL }
         : {
-            apiKey: apiKey,
-            dangerouslyAllowAPIKeyInBrowser: true,
-          }
+          apiKey: apiKey,
+          dangerouslyAllowAPIKeyInBrowser: true,
+        }
     )
   );
 
@@ -158,34 +161,34 @@ export function ConsolePage() {
     }
   }, []);
 
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
+
   /**
    * Connect to conversation:
    * WavRecorder taks speech input, WavStreamPlayer output, client is API client
    */
   const connectConversation = useCallback(async () => {
-    const client = clientRef.current;
     const wavRecorder = wavRecorderRef.current;
     const wavStreamPlayer = wavStreamPlayerRef.current;
+    const client = clientRef.current;
 
-    // Set state variables
-    startTimeRef.current = new Date().toISOString();
+    // Reset state variables
+    setIsPlayerReady(false);
     setIsConnected(true);
+    startTimeRef.current = new Date().toISOString();
     setRealtimeEvents([]);
     setItems(client.conversation.getItems());
 
-    // Connect to microphone
+    // Connect components
     await wavRecorder.begin();
-
-    // Connect to audio output
-    await wavStreamPlayer.connect();
-
-    // Connect to realtime API
+    await wavStreamPlayer.connect(); // Ensure this completes before visualization uses it
+    setIsPlayerReady(true); // Set the state to signal readiness
     await client.connect();
+
     client.sendUserMessageContent([
       {
         type: `input_text`,
         text: `Hello!`,
-        // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
       },
     ]);
 
@@ -532,6 +535,11 @@ export function ConsolePage() {
               <div className="visualization-entry server">
                 <canvas ref={serverCanvasRef} />
               </div>
+              {isPlayerReady && (
+                <div className="fixed inset-0 bg-black">
+                  <SoundVisualizationCanvas wavStreamPlayer={wavStreamPlayerRef.current} />
+                </div>
+              )}
             </div>
             <div className="content-block-title">events</div>
             <div className="content-block-body" ref={eventsScrollRef}>
@@ -565,11 +573,10 @@ export function ConsolePage() {
                         }}
                       >
                         <div
-                          className={`event-source ${
-                            event.type === 'error'
-                              ? 'error'
-                              : realtimeEvent.source
-                          }`}
+                          className={`event-source ${event.type === 'error'
+                            ? 'error'
+                            : realtimeEvent.source
+                            }`}
                         >
                           {realtimeEvent.source === 'client' ? (
                             <ArrowUp />
@@ -639,7 +646,7 @@ export function ConsolePage() {
                               (conversationItem.formatted.audio?.length
                                 ? '(awaiting transcript)'
                                 : conversationItem.formatted.text ||
-                                  '(item sent)')}
+                                '(item sent)')}
                           </div>
                         )}
                       {!conversationItem.formatted.tool &&
@@ -726,6 +733,9 @@ export function ConsolePage() {
           </div>
         </div>
       </div>
+
+
+
     </div>
   );
 }
