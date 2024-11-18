@@ -1,6 +1,6 @@
 import React from 'react';
 import './Button.scss';
-
+import { Button as RadixButton }  from '@radix-ui/themes'
 import { Icon } from 'react-feather';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -12,7 +12,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   buttonStyle?: 'regular' | 'action' | 'alert' | 'flush';
 }
 
-export function Button({
+export function CustomButton({
   label = 'Okay',
   icon = void 0,
   iconPosition = 'start',

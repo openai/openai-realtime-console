@@ -5,6 +5,9 @@
   "private": true,
   "dependencies": {
     "@openai/realtime-api-beta": "github:openai/openai-realtime-api-beta",
+    "@radix-ui/react-icons": "^1.3.2",
+    "@radix-ui/react-toggle-group": "^1.1.0",
+    "@radix-ui/themes": "^3.1.6",
     "@react-three/fiber": "^8.17.10",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
