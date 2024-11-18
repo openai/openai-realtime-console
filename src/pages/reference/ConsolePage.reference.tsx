@@ -61,6 +61,9 @@ const DeviceSelector: React.FC<DeviceSelectorProps> = ({
   );
 };
 
+// Update the VoiceOption type to match what's currently accepted by the client
+type VoiceOption = 'alloy' | 'echo' | 'shimmer';
+
 export default function ConsolePage() {
   const [isConnected, setIsConnected] = useState(false);
   const [isVADMode, setIsVADMode] = useState(false);
@@ -75,6 +78,8 @@ export default function ConsolePage() {
     localStorage.getItem('tmp::voice_api_key') || ''
   );
   const [currentResponse, setCurrentResponse] = useState<string>('');
+  const [debugMode, setDebugMode] = useState(false);
+  const [streamingText, setStreamingText] = useState<string>('');
 
   const LOCAL_RELAY_SERVER_URL = process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
@@ -103,20 +108,40 @@ export default function ConsolePage() {
   const [isAudioInitialized, setIsAudioInitialized] = useState(false);
   const initializingRef = useRef<boolean>(false);
 
+  // Fix the analyzer ref type to match the Character prop type
+  const analyzerRef = useRef<AnalyserNode | undefined>(undefined);
+
+  // Add this state to track if we're in a response turn
+  const [isResponseTurn, setIsResponseTurn] = useState(false);
+
+  // Add this state to track audio playback
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+  // Add state for current voice
+  const [currentVoice, setCurrentVoice] = useState<VoiceOption>('alloy');
+
   const initializeAudio = async () => {
     try {
-      // Create AudioContext only if it doesn't exist
       if (!audioContextRef.current) {
         audioContextRef.current = new AudioContext({ sampleRate: 24000 });
         await audioContextRef.current.resume();
       }
 
-      // Initialize WavStreamPlayer with AudioContext
       wavStreamPlayerRef.current = new WavStreamPlayer({ 
         sampleRate: 24000 
       });
 
       await wavStreamPlayerRef.current.connect();
+      
+      // Configure analyzer for better sensitivity
+      if (wavStreamPlayerRef.current.analyser) {
+        wavStreamPlayerRef.current.analyser.fftSize = 2048; // Smaller FFT size for faster updates
+        wavStreamPlayerRef.current.analyser.smoothingTimeConstant = 0.8; // Increase smoothing
+        wavStreamPlayerRef.current.analyser.minDecibels = -90;
+        wavStreamPlayerRef.current.analyser.maxDecibels = -10;
+        analyzerRef.current = wavStreamPlayerRef.current.analyser;
+      }
+      
       setIsAudioInitialized(true);
     } catch (error) {
       console.error('Failed to initialize audio:', error);
@@ -150,47 +175,42 @@ export default function ConsolePage() {
 
           // Handle audio playback
           if (delta?.audio) {
+            setIsAudioPlaying(true);  // Set when audio starts
             setIsAISpeaking(true);
-            await wavStreamPlayerRef.current?.add16BitPCM(delta.audio, item.id);
+            setIsResponseTurn(true);
+            try {
+              await wavStreamPlayerRef.current?.add16BitPCM(delta.audio, item.id);
+            } catch (error) {
+              console.error('Audio playback error:', error);
+              setIsAudioPlaying(false);
+            }
           }
 
-          // Handle assistant messages
+          // Handle assistant messages and streaming text
           if (item?.role === 'assistant') {
-            // Handle streaming transcript from delta
             if (delta?.transcript) {
-              setCurrentResponse(prev => prev + delta.transcript);
-              console.log('Adding delta transcript:', delta.transcript);
-            }
-            // Handle streaming transcript from formatted
-            else if (item.formatted?.transcript && item.status === 'in_progress') {
-              // Only update if the new transcript is longer
-              setCurrentResponse(prev => 
-                item.formatted.transcript.length > prev.length ? item.formatted.transcript : prev
-              );
-              console.log('Setting formatted transcript:', item.formatted.transcript);
+              setCurrentResponse(prev => {
+                const newText = prev + delta.transcript;
+                console.log('Streaming text update:', newText);
+                return newText;
+              });
             }
           }
 
           // Handle turn end
           if (delta?.turn_end || item.status === 'completed') {
-            console.log('Turn ended, final message:', currentResponse);
-            // Store the final message
-            const finalMessage = currentResponse || item.formatted?.transcript || item.formatted?.text;
-            if (finalMessage) {
-              setCurrentMessage(finalMessage);
-              // Keep the message visible for a moment before clearing
-              setTimeout(() => {
-                setCurrentResponse('');
-                setIsAISpeaking(false);
-              }, 1000); // 1 second delay
+            console.log('Turn ended');
+            if (currentResponse) {
+              setCurrentMessage(currentResponse);
             }
+            // Don't reset isAudioPlaying here - let the audio finish playing first
+            setIsResponseTurn(false);
+            setIsAISpeaking(false);
           }
 
-          // Only clear responses when explicitly starting a new user turn
-          if (item?.role === 'user' && delta?.transcript && delta.transcript.trim() !== '') {
-            console.log('New user turn, clearing responses');
-            setCurrentResponse('');
-            setCurrentMessage('');
+          // Update conversation items
+          if (clientRef.current) {
+            setItems(clientRef.current.conversation.getItems());
           }
         });
 
@@ -205,6 +225,11 @@ export default function ConsolePage() {
         
         await clientRef.current.updateSession({
           turn_detection: null
+        });
+
+        // Set initial voice (corrected)
+        await clientRef.current.updateSession({
+          voice: currentVoice  // Changed from audio_output.voice to just voice
         });
       }
 
@@ -308,6 +333,50 @@ export default function ConsolePage() {
     }
   };
 
+  // Add these new handlers for press-and-hold functionality
+  const handleMicStart = async () => {
+    try {
+      if (!clientRef.current?.isConnected()) {
+        throw new Error('Client not connected');
+      }
+
+      // Clear previous responses when starting new recording
+      setCurrentResponse('');
+      setCurrentMessage('');
+      setIsAISpeaking(false);
+
+      if (wavRecorderRef.current?.getStatus() !== 'ended') {
+        await wavRecorderRef.current?.end();
+      }
+      
+      await wavRecorderRef.current?.begin();
+      setMicStatus('listening');
+      
+      await wavRecorderRef.current?.record((audioData: { mono: Int16Array }) => {
+        if (clientRef.current?.isConnected()) {
+          clientRef.current?.appendInputAudio(audioData.mono);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      setMicStatus('inactive');
+    }
+  };
+
+  const handleMicStop = async () => {
+    try {
+      // Only try to end recording if we're actually recording
+      if (wavRecorderRef.current?.getStatus() === 'recording') {
+        await wavRecorderRef.current?.end();
+        clientRef.current?.createResponse();
+      }
+      setMicStatus('inactive');
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      setMicStatus('inactive');
+    }
+  };
+
   const changeTurnEndType = async (isVADMode: boolean) => {
     if (!clientRef.current || !wavRecorderRef.current) return;
 
@@ -324,6 +393,12 @@ export default function ConsolePage() {
       setIsVADMode(isVADMode);
       
       if (isVADMode) {
+        // Reset states when entering VAD mode
+        setCurrentResponse('');
+        setCurrentMessage('');
+        setIsAISpeaking(false);
+        setIsResponseTurn(false);
+
         // Enable VAD mode in client first
         await client.updateSession({
           turn_detection: { type: 'server_vad' }
@@ -347,6 +422,10 @@ export default function ConsolePage() {
           }
         }
       } else {
+        // Clean up states when disabling VAD
+        setIsAISpeaking(false);
+        setIsResponseTurn(false);
+        
         // Disable VAD mode
         await client.updateSession({
           turn_detection: null
@@ -443,9 +522,56 @@ export default function ConsolePage() {
     }
   };
 
+  // Add this effect to check for audio completion
+  useEffect(() => {
+    const checkAudioCompletion = async () => {
+      if (!isAudioPlaying || !wavStreamPlayerRef.current) return;
+
+      const offset = await wavStreamPlayerRef.current.getTrackSampleOffset();
+      if (!offset || !offset.trackId) {
+        setIsAudioPlaying(false);
+      } else {
+        setTimeout(checkAudioCompletion, 300);
+      }
+    };
+
+    if (isAudioPlaying) {
+      checkAudioCompletion();
+    }
+  }, [isAudioPlaying]);
+
+  // Add voice selection handler
+  const handleVoiceChange = async (voice: VoiceOption) => {
+    if (!clientRef.current?.isConnected()) {
+      console.error('Client not connected');
+      return;
+    }
+
+    try {
+      await clientRef.current.updateSession({
+        voice  // Changed from audio_output.voice to just voice
+      });
+      setCurrentVoice(voice);
+    } catch (error) {
+      console.error('Failed to change voice:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 p-4">
       <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-screen py-8">
+        <div className="mb-4 z-50">
+          <select
+            value={currentVoice}
+            onChange={(e) => handleVoiceChange(e.target.value as VoiceOption)}
+            disabled={!isConnected}
+            className="px-3 py-2 bg-white rounded-lg shadow-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          >
+            <option value="alloy">Alloy - Default voice</option>
+            <option value="echo">Echo - Warm and rounded</option>
+            <option value="shimmer">Shimmer - Clear and bright</option>
+          </select>
+        </div>
         <div className="mb-4 z-50">
           <DeviceSelector
             devices={audioDevices}
@@ -457,7 +583,7 @@ export default function ConsolePage() {
         </div>
         <Character 
           isListening={micStatus === 'listening'}
-          isSpeaking={isAISpeaking}
+          isSpeaking={isAudioPlaying}
           isConnected={isConnected}
           message={currentMessage}
           currentResponse={currentResponse}
@@ -465,6 +591,9 @@ export default function ConsolePage() {
           isVADMode={isVADMode}
           onVADToggle={handleVADToggle}
           disableMic={isVADMode}
+          onMicStart={handleMicStart}
+          onMicStop={handleMicStop}
+          audioAnalyzer={analyzerRef.current}
         />
         <button
           onClick={isConnected ? handleDisconnect : handleConnect}
@@ -480,8 +609,7 @@ export default function ConsolePage() {
             }
             shadow-lg hover:shadow-xl
             transform hover:scale-105
-            disabled:opacity-50 disabled:cursor-not-allowed
-          `}
+            disabled:opacity-50 disabled:cursor-not          `}
           disabled={false}
         >
           <div className={`

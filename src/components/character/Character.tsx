@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Mic } from 'lucide-react';
 import { isDev } from '../../utils/dev';
 
@@ -12,7 +12,17 @@ interface CharacterProps {
   onVADToggle: () => Promise<void>;
   disableMic: boolean;
   currentResponse: string;
+  onMicStart: () => Promise<void>;
+  onMicStop: () => Promise<void>;
+  audioAnalyzer?: AnalyserNode;
 }
+
+// Add this helper function at the component level
+const getMicButtonText = (isConnected: boolean, isListening: boolean) => {
+  if (!isConnected) return "Connect to start!";
+  if (isListening) return "Release to Send!";
+  return "Press & Hold to Speak!";
+};
 
 export const Character: React.FC<CharacterProps> = ({
   isListening,
@@ -23,8 +33,54 @@ export const Character: React.FC<CharacterProps> = ({
   isVADMode,
   onVADToggle,
   disableMic,
-  currentResponse
+  currentResponse,
+  onMicStart,
+  onMicStop,
+  audioAnalyzer,
 }) => {
+  const [isActuallySpeaking, setIsActuallySpeaking] = useState(false);
+  const animationFrameRef = useRef<number>();
+  const lastAudioActivityRef = useRef<number>(0);
+  const AUDIO_SILENCE_THRESHOLD = 0.5;
+  const AUDIO_SILENCE_DURATION = 2000; // Increased from previous value
+
+  useEffect(() => {
+    // If not speaking at all, reset everything
+    if (!isSpeaking) {
+      setIsActuallySpeaking(false);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      return;
+    }
+
+    // If speaking but no analyzer, still show speaking animation
+    if (!audioAnalyzer) {
+      setIsActuallySpeaking(true);
+      return;
+    }
+
+    const analyzeAudio = () => {
+      const dataArray = new Uint8Array(audioAnalyzer.frequencyBinCount);
+      audioAnalyzer.getByteFrequencyData(dataArray);
+      
+      // Always set to true while isSpeaking is true
+      setIsActuallySpeaking(true);
+      
+      animationFrameRef.current = requestAnimationFrame(analyzeAudio);
+    };
+
+    lastAudioActivityRef.current = Date.now();
+    setIsActuallySpeaking(true);
+    analyzeAudio();
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [audioAnalyzer, isSpeaking]);
+
   React.useEffect(() => {
     console.log('Character state updated:', {
       currentResponse,
@@ -45,43 +101,37 @@ export const Character: React.FC<CharacterProps> = ({
 
   const getAnimationSource = () => {
     if (isDev) {
-      console.log('Character state:', { isListening, isSpeaking });
+      console.log('Character animation state:', { isListening, isSpeaking });
     }
     
     const basePath = '/assets/character';
-    let filename;
     
+    // Prioritize listening animation
     if (isListening) {
-      filename = 'character-listening.gif';
-    } else if (isSpeaking) {
-      filename = 'character-speaking.gif';
-    } else {
-      filename = 'character-speaking.gif';
+      return `${basePath}/character-listening.gif`;
     }
     
-    return `${basePath}/${filename}`;
+    // Show speaking animation during audio playback
+    if (isSpeaking) {
+      return `${basePath}/character-speaking.gif`;
+    }
+    
+    // Default to listening animation
+    return `${basePath}/character-listening.gif`;
   };
 
   const getBubbleContent = () => {
-    console.log('Bubble content values:', {
-      currentResponse,
-      message,
-      isListening,
-      isConnected,
-      isSpeaking
-    });
-
-    // First priority: Show streaming response
-    if (currentResponse) {
-      return currentResponse;
+    // During active response or when there's streaming content
+    if (currentResponse || isSpeaking) {
+      return currentResponse || "Processing...";
     }
 
-    // Second priority: Show completed message
+    // Show final message when available
     if (message) {
       return message;
     }
 
-    // Status messages
+    // Status messages as fallback
     if (!isConnected) {
       return "Connect me to start chatting! 👋";
     }
@@ -90,10 +140,7 @@ export const Character: React.FC<CharacterProps> = ({
       return "I'm listening... 👂";
     }
 
-    if (isSpeaking) {
-      return "Thinking...";
-    }
-
+    // Default greeting as last resort
     return "Hi there! Let's talk! 😊";
   };
 
@@ -107,6 +154,35 @@ export const Character: React.FC<CharacterProps> = ({
       isConnected
     });
   }, [currentResponse, message, isListening, isSpeaking, isConnected]);
+
+  // Add these handlers for the mic button
+  const handleMouseDown = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent text selection
+    if (!disableMic && isConnected) {
+      await onMicStart();
+    }
+  };
+
+  const handleMouseUp = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!disableMic && isConnected) {
+      await onMicStop();
+    }
+  };
+
+  const handleTouchStart = async (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (!disableMic && isConnected) {
+      await onMicStart();
+    }
+  };
+
+  const handleTouchEnd = async (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (!disableMic && isConnected) {
+      await onMicStop();
+    }
+  };
 
   return (
     <div className="relative w-[500px] h-[600px] flex flex-col items-center justify-center">
@@ -211,22 +287,70 @@ export const Character: React.FC<CharacterProps> = ({
           {isVADMode ? 'VAD Mode' : 'Push to Talk'}
         </button>
 
-        {/* Mic Button */}
-        <button 
-          onClick={onMicClick}
-          disabled={disableMic || !isConnected}
-          className={`
-            w-16 h-16 rounded-full
-            flex items-center justify-center
-            transition-all duration-300
-            ${!isConnected ? 'bg-gray-400' :
-              isListening ? 'bg-red-500 animate-pulse' : 'bg-purple-500 hover:bg-purple-600'
-            }
-            shadow-lg border-4 border-white
-          `}
-        >
-          <Mic className="w-8 h-8 text-white" />
-        </button>
+        {/* Mic Button Container with Tooltip */}
+        <div className="relative group">
+          {/* Tooltip */}
+          <div className={`
+            absolute -top-12 left-1/2 -translate-x-1/2 
+            whitespace-nowrap
+            px-4 py-2 rounded-full
+            bg-purple-100 text-purple-700
+            text-sm font-medium
+            opacity-0 group-hover:opacity-100
+            transition-opacity duration-200
+            pointer-events-none
+            ${isListening ? 'opacity-100' : ''}
+          `}>
+            {getMicButtonText(isConnected, isListening)}
+          </div>
+
+          {/* Mic Button with Pulsing Border */}
+          <div className="relative">
+            {/* Animated Border Ring */}
+            <div className={`
+              absolute inset-0
+              rounded-full
+              ${isListening ? 'animate-ping-slow' : ''}
+              ${isListening ? 'bg-gradient-to-r from-purple-400 to-pink-400' : 'bg-transparent'}
+              opacity-75
+              scale-110
+            `} />
+
+            {/* Main Mic Button - Updated with press-and-hold handlers */}
+            <button 
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              disabled={disableMic || !isConnected}
+              className={`
+                relative
+                w-16 h-16 rounded-full
+                flex items-center justify-center
+                transition-all duration-300
+                select-none
+                ${!isConnected ? 'bg-gray-400' :
+                  isListening ? 
+                    'bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse' : 
+                    'bg-purple-500 hover:bg-purple-600'
+                }
+                shadow-lg border-4 border-white
+                transform hover:scale-105
+                ${isListening ? 'scale-110' : ''}
+                cursor-pointer
+                touch-none
+              `}
+            >
+              <Mic className={`
+                w-8 h-8 text-white
+                transition-transform duration-200
+                ${isListening ? 'scale-110' : ''}
+                pointer-events-none
+              `} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
