@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
+  "homepage": "https://thefranciscook.github.io/openai-realtime-console/",
   "dependencies": {
     "@openai/realtime-api-beta": "github:openai/openai-realtime-api-beta",
     "@pmndrs/assets": "^1.7.0",
@@ -44,7 +45,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "zip": "zip -r realtime-api-console.zip . -x 'node_modules' 'node_modules/*' 'node_modules/**' '.git' '.git/*' '.git/**' '.DS_Store' '*/.DS_Store' 'package-lock.json' '*.zip' '*.tar.gz' '*.tar' '.env'",
-    "relay": "nodemon ./relay-server/index.js"
+    "relay": "nodemon ./relay-server/index.js",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -66,6 +69,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "gh-pages": "^6.2.0",
     "nodemon": "^3.1.7",
     "tailwindcss": "^3.4.15"
   }

@@ -40,7 +40,7 @@ const SoundVisualization = ({ wavStreamPlayer, isActive = false }: { wavStreamPl
       }
     };
 
-    const interval = setInterval(updateFrequencyData, 300);
+    const interval = setInterval(updateFrequencyData, 50);
     return () => clearInterval(interval);
   }, [wavStreamPlayer, isActive]);
 
