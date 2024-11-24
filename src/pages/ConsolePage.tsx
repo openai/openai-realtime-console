@@ -16,7 +16,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
-import { instructions } from '../utils/conversation_config.js';
+import { instructions, userInfo } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
@@ -43,6 +43,8 @@ interface Coordinates {
     units: string;
   };
 }
+
+type Voice = 'coral' | 'alloy' | 'echo' | 'shimmer' | 'ash' | 'ballad' | 'sage' | 'verse';
 
 /**
  * Type for all event logs
@@ -124,6 +126,28 @@ export function ConsolePage() {
     lng: -122.418137,
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
+  const [selectedVoice, setSelectedVoice] = useState<Voice>('ash');
+
+  const voices = ['coral', 'alloy', 'echo', 'shimmer', 'ash', 'ballad', 'sage', 'verse'];
+
+  const handleVoiceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const voice = e.target.value as Voice;
+    setSelectedVoice(voice);
+    
+    // If connected, disconnect first
+    if (isConnected) {
+      await disconnectConversation();
+    }
+    
+    // Update voice and reconnect
+    const client = clientRef.current;
+    try {
+      client?.updateSession({ voice });
+      await connectConversation();
+    } catch (error) {
+      console.error('Error updating voice:', error);
+    }
+  };
 
   /**
    * Utility for formatting the timing of logs
@@ -395,7 +419,8 @@ export function ConsolePage() {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: instructions });
+    client.updateSession({ instructions: instructions + userInfo });
+    client.updateSession({ voice: selectedVoice });
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
@@ -475,6 +500,7 @@ export function ConsolePage() {
 
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
+      console.log('realtimeEvent', realtimeEvent);
       setRealtimeEvents((realtimeEvents) => {
         const lastEvent = realtimeEvents[realtimeEvents.length - 1];
         if (lastEvent?.event.type === realtimeEvent.event.type) {
@@ -603,6 +629,11 @@ export function ConsolePage() {
                           {event.type}
                           {count && ` (${count})`}
                         </div>
+                        {event.type === 'error' && (
+                          <div className="event-error">
+                            {JSON.stringify(event.error.message)}
+                          </div>
+                        )}
                       </div>
                       {!!expandedEvents[event.event_id] && (
                         <div className="event-payload">
@@ -739,6 +770,18 @@ export function ConsolePage() {
             <div className="content-block-title">set_memory()</div>
             <div className="content-block-body content-kv">
               {JSON.stringify(memoryKv, null, 2)}
+            </div>
+          </div>
+          <div className="content-block kv">
+            <div className="content-block-title">set_voice()</div>
+            <div className="content-block-body content-kv">
+              <select value={selectedVoice} onChange={handleVoiceChange}>
+                {voices.map(voice => (
+                  <option key={voice} value={voice}>
+                    {voice}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
