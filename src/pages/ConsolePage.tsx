@@ -16,7 +16,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
-import { instruction1 } from '../utils/conversation_config.js';
+import { instruction1, instruction2 } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
@@ -110,6 +110,7 @@ export function ConsolePage() {
    * - memoryKv is for set_memory() function
    * - coords, marker are for get_weather() function
    */
+  const [currentInstruction, setCurrentInstruction] = useState(instruction1);
   const [items, setItems] = useState<ItemType[]>([]);
   const [realtimeEvents, setRealtimeEvents] = useState<RealtimeEvent[]>([]);
   const [expandedEvents, setExpandedEvents] = useState<{
@@ -124,6 +125,58 @@ export function ConsolePage() {
     lng: -122.418137,
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
+
+
+  const toggleInstructions = async () => {
+    const client = clientRef.current;
+    const wavRecorder = wavRecorderRef.current;
+    const wavStreamPlayer = wavStreamPlayerRef.current;
+  
+    // Disconnect if currently connected
+    if (isConnected) {
+      setIsConnected(false);
+      setRealtimeEvents([]);
+      setItems([]);
+      setMemoryKv({});
+      setMarker(null);
+  
+      client.disconnect();
+      await wavRecorder.end();
+      await wavStreamPlayer.interrupt();
+    }
+  
+    // Toggle instructions
+    const newInstruction = currentInstruction === instruction1 ? instruction2 : instruction1;
+    setCurrentInstruction(newInstruction);
+  
+    // Update session with new instructions
+    client.updateSession({ instructions: newInstruction });
+  
+    // Reconnect to apply new session settings
+    await wavRecorder.begin();
+    await wavStreamPlayer.connect();
+    await client.connect();
+  
+    // Send "Hello!" message after reconnection
+    client.sendUserMessageContent([
+      {
+        type: 'input_text',
+        text: 'Hello!',
+      },
+    ]);
+  
+    // Start recording if using server VAD
+    if (client.getTurnDetectionType() === 'server_vad') {
+      await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+    }
+  
+    // Update state to reflect connection status
+    startTimeRef.current = new Date().toISOString();
+    setIsConnected(true);
+    setRealtimeEvents([]);
+    setItems(client.conversation.getItems());
+  };
+  
 
   /**
    * Utility for formatting the timing of logs
@@ -366,6 +419,15 @@ export function ConsolePage() {
       isLoaded = false;
     };
   }, []);
+
+  /** 
+useEffect(() => {
+  const client = clientRef.current;
+  client.updateSession({ instructions: currentInstruction });
+
+  }, [currentInstruction]);
+**/
+
 
   /**
    * Core RealtimeClient and audio capture setup
@@ -688,6 +750,13 @@ export function ConsolePage() {
               onClick={
                 isConnected ? disconnectConversation : connectConversation
               }
+            />
+            <div className="spacer" />
+            <Button
+              label="next question"
+              icon={Edit}
+              buttonStyle="flush"
+              onClick={toggleInstructions}
             />
           </div>
         </div>
