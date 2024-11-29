@@ -128,21 +128,24 @@ export function ConsolePage() {
 
 
   const toggleInstructions = async () => {
+    console.log('toggleInstructions start');
     const client = clientRef.current;
     const wavRecorder = wavRecorderRef.current;
     const wavStreamPlayer = wavStreamPlayerRef.current;
   
     // Disconnect if currently connected
-    if (isConnected) {
+    if (client.isConnected()) {
+      console.log('toggleInstructions: disconnecting...', isConnected, client.isConnected());
+      await wavRecorder.end();
+      await wavStreamPlayer.interrupt();
+      await client.disconnect();
+      console.log('toggleInstructions: disconnected...');
+
       setIsConnected(false);
       setRealtimeEvents([]);
       setItems([]);
       setMemoryKv({});
       setMarker(null);
-  
-      client.disconnect();
-      await wavRecorder.end();
-      await wavStreamPlayer.interrupt();
     }
   
     // Toggle instructions
@@ -157,6 +160,12 @@ export function ConsolePage() {
     await wavStreamPlayer.connect();
     await client.connect();
   
+    // Update state to reflect connection status
+    startTimeRef.current = new Date().toISOString();
+    setIsConnected(true);
+    setRealtimeEvents([]);
+    setItems(client.conversation.getItems());
+
     // Send "Hello!" message after reconnection
     client.sendUserMessageContent([
       {
@@ -169,12 +178,6 @@ export function ConsolePage() {
     if (client.getTurnDetectionType() === 'server_vad') {
       await wavRecorder.record((data) => client.appendInputAudio(data.mono));
     }
-  
-    // Update state to reflect connection status
-    startTimeRef.current = new Date().toISOString();
-    setIsConnected(true);
-    setRealtimeEvents([]);
-    setItems(client.conversation.getItems());
   };
   
 
@@ -238,13 +241,13 @@ export function ConsolePage() {
       {
         type: `input_text`,
         text: `Hello!`,
-        // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
       },
     ]);
-
+    console.log("connected before  if (client.getTurnDetectionType() === 'server_vad')");
     if (client.getTurnDetectionType() === 'server_vad') {
       await wavRecorder.record((data) => client.appendInputAudio(data.mono));
     }
+    console.log("connected after  if (client.getTurnDetectionType() === 'server_vad')");
   }, []);
 
   /**
@@ -420,15 +423,6 @@ export function ConsolePage() {
     };
   }, []);
 
-  /** 
-useEffect(() => {
-  const client = clientRef.current;
-  client.updateSession({ instructions: currentInstruction });
-
-  }, [currentInstruction]);
-**/
-
-
   /**
    * Core RealtimeClient and audio capture setup
    * Set all of our instructions, tools, events and more
@@ -475,45 +469,18 @@ useEffect(() => {
     );
     client.addTool(
       {
-        name: 'get_weather',
+        name: 'next_question',
         description:
-          'Retrieves the weather for a given lat, lng coordinate pair. Specify a label for the location.',
+          'Switches to the next question of the HAM-A after covering all the questions from the prepared list.',
         parameters: {
           type: 'object',
-          properties: {
-            lat: {
-              type: 'number',
-              description: 'Latitude',
-            },
-            lng: {
-              type: 'number',
-              description: 'Longitude',
-            },
-            location: {
-              type: 'string',
-              description: 'Name of the location',
-            },
-          },
-          required: ['lat', 'lng', 'location'],
+          properties: {},
         },
       },
-      async ({ lat, lng, location }: { [key: string]: any }) => {
-        setMarker({ lat, lng, location });
-        setCoords({ lat, lng, location });
-        const result = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
-        );
-        const json = await result.json();
-        const temperature = {
-          value: json.current.temperature_2m as number,
-          units: json.current_units.temperature_2m as string,
-        };
-        const wind_speed = {
-          value: json.current.wind_speed_10m as number,
-          units: json.current_units.wind_speed_10m as string,
-        };
-        setMarker({ lat, lng, location, temperature, wind_speed });
-        return json;
+      async () => {
+        console.log('next_question tirggered');
+        toggleInstructions();
+        return { ok: true };
       }
     );
 
