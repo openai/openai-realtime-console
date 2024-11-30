@@ -113,7 +113,7 @@ export function ConsolePage() {
       client.sendUserMessageContent([
         {
           type: `input_text`,
-          text: `Hello, you are on the True Trading Group Live Stream. Say hello to everyone and tell them about yourself. You are talking to Michael Edward, award winning hedge fund trader and head trader at True Trading Group. Tell us about yourself.`,
+          text: `Hello Chip Shields! I'm HAL, your personal phone advisor for the day, and I heard you're trying to decide between an iPhone and an Android phone. I know the world of smartphones can feel overwhelming sometimes - with all their features, buttons, and fancy terms - but that's exactly why I'm here to help! I specialize in making these decisions simpler, especially for folks who want a phone that just works well for their needs without all the confusing tech talk. I understand how important it is to get this choice right, whether it's for staying connected with family, having clear, readable text, or just making sure you can easily make calls and send messages. Before we dive in, I'd love to learn a bit about what you're currently using and what matters most to you in a new phone. How about we start there, Chip?`,
 
         },
       ]);
