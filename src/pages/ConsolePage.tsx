@@ -22,27 +22,15 @@ import { WavRenderer } from '../utils/wav_renderer';
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
 import { Button } from '../components/button/Button';
 import { Toggle } from '../components/toggle/Toggle';
-import { Map } from '../components/Map';
+import { saveAs } from 'file-saver';
+
+let globalMessageCounter = 0; // Global counter for messages
+const processedItems = new WeakMap<object, boolean>(); // Track processed state for items
+
 
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
 
-/**
- * Type for result from get_weather() function call
- */
-interface Coordinates {
-  lat: number;
-  lng: number;
-  location?: string;
-  temperature?: {
-    value: number;
-    units: string;
-  };
-  wind_speed?: {
-    value: number;
-    units: string;
-  };
-}
 
 /**
  * Type for all event logs
@@ -120,11 +108,6 @@ export function ConsolePage() {
   const [canPushToTalk, setCanPushToTalk] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [memoryKv, setMemoryKv] = useState<{ [key: string]: any }>({});
-  const [coords, setCoords] = useState<Coordinates | null>({
-    lat: 37.775593,
-    lng: -122.418137,
-  });
-  const [marker, setMarker] = useState<Coordinates | null>(null);
 
 
   const toggleInstructions = async () => {
@@ -145,7 +128,6 @@ export function ConsolePage() {
       setRealtimeEvents([]);
       setItems([]);
       setMemoryKv({});
-      setMarker(null);
     }
   
     // Toggle instructions
@@ -258,11 +240,6 @@ export function ConsolePage() {
     setRealtimeEvents([]);
     setItems([]);
     setMemoryKv({});
-    setCoords({
-      lat: 37.775593,
-      lng: -122.418137,
-    });
-    setMarker(null);
 
     const client = clientRef.current;
     client.disconnect();
@@ -530,6 +507,84 @@ export function ConsolePage() {
   }, []);
 
   /**
+   * Monitor changes in items and handle saving locally
+   */
+  useEffect(() => {
+    if (!items || items.length === 0) return;
+
+    items.forEach((item) => {
+      // Check if the item has the 'status' property and it's completed
+      if ('status' in item && item.status === 'completed' && !processedItems.get(item)) {
+        // Increment global counter
+        globalMessageCounter += 1;
+
+        // Add the counter to the item's metadata
+        const metadata = {
+          id: item.id,
+          counter: globalMessageCounter, // Add global counter to metadata
+          object: item.object,
+          type: item.type,
+          role: item.role,
+          status: item.status,
+        };
+
+        if (item.role === 'assistant') {
+          // Save assistant's transcript and metadata into a JSON file
+          const transcriptData = {
+            ...metadata,
+            transcript: item.formatted.transcript || '',
+          };
+          saveJsonToFile(
+            transcriptData,
+            `${globalMessageCounter}_${item.id}_assistant.json`
+          );
+        } else if (item.role === 'user') {
+          // Save user's audio data (formatted.audio) as a WAV file
+          if (item.formatted.audio?.length) {
+            const audioUrl = item.formatted.file.url;
+            downloadFileFromUrl(audioUrl, `${globalMessageCounter}_${item.id}_user_audio.wav`);
+          }
+
+          // Save user's metadata with transcript into a JSON file
+          const userData = {
+            ...metadata,
+            transcript: '',
+          };
+          saveJsonToFile(
+            userData,
+            `${globalMessageCounter}_${item.id}_user.json`
+          );
+        }
+
+        // Mark the item as processed in the WeakMap
+        processedItems.set(item, true);
+      }
+    });
+  }, [items]);
+
+  /**
+   * Save JSON object to a file
+   */
+  const saveJsonToFile = (data: object, filename: string) => {
+    const jsonBlob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    });
+    saveAs(jsonBlob, filename);
+  };
+
+  /**
+   * Download a file from a URL
+   */
+  const downloadFileFromUrl = (url: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  /**
    * Render the application
    */
   return (
@@ -725,14 +780,6 @@ export function ConsolePage() {
               buttonStyle="flush"
               onClick={toggleInstructions}
             />
-          </div>
-        </div>
-        <div className="content-right">
-          <div className="content-block kv">
-            <div className="content-block-title">set_memory()</div>
-            <div className="content-block-body content-kv">
-              {JSON.stringify(memoryKv, null, 2)}
-            </div>
           </div>
         </div>
       </div>
