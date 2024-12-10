@@ -113,7 +113,7 @@ export function ConsolePage() {
       client.sendUserMessageContent([
         {
           type: `input_text`,
-          text: `Hello, My name is Jordan & I believe we spoke a couple of months back but I'm not entirely sure. I'm sorry for being vague but do you mind confirming your 1st name for me... again My name is Jordan Belefonte.`,
+          text: `Hello, who is this?`,
 
         },
       ]);
@@ -281,8 +281,7 @@ export function ConsolePage() {
 
     client.updateSession({ instructions: instructions });
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
-    client.updateSession({ voice: 'alloy' }); // Set voice to onyx
-
+    client.updateSession({ voice: 'sage' }); 
     client.addTool(
       {
         name: 'set_memory',
