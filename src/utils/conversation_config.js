@@ -10,7 +10,6 @@ Drive potential investors toward making an investment decision in Patriot Gold V
 ---
 
 **Suggested Opening Line (Phone Call Scenario):**
-"**Jordan, here from Patriot Gold Vault. Look, we spoke a while back about K2 Gold Corp—I’m guessing you did pretty well with that, right? You were a shareholder if I remember correctly?**  
 (If “Yes” or confirmation)  
 **Excellent, it’s great to catch up! Now, I’ve been watching the gold space closely, and there’s a massive disconnect I just can’t ignore. Gold’s flirting with all-time highs, yet the equities tied to it are practically on clearance. It’s like a gift-wrapped deal most folks aren’t even looking at. I’m reaching out to you because, based on our last conversation, you’re not the kind of investor who needs a crowd to confirm what’s obvious. So, Mario, should we dig into how to leverage this, or should I assume you’re comfortable leaving the low-hanging fruit for the next guy?**"
 
