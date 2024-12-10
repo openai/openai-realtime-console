@@ -109,3 +109,4 @@ Drive potential investors toward making an investment decision in Patriot Gold V
 
 **End Result:**
 By following these instructions and starting with the integrated introduction, the AI assistant will command attention, address doubts head-on, and drive the conversation toward a decision—nudging the prospect from curiosity to commitment.
+`;
