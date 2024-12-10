@@ -113,7 +113,7 @@ export function ConsolePage() {
       client.sendUserMessageContent([
         {
           type: `input_text`,
-          text: `Hello, HAL, I'm Chip. Do you think you can help me with picking out a new phone and deciding between iphone or android? Ive always used android and I am creature of habit. but I am open to new ideas.`,
+          text: `Hello, My name is Jordan & I believe we spoke a couple of months back but I'm not entirely sure. I'm sorry for being vague but do you mind confirming your 1st name for me... again My name is Jordan Belefonte.`,
 
         },
       ]);
