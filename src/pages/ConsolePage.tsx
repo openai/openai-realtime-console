@@ -281,7 +281,7 @@ export function ConsolePage() {
 
     client.updateSession({ instructions: instructions });
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
-    client.updateSession({ voice: 'onyx' }); // Set voice to onyx
+    client.updateSession({ voice: 'alloy' }); // Set voice to onyx
 
     client.addTool(
       {
