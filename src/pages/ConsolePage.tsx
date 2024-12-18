@@ -9,7 +9,8 @@
  * You can run it with `npm run relay`, in parallel with `npm start`
  */
 const LOCAL_RELAY_SERVER_URL: string =
-  process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
+  process.env.REACT_APP_LOCAL_RELAY_SERVER_URL ||
+  'wss://brennanphoneapiendpoint.ngrok.io/voice_ai_agent/twilio_media_stream';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 
@@ -26,6 +27,7 @@ import { Map } from '../components/Map';
 
 import './ConsolePage.scss';
 import { isJsxOpeningLikeElement } from 'typescript';
+import { AnswerBotClient } from '../lib/answer_bot_client/answer_bot_client';
 
 /**
  * Type for result from get_weather() function call
@@ -59,14 +61,14 @@ export function ConsolePage() {
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
    */
-  const apiKey = LOCAL_RELAY_SERVER_URL
-    ? ''
-    : localStorage.getItem('tmp::voice_api_key') ||
-      prompt('OpenAI API Key') ||
-      '';
-  if (apiKey !== '') {
-    localStorage.setItem('tmp::voice_api_key', apiKey);
-  }
+  // const apiKey = LOCAL_RELAY_SERVER_URL
+  //   ? ''
+  //   : localStorage.getItem('tmp::voice_api_key') ||
+  //     prompt('OpenAI API Key') ||
+  //     '';
+  // if (apiKey !== '') {
+  //   localStorage.setItem('tmp::voice_api_key', apiKey);
+  // }
 
   /**
    * Instantiate:
@@ -80,16 +82,24 @@ export function ConsolePage() {
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(
     new WavStreamPlayer({ sampleRate: 24000 })
   );
-  const clientRef = useRef<RealtimeClient>(
-    new RealtimeClient(
-      LOCAL_RELAY_SERVER_URL
-        ? { url: LOCAL_RELAY_SERVER_URL }
-        : {
-            apiKey: apiKey,
-            dangerouslyAllowAPIKeyInBrowser: true,
-          }
-    )
+  const clientRef = useRef<AnswerBotClient>(
+    // console.log('apiKey', LOCAL_RELAY_SERVER_URL);
+
+    new AnswerBotClient({ url: LOCAL_RELAY_SERVER_URL })
   );
+
+  // const clientRef = useRef<RealtimeClient>(
+  //   // console.log('apiKey', LOCAL_RELAY_SERVER_URL);
+
+  //   new RealtimeClient(
+  //     LOCAL_RELAY_SERVER_URL
+  //       ? { url: LOCAL_RELAY_SERVER_URL }
+  //       : {
+  //           apiKey: apiKey,
+  //           dangerouslyAllowAPIKeyInBrowser: false,
+  //         }
+  //   )
+  // );
 
   /**
    * References for
@@ -171,7 +181,10 @@ export function ConsolePage() {
     startTimeRef.current = new Date().toISOString();
     setIsConnected(true);
     setRealtimeEvents([]);
-    setItems(client.conversation.getItems());
+    setItems(
+      // client.conversation.getItems()
+      []
+    );
 
     // Connect to microphone
     await wavRecorder.begin();
@@ -181,17 +194,17 @@ export function ConsolePage() {
 
     // Connect to realtime API
     await client.connect();
-    client.sendUserMessageContent([
-      {
-        type: `input_text`,
-        text: `Hello!`,
-        // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
-      },
-    ]);
+    // client.sendUserMessageContent([
+    //   {
+    //     type: `input_text`,
+    //     text: `Hello!`,
+    //     // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
+    //   },
+    // ]);
 
-    if (client.getTurnDetectionType() === 'server_vad') {
-      await wavRecorder.record((data) => client.appendInputAudio(data.mono));
-    }
+    // if (client.getTurnDetectionType() === 'server_vad') {
+    await wavRecorder.record((data) => client.appendInputAudio(data.mono));
+    // }
   }, []);
 
   /**
@@ -220,7 +233,7 @@ export function ConsolePage() {
 
   const deleteConversationItem = useCallback(async (id: string) => {
     const client = clientRef.current;
-    client.deleteItem(id);
+    // client.deleteItem(id);
   }, []);
 
   /**
@@ -260,10 +273,10 @@ export function ConsolePage() {
     if (value === 'none' && wavRecorder.getStatus() === 'recording') {
       await wavRecorder.pause();
     }
-    client.updateSession({
-      turn_detection: value === 'none' ? null : { type: 'server_vad' },
-    });
-    if (value === 'server_vad' && client.isConnected()) {
+    // client.updateSession({
+    //   turn_detection: value === 'none' ? null : { type: 'server_vad' },
+    // });
+    if (client.isConnected()) {
       await wavRecorder.record((data) => client.appendInputAudio(data.mono));
     }
     setCanPushToTalk(value === 'none');
@@ -377,83 +390,83 @@ export function ConsolePage() {
     const client = clientRef.current;
 
     // Set instructions
-    client.updateSession({ instructions: instructions });
+    // client.updateSession({ instructions: instructions });
     // Set transcription, otherwise we don't get user transcriptions back
-    client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
+    // client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
     // Add tools
-    client.addTool(
-      {
-        name: 'set_memory',
-        description: 'Saves important data about the user into memory.',
-        parameters: {
-          type: 'object',
-          properties: {
-            key: {
-              type: 'string',
-              description:
-                'The key of the memory value. Always use lowercase and underscores, no other characters.',
-            },
-            value: {
-              type: 'string',
-              description: 'Value can be anything represented as a string',
-            },
-          },
-          required: ['key', 'value'],
-        },
-      },
-      async ({ key, value }: { [key: string]: any }) => {
-        setMemoryKv((memoryKv) => {
-          const newKv = { ...memoryKv };
-          newKv[key] = value;
-          return newKv;
-        });
-        return { ok: true };
-      }
-    );
-    client.addTool(
-      {
-        name: 'get_weather',
-        description:
-          'Retrieves the weather for a given lat, lng coordinate pair. Specify a label for the location.',
-        parameters: {
-          type: 'object',
-          properties: {
-            lat: {
-              type: 'number',
-              description: 'Latitude',
-            },
-            lng: {
-              type: 'number',
-              description: 'Longitude',
-            },
-            location: {
-              type: 'string',
-              description: 'Name of the location',
-            },
-          },
-          required: ['lat', 'lng', 'location'],
-        },
-      },
-      async ({ lat, lng, location }: { [key: string]: any }) => {
-        setMarker({ lat, lng, location });
-        setCoords({ lat, lng, location });
-        const result = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
-        );
-        const json = await result.json();
-        const temperature = {
-          value: json.current.temperature_2m as number,
-          units: json.current_units.temperature_2m as string,
-        };
-        const wind_speed = {
-          value: json.current.wind_speed_10m as number,
-          units: json.current_units.wind_speed_10m as string,
-        };
-        setMarker({ lat, lng, location, temperature, wind_speed });
-        return json;
-      }
-    );
+    // client.addTool(
+    //   {
+    //     name: 'set_memory',
+    //     description: 'Saves important data about the user into memory.',
+    //     parameters: {
+    //       type: 'object',
+    //       properties: {
+    //         key: {
+    //           type: 'string',
+    //           description:
+    //             'The key of the memory value. Always use lowercase and underscores, no other characters.',
+    //         },
+    //         value: {
+    //           type: 'string',
+    //           description: 'Value can be anything represented as a string',
+    //         },
+    //       },
+    //       required: ['key', 'value'],
+    //     },
+    //   },
+    //   async ({ key, value }: { [key: string]: any }) => {
+    //     setMemoryKv((memoryKv) => {
+    //       const newKv = { ...memoryKv };
+    //       newKv[key] = value;
+    //       return newKv;
+    //     });
+    //     return { ok: true };
+    //   }
+    // );
+    // client.addTool(
+    //   {
+    //     name: 'get_weather',
+    //     description:
+    //       'Retrieves the weather for a given lat, lng coordinate pair. Specify a label for the location.',
+    //     parameters: {
+    //       type: 'object',
+    //       properties: {
+    //         lat: {
+    //           type: 'number',
+    //           description: 'Latitude',
+    //         },
+    //         lng: {
+    //           type: 'number',
+    //           description: 'Longitude',
+    //         },
+    //         location: {
+    //           type: 'string',
+    //           description: 'Name of the location',
+    //         },
+    //       },
+    //       required: ['lat', 'lng', 'location'],
+    //     },
+    //   },
+    //   async ({ lat, lng, location }: { [key: string]: any }) => {
+    //     setMarker({ lat, lng, location });
+    //     setCoords({ lat, lng, location });
+    //     const result = await fetch(
+    //       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m`
+    //     );
+    //     const json = await result.json();
+    //     const temperature = {
+    //       value: json.current.temperature_2m as number,
+    //       units: json.current_units.temperature_2m as string,
+    //     };
+    //     const wind_speed = {
+    //       value: json.current.wind_speed_10m as number,
+    //       units: json.current_units.wind_speed_10m as string,
+    //     };
+    //     setMarker({ lat, lng, location, temperature, wind_speed });
+    //     return json;
+    //   }
+    // );
 
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
@@ -476,8 +489,42 @@ export function ConsolePage() {
         await client.cancelResponse(trackId, offset);
       }
     });
+    client.on('media', async (event) => {
+      console.log('media', event.media.payload);
+      const payload = event.media.payload;
+
+      // Convert base64 to ArrayBuffer
+      const binaryString = atob(payload);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const arrayBuffer = bytes.buffer;
+
+      if (payload) {
+        wavStreamPlayer.add16BitPCM(arrayBuffer, event.media.id);
+      }
+
+      // const wavFile = await WavRecorder.decode(payload, 24000, 24000);
+
+      // let item: ItemType = {
+      //   id: event.media.id,
+      //   object: 'assistant',
+      //   role: 'assistant',
+      //   type: 'message',
+      //   formatted: {
+      //     file: wavFile,
+      //   },
+      //   status: 'completed',
+      //   content: [],
+      // };
+
+      // setItems((items) => [...items, item]);
+    });
+
     client.on('conversation.updated', async ({ item, delta }: any) => {
-      const items = client.conversation.getItems();
+      // const items = client.conversation.getItems();
       if (delta?.audio) {
         wavStreamPlayer.add16BitPCM(delta.audio, item.id);
       }
@@ -489,10 +536,10 @@ export function ConsolePage() {
         );
         item.formatted.file = wavFile;
       }
-      setItems(items);
+      // setItems(items);
     });
 
-    setItems(client.conversation.getItems());
+    // setItems(client.conversation.getItems());
 
     return () => {
       // cleanup; resets to defaults
@@ -509,17 +556,6 @@ export function ConsolePage() {
         <div className="content-title">
           <img src="/openai-logomark.svg" />
           <span>realtime console</span>
-        </div>
-        <div className="content-api-key">
-          {!LOCAL_RELAY_SERVER_URL && (
-            <Button
-              icon={Edit}
-              iconPosition="end"
-              buttonStyle="flush"
-              label={`api key: ${apiKey.slice(0, 3)}...`}
-              onClick={() => resetAPIKey()}
-            />
-          )}
         </div>
       </div>
       <div className="content-main">
