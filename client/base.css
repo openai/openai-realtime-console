@@ -1,0 +1,24 @@
+/*
+@tailwind base; adds base styles to all elements:
+https://tailwindcss.com/docs/preflight
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-base: #efefef;
+  --color-highlight: #ff80ff;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: "Consolas", "Andale Mono", monospace;
+  font-size: 0.9rem;
+  background-color: var(--color-base);
+}
