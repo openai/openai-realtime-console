@@ -24,6 +24,10 @@ npm run dev
 
 This should start the console application on [http://localhost:3000](http://localhost:3000).
 
+## Previous WebSockets version
+
+The previous version of this application that used WebSockets on the client (not recommended in client-side browsers) [can be found here](https://github.com/openai/openai-realtime-console/tree/websockets).
+
 ## License
 
 MIT
