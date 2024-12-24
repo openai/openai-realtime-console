@@ -4,10 +4,10 @@ This is an example application showing how to use the [OpenAI Realtime API](http
 
 ## Installation and usage
 
-Before you begin, you'll need an OpenAI API key - [create one in the dashboard here](https://platform.openai.com/settings/api-keys). Export it as a system environment variable:
+Before you begin, you'll need an OpenAI API key - [create one in the dashboard here](https://platform.openai.com/settings/api-keys). Create `.env` file in the root of the project and add your API key:
 
-```bash
-export OPENAI_API_KEY=<your key here>
+```
+OPENAI_API_KEY=<your key here>
 ```
 
 Running this application locally requires [Node.js](https://nodejs.org/) to be installed. Install dependencies for the application with:
