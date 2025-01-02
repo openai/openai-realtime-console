@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .js,.jsx --fix"
   },
   "dependencies": {
+    "@fastify/env": "^4.4.0",
     "@fastify/one-line-logger": "^1.2.0",
     "@fastify/react": "^0.6.0",
     "@fastify/vite": "^6.0.5",

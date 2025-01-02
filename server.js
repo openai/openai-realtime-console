@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import FastifyVite from "@fastify/vite";
+import fastifyEnv from "@fastify/env";
 
 // Fastify + React + Vite configuration
 const server = Fastify({
@@ -9,6 +10,18 @@ const server = Fastify({
     },
   },
 });
+
+const schema = {
+  type: "object",
+  required: ["OPENAI_API_KEY"],
+  properties: {
+    OPENAI_API_KEY: {
+      type: "string",
+    },
+  },
+};
+
+await server.register(fastifyEnv, { dotenv: true, schema });
 
 await server.register(FastifyVite, {
   root: import.meta.url,

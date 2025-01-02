@@ -4,10 +4,10 @@ This is an example application showing how to use the [OpenAI Realtime API](http
 
 ## Installation and usage
 
-Before you begin, you'll need an OpenAI API key - [create one in the dashboard here](https://platform.openai.com/settings/api-keys). Export it as a system environment variable:
+Before you begin, you'll need an OpenAI API key - [create one in the dashboard here](https://platform.openai.com/settings/api-keys). Create a `.env` file from the example file and set your API key in there:
 
 ```bash
-export OPENAI_API_KEY=<your key here>
+cp .env.example .env
 ```
 
 Running this application locally requires [Node.js](https://nodejs.org/) to be installed. Install dependencies for the application with:
@@ -23,6 +23,8 @@ npm run dev
 ```
 
 This should start the console application on [http://localhost:3000](http://localhost:3000).
+
+_Note:_ The `server.js` file uses [@fastify/vite](https://fastify-vite.dev/) to build and serve the Astro frontend contained in the `/client` folder. You can find the configuration in the [`vite.config.js` file](./vite.config.js)
 
 ## Previous WebSockets version
 
