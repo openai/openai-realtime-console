@@ -24,12 +24,22 @@ export default function App() {
     audioElement.current = document.createElement("audio");
     audioElement.current.autoplay = true;
     pc.ontrack = (e) => (audioElement.current.srcObject = e.streams[0]);
-
-    // Add local audio track for microphone input in the browser
-    const ms = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
-    pc.addTrack(ms.getTracks()[0]);
+    
+    try {
+      // Add local audio track for microphone input in the browser
+      const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
+      pc.addTrack(ms.getTracks()[0]);
+    } catch (error) {
+      console.error(
+        `%cFailed to access microphone: ${error.message}`,
+        'color: red; font-weight: bold;'
+      );
+  
+      // Create a dummy audio track when permission is denied or other errors occur
+      const dummyAudioTrack = new MediaStreamTrackGenerator({ kind: 'audio' });
+      const dummyStream = new MediaStream([dummyAudioTrack]);
+      pc.addTransceiver(dummyStream.getTracks()[0], { directions: ['sendonly'] });
+    }
 
     // Set up data channel for sending and receiving events
     const dc = pc.createDataChannel("oai-events");
