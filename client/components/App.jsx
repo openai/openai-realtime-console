@@ -3,6 +3,7 @@ import logo from "/assets/openai-logomark.svg";
 import EventLog from "./EventLog";
 import SessionControls from "./SessionControls";
 import ToolPanel from "./ToolPanel";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
@@ -86,7 +87,7 @@ export default function App() {
   // Send a message to the model
   function sendClientEvent(message) {
     if (dataChannel) {
-      message.event_id = message.event_id || crypto.randomUUID();
+      message.event_id = message.event_id || uuidv4();
       dataChannel.send(JSON.stringify(message));
       setEvents((prev) => [message, ...prev]);
     } else {
