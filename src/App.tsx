@@ -4,43 +4,19 @@ import EventLog from "./components/EventLog";
 import SessionControls from "./components/SessionControls";
 import ToolPanel from "./components/ToolPanel";
 import { WavRecorder, WavStreamPlayer } from "./lib/wavtools/index.js";
+import { arrayBufferToBase64 } from "./utils/audio-utils.js";
 // import RecordRTC from "recordrtc";
 
 const LOCAL_RELAY_SERVER_URL =
   "wss://brennanphoneapiendpoint.ngrok.io/voice_ai_agent/messenger_media_stream";
 
-function arrayBufferToBase64(arrayBuffer) {
-  if (arrayBuffer instanceof Float32Array) {
-    arrayBuffer = this.floatTo16BitPCM(arrayBuffer);
-  } else if (arrayBuffer instanceof Int16Array) {
-    arrayBuffer = arrayBuffer.buffer;
-  }
-  let binary = "";
-  let bytes = new Uint8Array(arrayBuffer);
-  const chunkSize = 0x8000; // 32KB chunk size
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    let chunk = bytes.subarray(i, i + chunkSize);
-    binary += String.fromCharCode.apply(null, chunk);
-  }
-  return btoa(binary);
-}
-
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [dataChannel, setDataChannel] = useState(null);
-  const peerConnection = useRef(null);
-  const audioElement = useRef(null);
-  const [webSocket, setWebSocket] = useState(null);
+  const [events, setEvents] = useState<any[]>([]);
+  const [webSocket, setWebSocket] = useState<WebSocket | null>(null);
 
-  // const [audioContext, setAudioContext] = useState(null);
-  // const [audioQueue, setAudioQueue] = useState([]);
-  // const [isPlaying, setIsPlaying] = useState(false);
-  // const [lastChunkReceived, setLastChunkReceived] = useState(0);
-  // const [processingTimes, setProcessingTimes] = useState([]);
-
-  const wavRecorderRef = useRef(null);
-  const wavStreamPlayer = useRef(null);
+  const wavRecorderRef = useRef<WavRecorder | null>(null);
+  const wavStreamPlayer = useRef<WavStreamPlayer | null>(null);
 
   async function startSession() {
     wavStreamPlayer.current = new WavStreamPlayer({
@@ -217,16 +193,20 @@ export default function App() {
       wavRecorderRef.current.end();
     }
 
+    if (wavStreamPlayer.current) {
+      wavStreamPlayer.current.interrupt();
+      // wavStreamPlayer.current.disconnect();
+    }
+
     setIsSessionActive(false);
-    setDataChannel(null);
   }
 
   // Send a message to the model
-  function sendClientEvent(message) {
+  function sendClientEvent(message: { [key: string]: any }) {
     if (webSocket) {
       message.event_id = message.event_id || crypto.randomUUID();
       webSocket.send(JSON.stringify(message));
-      setEvents((prev) => [message, ...prev]);
+      setEvents((prev) => [{ ...message, timestamp: Date.now() }, ...prev]);
     } else {
       console.error(
         "Failed to send message - no data channel available",
@@ -236,7 +216,7 @@ export default function App() {
   }
 
   // Send a text message to the model
-  function sendTextMessage(message) {
+  function sendTextMessage(message: string) {
     const event = {
       type: "conversation.item.create",
       item: {
@@ -260,7 +240,10 @@ export default function App() {
     if (webSocket) {
       // Append new server events to the list
       webSocket.onmessage = (e) => {
-        setEvents((prev) => [JSON.parse(e.data), ...prev]);
+        setEvents((prev) => [
+          { ...JSON.parse(e.data), timestamp: Date.now() },
+          ...prev,
+        ]);
       };
 
       // Set session active when the data channel is opened
@@ -282,19 +265,14 @@ export default function App() {
       if (webSocket) {
         webSocket.close();
       }
-      // if (mediaRecorder) {
-      //   mediaRecorder.stop();
-      // }
-      if (audioElement.current) {
-        console.log("tis me");
-        audioElement.current.srcObject = null;
-      }
-      // if (audioContext) {
-      //   audioContext.close();
-      // }
 
       if (wavRecorderRef.current) {
         wavRecorderRef.current.end();
+      }
+
+      if (wavStreamPlayer.current) {
+        wavStreamPlayer.current.interrupt();
+        // wavStreamPlayer.current.disconnect();
       }
     };
   }, []);
@@ -334,28 +312,20 @@ export default function App() {
   //   return () => clearInterval(interval);
   // }, [audioQueue]);
 
-  useEffect(() => {
-    return () => {
-      if (wavStreamPlayer.current) {
-        wavStreamPlayer.current.interrupt();
-      }
-    };
-  }, []);
-
   return (
     <>
-      <nav className="absolute top-0 left-0 right-0 h-16 flex items-center">
+      <nav className="w-full h-16 flex items-center">
         <div className="flex items-center gap-4 w-full m-4 pb-2 border-0 border-b border-solid border-gray-200">
           <img style={{ width: "24px" }} src={logo} />
           <h1>realtime console</h1>
         </div>
       </nav>
-      <main className="absolute top-16 left-0 right-0 bottom-0">
-        <section className="absolute top-0 left-0 right-[380px] bottom-0 flex">
-          <section className="absolute top-0 left-0 right-0 bottom-32 px-4 overflow-y-auto">
+      <main className="flex w-full h-full">
+        <section className="flex w-full flex-col">
+          <section className="h-full px-4 overflow-y-auto">
             <EventLog events={events} />
           </section>
-          <section className="absolute h-32 left-0 right-0 bottom-0 p-4">
+          <section className=" h-32 p-4">
             <SessionControls
               startSession={startSession}
               stopSession={stopSession}
@@ -366,16 +336,14 @@ export default function App() {
             />
           </section>
         </section>
-        <section className="absolute top-0 w-[380px] right-0 bottom-0 p-4 pt-0 overflow-y-auto">
+        {/* <section className=" top-0 w-[380px] right-0 bottom-0 p-4 pt-0 overflow-y-auto">
           <ToolPanel
             sendClientEvent={sendClientEvent}
             sendTextMessage={sendTextMessage}
             events={events}
             isSessionActive={isSessionActive}
           />
-        </section>
-
-        <audio ref={audioElement} autoPlay />
+        </section> */}
       </main>
     </>
   );

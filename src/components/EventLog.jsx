@@ -37,8 +37,8 @@ export default function EventLog({ events }) {
   const eventsToDisplay = [];
   let deltaEvents = {};
 
-  events.forEach((event) => {
-    // console.log(event);
+  events.forEach((event, index) => {
+    console.log(event);
 
     if (event.type?.endsWith("delta")) {
       if (deltaEvents[event.type]) {
@@ -51,10 +51,11 @@ export default function EventLog({ events }) {
 
     eventsToDisplay.push(
       <Event
-        key={event.event_id}
+        key={index}
+        // key={event.event_id}
         event={event}
-        timestamp={new Date().toLocaleTimeString()}
-      />,
+        timestamp={new Date(event.timestamp).toLocaleTimeString()}
+      />
     );
   });
 
