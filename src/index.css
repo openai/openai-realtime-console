@@ -1,21 +1,20 @@
-html,
-body {
-  padding: 0px;
-  margin: 0px;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  font-family: 'Assistant', sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  color: #18181b;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-base: #efefef;
+  --color-highlight: #ff80ff;
 }
 
-#root {
-  position: relative;
-  width: 100%;
+html,
+body {
   height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: "Consolas", "Andale Mono", monospace;
+  font-size: 0.9rem;
+  background-color: var(--color-base);
 }

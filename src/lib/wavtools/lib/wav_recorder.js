@@ -1,6 +1,6 @@
-import { AudioProcessorSrc } from './worklets/audio_processor.js';
-import { AudioAnalysis } from './analysis/audio_analysis.js';
-import { WavPacker } from './wav_packer.js';
+import { AudioProcessorSrc } from "./worklets/audio_processor.js";
+import { AudioAnalysis } from "./analysis/audio_analysis.js";
+import { WavPacker } from "./wav_packer.js";
 
 /**
  * Decodes audio into a wav file
@@ -79,7 +79,7 @@ export class WavRecorder {
         );
       }
       arrayBuffer = audioData;
-      blob = new Blob([arrayBuffer], { type: 'audio/wav' });
+      blob = new Blob([arrayBuffer], { type: "audio/wav" });
     } else {
       let float32Array;
       let data;
@@ -155,11 +155,11 @@ export class WavRecorder {
    */
   getStatus() {
     if (!this.processor) {
-      return 'ended';
+      return "ended";
     } else if (!this.recording) {
-      return 'paused';
+      return "paused";
     } else {
-      return 'recording';
+      return "recording";
     }
   }
 
@@ -174,7 +174,7 @@ export class WavRecorder {
   async _event(name, data = {}, _processor = null) {
     _processor = _processor || this.processor;
     if (!_processor) {
-      throw new Error('Can not send events without recording first');
+      throw new Error("Can not send events without recording first");
     }
     const message = {
       event: name,
@@ -202,7 +202,7 @@ export class WavRecorder {
   listenForDeviceChange(callback) {
     if (callback === null && this._deviceChangeCallback) {
       navigator.mediaDevices.removeEventListener(
-        'devicechange',
+        "devicechange",
         this._deviceChangeCallback,
       );
       this._deviceChangeCallback = null;
@@ -216,7 +216,7 @@ export class WavRecorder {
         devices
           .map((d) => d.deviceId)
           .sort()
-          .join(',');
+          .join(",");
       const cb = async () => {
         let id = ++lastId;
         const devices = await this.listDevices();
@@ -227,7 +227,7 @@ export class WavRecorder {
           }
         }
       };
-      navigator.mediaDevices.addEventListener('devicechange', cb);
+      navigator.mediaDevices.addEventListener("devicechange", cb);
       cb();
       this._deviceChangeCallback = cb;
     }
@@ -240,11 +240,11 @@ export class WavRecorder {
    */
   async requestPermission() {
     const permissionStatus = await navigator.permissions.query({
-      name: 'microphone',
+      name: "microphone",
     });
-    if (permissionStatus.state === 'denied') {
-      window.alert('You must grant microphone access to use this feature.');
-    } else if (permissionStatus.state === 'prompt') {
+    if (permissionStatus.state === "denied") {
+      window.alert("You must grant microphone access to use this feature.");
+    } else if (permissionStatus.state === "prompt") {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
@@ -252,7 +252,7 @@ export class WavRecorder {
         const tracks = stream.getTracks();
         tracks.forEach((track) => track.stop());
       } catch (e) {
-        window.alert('You must grant microphone access to use this feature.');
+        window.alert("You must grant microphone access to use this feature.");
       }
     }
     return true;
@@ -265,17 +265,17 @@ export class WavRecorder {
   async listDevices() {
     if (
       !navigator.mediaDevices ||
-      !('enumerateDevices' in navigator.mediaDevices)
+      !("enumerateDevices" in navigator.mediaDevices)
     ) {
-      throw new Error('Could not request user devices');
+      throw new Error("Could not request user devices");
     }
     await this.requestPermission();
     const devices = await navigator.mediaDevices.enumerateDevices();
     const audioDevices = devices.filter(
-      (device) => device.kind === 'audioinput',
+      (device) => device.kind === "audioinput",
     );
     const defaultDeviceIndex = audioDevices.findIndex(
-      (device) => device.deviceId === 'default',
+      (device) => device.deviceId === "default",
     );
     const deviceList = [];
     if (defaultDeviceIndex !== -1) {
@@ -300,16 +300,14 @@ export class WavRecorder {
    */
   async begin(deviceId) {
     if (this.processor) {
-      throw new Error(
-        `Already connected: please call .end() to start a new session`,
-      );
+      throw new Error("Session already started");
     }
 
     if (
       !navigator.mediaDevices ||
-      !('getUserMedia' in navigator.mediaDevices)
+      !("getUserMedia" in navigator.mediaDevices)
     ) {
-      throw new Error('Could not request user media');
+      throw new Error("Could not request user media");
     }
     try {
       const config = { audio: true };
@@ -318,7 +316,7 @@ export class WavRecorder {
       }
       this.stream = await navigator.mediaDevices.getUserMedia(config);
     } catch (err) {
-      throw new Error('Could not start media stream');
+      throw new Error("Could not start media stream");
     }
 
     const context = new AudioContext({ sampleRate: this.sampleRate });
@@ -330,12 +328,12 @@ export class WavRecorder {
       console.error(e);
       throw new Error(`Could not add audioWorklet module: ${this.scriptSrc}`);
     }
-    const processor = new AudioWorkletNode(context, 'audio_processor');
+    const processor = new AudioWorkletNode(context, "audio_processor");
     processor.port.onmessage = (e) => {
       const { event, id, data } = e.data;
-      if (event === 'receipt') {
+      if (event === "receipt") {
         this.eventReceipts[id] = data;
-      } else if (event === 'chunk') {
+      } else if (event === "chunk") {
         if (this._chunkProcessorSize) {
           const buffer = this._chunkProcessorBuffer;
           this._chunkProcessorBuffer = {
@@ -366,9 +364,9 @@ export class WavRecorder {
     if (this.outputToSpeakers) {
       // eslint-disable-next-line no-console
       console.warn(
-        'Warning: Output to speakers may affect sound quality,\n' +
-          'especially due to system audio feedback preventative measures.\n' +
-          'use only for debugging',
+        "Warning: Output to speakers may affect sound quality,\n" +
+          "especially due to system audio feedback preventative measures.\n" +
+          "use only for debugging",
       );
       analyser.connect(context.destination);
     }
@@ -388,12 +386,12 @@ export class WavRecorder {
    * @returns {import('./analysis/audio_analysis.js').AudioAnalysisOutputType}
    */
   getFrequencies(
-    analysisType = 'frequency',
+    analysisType = "frequency",
     minDecibels = -100,
     maxDecibels = -30,
   ) {
     if (!this.processor) {
-      throw new Error('Session ended: please call .begin() first');
+      throw new Error("Session ended: please call .begin() first");
     }
     return AudioAnalysis.getFrequencies(
       this.analyser,
@@ -412,15 +410,15 @@ export class WavRecorder {
    */
   async pause() {
     if (!this.processor) {
-      throw new Error('Session ended: please call .begin() first');
+      throw new Error("Session ended: please call .begin() first");
     } else if (!this.recording) {
-      throw new Error('Already paused: please call .record() first');
+      throw new Error("Already paused: please call .record() first");
     }
     if (this._chunkProcessorBuffer.raw.byteLength) {
       this._chunkProcessor(this._chunkProcessorBuffer);
     }
-    this.log('Pausing ...');
-    await this._event('stop');
+    this.log("Pausing ...");
+    await this._event("stop");
     this.recording = false;
     return true;
   }
@@ -433,10 +431,10 @@ export class WavRecorder {
    */
   async record(chunkProcessor = () => {}, chunkSize = 8192) {
     if (!this.processor) {
-      throw new Error('Session ended: please call .begin() first');
+      throw new Error("Session ended: please call .begin() first");
     } else if (this.recording) {
-      throw new Error('Already recording: please call .pause() first');
-    } else if (typeof chunkProcessor !== 'function') {
+      throw new Error("Already recording: please call .pause() first");
+    } else if (typeof chunkProcessor !== "function") {
       throw new Error(`chunkProcessor must be a function`);
     }
     this._chunkProcessor = chunkProcessor;
@@ -445,8 +443,8 @@ export class WavRecorder {
       raw: new ArrayBuffer(0),
       mono: new ArrayBuffer(0),
     };
-    this.log('Recording ...');
-    await this._event('start');
+    this.log("Recording ...");
+    await this._event("start");
     this.recording = true;
     return true;
   }
@@ -457,9 +455,9 @@ export class WavRecorder {
    */
   async clear() {
     if (!this.processor) {
-      throw new Error('Session ended: please call .begin() first');
+      throw new Error("Session ended: please call .begin() first");
     }
-    await this._event('clear');
+    await this._event("clear");
     return true;
   }
 
@@ -469,10 +467,10 @@ export class WavRecorder {
    */
   async read() {
     if (!this.processor) {
-      throw new Error('Session ended: please call .begin() first');
+      throw new Error("Session ended: please call .begin() first");
     }
-    this.log('Reading ...');
-    const result = await this._event('read');
+    this.log("Reading ...");
+    const result = await this._event("read");
     return result;
   }
 
@@ -483,15 +481,15 @@ export class WavRecorder {
    */
   async save(force = false) {
     if (!this.processor) {
-      throw new Error('Session ended: please call .begin() first');
+      throw new Error("Session ended: please call .begin() first");
     }
     if (!force && this.recording) {
       throw new Error(
-        'Currently recording: please call .pause() first, or call .save(true) to force',
+        "Currently recording: please call .pause() first, or call .save(true) to force",
       );
     }
-    this.log('Exporting ...');
-    const exportData = await this._event('export');
+    this.log("Exporting ...");
+    const exportData = await this._event("export");
     const packer = new WavPacker();
     const result = packer.pack(this.sampleRate, exportData.audio);
     return result;
@@ -503,19 +501,19 @@ export class WavRecorder {
    */
   async end() {
     if (!this.processor) {
-      throw new Error('Session ended: please call .begin() first');
+      throw new Error("Session ended: please call .begin() first");
     }
 
     const _processor = this.processor;
 
-    this.log('Stopping ...');
-    await this._event('stop');
+    this.log("Stopping ...");
+    await this._event("stop");
     this.recording = false;
     const tracks = this.stream.getTracks();
     tracks.forEach((track) => track.stop());
 
-    this.log('Exporting ...');
-    const exportData = await this._event('export', {}, _processor);
+    this.log("Exporting ...");
+    const exportData = await this._event("export", {}, _processor);
 
     this.processor.disconnect();
     this.source.disconnect();
