@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import logo from "./assets/openai-logomark.svg";
+import { useCallback, useEffect, useRef, useState } from "react";
+import fin from "./assets/fin.svg";
 import EventLog from "./components/EventLog";
 import SessionControls from "./components/SessionControls";
-import ToolPanel from "./components/ToolPanel";
+import LeftPanel from "./components/LeftPanel.js";
 import { WavRecorder, WavStreamPlayer } from "./lib/wavtools/index.js";
 import { arrayBufferToBase64 } from "./utils/audio-utils.js";
 // import RecordRTC from "recordrtc";
@@ -41,142 +41,28 @@ export default function App() {
 
     const ws = new WebSocket(`${LOCAL_RELAY_SERVER_URL}`);
 
-    ws.addEventListener("open", async () => {
-      console.log("WebSocket connection opened1");
-      ws.send(
-        JSON.stringify({
-          app_id: "",
-          event: "start",
-          start: {
-            streamSid: `stream_${crypto.randomUUID()}`,
-            customParameters: {
-              app_id: 6,
-            },
-          },
-          // stream_id: RealtimeUtils.generateId('stream_'),
-          conversation_id: "",
-        })
-      );
+    // ws.addEventListener("open", async () => {
 
-      ws.addEventListener("message", async (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          if (data.media?.payload) {
-            // Use a more efficient base64 decoder
-            const audioData = new Uint8Array(
-              atob(data.media.payload)
-                .split("")
-                .map((c) => c.charCodeAt(0))
-            );
-            wavStreamPlayer.current.add16BitPCM(audioData.buffer);
-          }
-        } catch (err) {
-          console.error("Error processing message:", err);
-        }
-      });
+    // });
 
-      // // Create a MediaSource instance to handle streaming audio
-      // const mediaSource = new MediaSource();
-      // audioElement.current.src = URL.createObjectURL(mediaSource);
+    ws.addEventListener("close", (event) => {
+      console.log("WebSocket connection closed", event);
 
-      // // Track our audio source buffers by ID
-      // const sourceBuffers = new Map();
+      if (event.wasClean) {
+        console.log(
+          `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
+        );
+      } else {
+        console.log("Connection died");
+      }
 
-      // mediaSource.addEventListener("sourceopen", () => {
-      //   // We'll create source buffers as new tracks arrive
-      //   ws.onmessage = (event) => {
-      //     const data = JSON.parse(event.data);
-
-      //     if (data.media) {
-      //       const { id, payload } = data.media;
-
-      //       // Convert base64 to array buffer
-      //       const audioData = Uint8Array.from(atob(payload), (c) =>
-      //         c.charCodeAt(0),
-      //       );
-
-      //       // Create new source buffer for new tracks
-      //       if (!sourceBuffers.has(id)) {
-      //         const sourceBuffer = mediaSource.addSourceBuffer(
-      //           "audio/webm; codecs=opus",
-      //         );
-      //         sourceBuffers.set(id, sourceBuffer);
-      //       }
-
-      //       const sourceBuffer = sourceBuffers.get(id);
-
-      //       // Wait if the buffer is still updating
-      //       if (!sourceBuffer.updating) {
-      //         sourceBuffer.appendBuffer(audioData);
-      //       }
-      //     }
-      //   };
-      // });
-
-      // Handle microphone audio
-      // const recorder = new RecordRTC(ms, {
-      //   type: "audio",
-      //   mimeType: "audio/wav",
-      //   recorderType: RecordRTC.StereoAudioRecorder,
-      //   numberOfAudioChannels: 1,
-      //   desiredSampRate: 24000,
-      //   timeSlice: 100, // Record in 100ms chunks
-      //   ondataavailable: async (blob) => {
-      //     if (ws.readyState === WebSocket.OPEN) {
-      //       try {
-      //         // Convert blob directly to base64
-      //         const reader = new FileReader();
-      //         reader.onload = () => {
-      //           const base64Audio = reader.result.split(",")[1];
-      //           ws.send(
-      //             JSON.stringify({
-      //               event_id: `evt_${crypto.randomUUID()}`,
-      //               event: "media",
-      //               media: {
-      //                 payload: base64Audio,
-      //                 timestamp: Date.now(),
-      //               },
-      //               audio: base64Audio,
-      //             }),
-      //           );
-      //         };
-      //         reader.readAsDataURL(blob);
-      //       } catch (error) {
-      //         console.error("Error converting audio:", error);
-      //       }
-      //     }
-      //   },
-      // });
-
-      // recorder.startRecording();
-      // setMediaRecorder(recorder);
-
-      await wavRecorderRef.current.record((data) => {
-        if (data.mono.byteLength > 0) {
-          ws.send(
-            JSON.stringify({
-              event_id: `evt_${crypto.randomUUID()}`,
-              event: "media",
-              media: {
-                payload: arrayBufferToBase64(data.mono),
-                timestamp: Date.now(),
-              },
-              audio: arrayBufferToBase64(data.mono),
-            })
-          );
-        }
-      }, 4096);
-
-      // setAudioContext(audioContext);
-
-      setIsSessionActive(true);
-      setEvents([]);
+      stopSession();
     });
 
     ws.addEventListener("error", (e) => {
       console.error("WebSocket error", e);
-      setIsSessionActive(false);
-      setEvents([]);
+      // setEvents([]);
+      stopSession();
     });
 
     // Store references for cleanup
@@ -185,8 +71,12 @@ export default function App() {
 
   // Stop current session, clean up peer connection and data channel
   function stopSession() {
+    if (!isSessionActive) {
+      return;
+    }
+
     if (webSocket) {
-      webSocket.close();
+      webSocket.close(1000, "Normal closure");
     }
 
     if (wavRecorderRef.current) {
@@ -200,20 +90,22 @@ export default function App() {
 
     setIsSessionActive(false);
   }
-
   // Send a message to the model
-  function sendClientEvent(message: { [key: string]: any }) {
-    if (webSocket) {
-      message.event_id = message.event_id || crypto.randomUUID();
-      webSocket.send(JSON.stringify(message));
-      setEvents((prev) => [{ ...message, timestamp: Date.now() }, ...prev]);
-    } else {
-      console.error(
-        "Failed to send message - no data channel available",
-        message
-      );
-    }
-  }
+  const sendClientEvent = useCallback(
+    (message: any) => {
+      if (webSocket) {
+        message.event_id = message.event_id || crypto.randomUUID();
+        webSocket.send(JSON.stringify(message));
+        setEvents((prev) => [{ ...message, timestamp: Date.now() }, ...prev]);
+      } else {
+        console.error(
+          "Failed to send message - no websocket available",
+          message
+        );
+      }
+    },
+    [webSocket]
+  );
 
   // Send a text message to the model
   function sendTextMessage(message: string) {
@@ -237,9 +129,25 @@ export default function App() {
 
   // Attach event listeners to the data channel when a new one is created
   useEffect(() => {
+    console.log("webSocket", webSocket);
     if (webSocket) {
       // Append new server events to the list
       webSocket.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.media?.payload) {
+            // Use a more efficient base64 decoder
+            const audioData = new Uint8Array(
+              atob(data.media.payload)
+                .split("")
+                .map((c) => c.charCodeAt(0))
+            );
+            wavStreamPlayer.current.add16BitPCM(audioData.buffer);
+          }
+        } catch (err) {
+          console.error("Error processing message:", err);
+        }
+
         setEvents((prev) => [
           { ...JSON.parse(e.data), timestamp: Date.now() },
           ...prev,
@@ -247,12 +155,45 @@ export default function App() {
       };
 
       // Set session active when the data channel is opened
-      webSocket.onopen = () => {
-        setIsSessionActive(true);
+      webSocket.onopen = async () => {
+        console.log("WebSocket connection opened1");
+
         setEvents([]);
+        sendClientEvent({
+          app_id: "",
+          event: "start",
+          start: {
+            streamSid: `stream_${crypto.randomUUID()}`,
+            customParameters: {
+              app_id: 6,
+            },
+          },
+          // stream_id: RealtimeUtils.generateId('stream_'),
+          conversation_id: "",
+        });
+
+        await wavRecorderRef.current.record((data) => {
+          if (data.mono.byteLength > 0) {
+            let audioData = arrayBufferToBase64(data.mono);
+
+            sendClientEvent({
+              event_id: `evt_${crypto.randomUUID()}`,
+              event: "media",
+              media: {
+                payload: audioData,
+                timestamp: Date.now(),
+              },
+              audio: audioData,
+            });
+          }
+        }, 4096);
+
+        // setAudioContext(audioContext);
+
+        setIsSessionActive(true);
       };
     }
-  }, [webSocket]);
+  }, [webSocket, sendClientEvent]);
 
   // Attach event listeners to the data channel when a new one is created
   // useEffect(() => {
@@ -316,13 +257,13 @@ export default function App() {
     <>
       <nav className="w-full h-16 flex items-center">
         <div className="flex items-center gap-4 w-full m-4 pb-2 border-0 border-b border-solid border-gray-200">
-          <img style={{ width: "24px" }} src={logo} />
-          <h1>realtime console</h1>
+          <img style={{ width: "24px" }} src={fin} />
+          <h1>Fin Voice Demo</h1>
         </div>
       </nav>
-      <main className="flex w-full h-full">
-        <section className="flex w-full flex-col">
-          <section className="h-full px-4 overflow-y-auto">
+      <main className="flex w-full h-full overflow-hidden">
+        <section className="flex w-full flex-col overflow-hidden">
+          <section className="h-full px-4 overflow-hidden">
             <EventLog events={events} />
           </section>
           <section className=" h-32 p-4">
@@ -336,14 +277,9 @@ export default function App() {
             />
           </section>
         </section>
-        {/* <section className=" top-0 w-[380px] right-0 bottom-0 p-4 pt-0 overflow-y-auto">
-          <ToolPanel
-            sendClientEvent={sendClientEvent}
-            sendTextMessage={sendTextMessage}
-            events={events}
-            isSessionActive={isSessionActive}
-          />
-        </section> */}
+        <section className=" top-0 w-96 p-4 pt-0 overflow-y-auto">
+          <LeftPanel events={events} />
+        </section>
       </main>
     </>
   );
