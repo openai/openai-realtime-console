@@ -5,9 +5,13 @@ import SessionControls from "./SessionControls";
 import ToolPanel from "./ToolPanel";
 import { getToken } from "../app/actions";
 
-interface Event {
+
+export interface BaseEvent {
   type: string;
   event_id?: string;
+  item_id?: string;
+}
+export interface Event extends BaseEvent {
   item?: {
     type: string;
     role: string;
@@ -18,10 +22,38 @@ interface Event {
   };
 }
 
+export interface ConversationItemCreatedEvent extends BaseEvent {
+  previous_item_id: string;
+  item: {
+    id: string;
+    object: string;
+    type: string;
+    status: string;
+    role: string;
+    content: Array<{
+      type: string;
+      transcript?: string;
+      text: string;
+    }>;
+  };
+}
+
+export interface AudioTranscriptEvent extends BaseEvent {
+  transcript: string;
+}
+
+interface ChatItem {
+  item_id: string;
+  previous_item_id: string | null;
+  role: string;
+  transcript?: string;
+}
+
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<BaseEvent[]>([]);
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
@@ -120,18 +152,46 @@ export default function App() {
     sendClientEvent({ type: "response.create" });
   }
 
+  function conversationHandler(event: BaseEvent | ConversationItemCreatedEvent) {
+    if (event.type === "conversation.item.created") {
+        const conversationEvent = event as ConversationItemCreatedEvent;
+        setChatHistory(prevHistory => [...prevHistory, { 
+            item_id: conversationEvent.item?.id,
+            previous_item_id: conversationEvent.previous_item_id,
+            role: conversationEvent.item?.role || ''
+        }]);
+    } else if (
+        event.type === "response.audio_transcript.done" ||
+        event.type === "conversation.item.input_audio_transcription.completed"
+    ) {
+        const transcriptEvent = event as AudioTranscriptEvent;
+        setChatHistory(prevHistory => prevHistory.map(line => {
+            if (line.item_id === event.item_id) {
+                return {
+                    ...line,
+                    transcript: transcriptEvent.transcript
+                };
+            }
+            return line;
+        }));
+    }
+}
+
   // Attach event listeners to the data channel when a new one is created
   useEffect(() => {
     if (dataChannel) {
       // Append new server events to the list
       dataChannel.addEventListener("message", (e) => {
-        setEvents((prev) => [JSON.parse(e.data) as Event, ...prev]);
+        const eventData: Event = JSON.parse(e.data)
+        setEvents((prev) => [eventData, ...prev]);
+        conversationHandler(eventData)
       });
 
       // Set session active when the data channel is opened
       dataChannel.addEventListener("open", () => {
         setIsSessionActive(true);
         setEvents([]);
+        setChatHistory([]);
       });
     }
   }, [dataChannel]);
