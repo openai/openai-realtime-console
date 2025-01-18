@@ -1,4 +1,4 @@
-export async function GET() {
+export async function GET(request: Request) {
   const r = await fetch("https://api.openai.com/v1/realtime/sessions", {
     method: "POST",
     headers: {

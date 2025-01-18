@@ -1,20 +1,33 @@
 import { useEffect, useRef, useState } from "react";
-import logo from "/assets/openai-logomark.svg";
+import logo from "../../public/openai-logomark.svg";
 import EventLog from "./EventLog";
 import SessionControls from "./SessionControls";
 import ToolPanel from "./ToolPanel";
+import { getToken } from "../app/actions";
+
+interface Event {
+  type: string;
+  event_id?: string;
+  item?: {
+    type: string;
+    role: string;
+    content: Array<{
+      type: string;
+      text: string;
+    }>;
+  };
+}
 
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [dataChannel, setDataChannel] = useState(null);
-  const peerConnection = useRef(null);
-  const audioElement = useRef(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
+  const peerConnection = useRef<RTCPeerConnection | null>(null);
+  const audioElement = useRef<HTMLAudioElement | null>(null);
 
   async function startSession() {
     // Get an ephemeral key from the Fastify server
-    const tokenResponse = await fetch("/token");
-    const data = await tokenResponse.json();
+    const data = await getToken();
     const EPHEMERAL_KEY = data.client_secret.value;
 
     // Create a peer connection
@@ -23,7 +36,7 @@ export default function App() {
     // Set up to play remote audio from the model
     audioElement.current = document.createElement("audio");
     audioElement.current.autoplay = true;
-    pc.ontrack = (e) => (audioElement.current.srcObject = e.streams[0]);
+    pc.ontrack = (e) => (audioElement.current ? audioElement.current.srcObject = e.streams[0] : null);
 
     // Add local audio track for microphone input in the browser
     const ms = await navigator.mediaDevices.getUserMedia({
@@ -50,7 +63,7 @@ export default function App() {
       },
     });
 
-    const answer = {
+    const answer: RTCSessionDescriptionInit = {
       type: "answer",
       sdp: await sdpResponse.text(),
     };
@@ -74,7 +87,7 @@ export default function App() {
   }
 
   // Send a message to the model
-  function sendClientEvent(message) {
+  function sendClientEvent(message: Event) {
     if (dataChannel) {
       message.event_id = message.event_id || crypto.randomUUID();
       dataChannel.send(JSON.stringify(message));
@@ -88,8 +101,8 @@ export default function App() {
   }
 
   // Send a text message to the model
-  function sendTextMessage(message) {
-    const event = {
+  function sendTextMessage(message: string) {
+    const event: Event = {
       type: "conversation.item.create",
       item: {
         type: "message",
@@ -112,7 +125,7 @@ export default function App() {
     if (dataChannel) {
       // Append new server events to the list
       dataChannel.addEventListener("message", (e) => {
-        setEvents((prev) => [JSON.parse(e.data), ...prev]);
+        setEvents((prev) => [JSON.parse(e.data) as Event, ...prev]);
       });
 
       // Set session active when the data channel is opened
@@ -127,7 +140,7 @@ export default function App() {
     <>
       <nav className="absolute top-0 left-0 right-0 h-16 flex items-center">
         <div className="flex items-center gap-4 w-full m-4 pb-2 border-0 border-b border-solid border-gray-200">
-          <img style={{ width: "24px" }} src={logo} />
+          <img style={{ width: "24px" }} src={logo.src} />
           <h1>realtime console</h1>
         </div>
       </nav>
@@ -142,7 +155,7 @@ export default function App() {
               stopSession={stopSession}
               sendClientEvent={sendClientEvent}
               sendTextMessage={sendTextMessage}
-              events={events}
+              serverEvents={events}
               isSessionActive={isSessionActive}
             />
           </section>
@@ -150,7 +163,6 @@ export default function App() {
         <section className="absolute top-0 w-[380px] right-0 bottom-0 p-4 pt-0 overflow-y-auto">
           <ToolPanel
             sendClientEvent={sendClientEvent}
-            sendTextMessage={sendTextMessage}
             events={events}
             isSessionActive={isSessionActive}
           />

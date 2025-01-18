@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, KeyboardEvent, ChangeEvent } from "react";
 import { CloudLightning, CloudOff, MessageSquare } from "react-feather";
 import Button from "./Button";
 
-function SessionStopped({ startSession }) {
+interface SessionStoppedProps {
+  startSession: () => void;
+}
+
+function SessionStopped({ startSession }: SessionStoppedProps) {
   const [isActivating, setIsActivating] = useState(false);
 
   function handleStartSession() {
     if (isActivating) return;
-
     setIsActivating(true);
     startSession();
   }
@@ -25,7 +28,14 @@ function SessionStopped({ startSession }) {
   );
 }
 
-function SessionActive({ stopSession, sendTextMessage }) {
+interface SessionActiveProps {
+  stopSession: () => void;
+  sendTextMessage: (message: string) => void;
+  sendClientEvent?: (event: any) => void;
+  serverEvents?: any[];
+}
+
+function SessionActive({ stopSession, sendTextMessage }: SessionActiveProps) {
   const [message, setMessage] = useState("");
 
   function handleSendClientEvent() {
@@ -36,7 +46,7 @@ function SessionActive({ stopSession, sendTextMessage }) {
   return (
     <div className="flex items-center justify-center w-full h-full gap-4">
       <input
-        onKeyDown={(e) => {
+        onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
           if (e.key === "Enter" && message.trim()) {
             handleSendClientEvent();
           }
@@ -45,7 +55,7 @@ function SessionActive({ stopSession, sendTextMessage }) {
         placeholder="send a text message..."
         className="border border-gray-200 rounded-full p-4 flex-1"
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)}
       />
       <Button
         onClick={() => {
@@ -65,6 +75,15 @@ function SessionActive({ stopSession, sendTextMessage }) {
   );
 }
 
+interface SessionControlsProps {
+  startSession: () => void;
+  stopSession: () => void;
+  sendClientEvent: (event: any) => void;
+  sendTextMessage: (message: string) => void;
+  serverEvents: any[];
+  isSessionActive: boolean;
+}
+
 export default function SessionControls({
   startSession,
   stopSession,
@@ -72,7 +91,7 @@ export default function SessionControls({
   sendTextMessage,
   serverEvents,
   isSessionActive,
-}) {
+}: SessionControlsProps) {
   return (
     <div className="flex gap-4 border-t-2 border-gray-200 h-full rounded-md">
       {isSessionActive ? (
