@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import logo from "../../application/../public/openai-logomark.svg";
 import EventLog from "./EventLog";
 import SessionControls from "./SessionControls";
 import ToolPanel from "./ToolPanel";
 import { getToken } from "../app/actions";
+import { startRecognize, stopRecognize } from "../utils/speechRecognizer";
 
 
 export interface BaseEvent {
@@ -55,7 +57,9 @@ export default function App() {
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
+  const proRecognizer = useRef<sdk.SpeechRecognizer>(null);
   const audioElement = useRef<HTMLAudioElement | null>(null);
+  const mediaStream = useRef<MediaStream | null>(null);
 
   async function startSession() {
     // Get an ephemeral key from the Fastify server
@@ -65,18 +69,14 @@ export default function App() {
     // Create a peer connection
     const pc = new RTCPeerConnection();
 
-    // Set up to play remote audio from the model
     audioElement.current = document.createElement("audio");
     audioElement.current.autoplay = true;
     pc.ontrack = (e) => (audioElement.current ? audioElement.current.srcObject = e.streams[0] : null);
 
-    // Add local audio track for microphone input in the browser
-    const ms = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
-    pc.addTrack(ms.getTracks()[0]);
+    mediaStream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+    pc.addTrack(mediaStream.current.getTracks()[0]);
 
-    // Set up data channel for sending and receiving events
+    // register OpenAI realtime events
     const dc = pc.createDataChannel("oai-events");
     setDataChannel(dc);
 
@@ -104,13 +104,16 @@ export default function App() {
     peerConnection.current = pc;
   }
 
-  // Stop current session, clean up peer connection and data channel
   function stopSession() {
     if (dataChannel) {
       dataChannel.close();
     }
     if (peerConnection.current) {
       peerConnection.current.close();
+    }
+    if (mediaStream.current) {
+      mediaStream.current.getTracks().forEach(track => track.stop());
+      mediaStream.current = null;
     }
 
     setIsSessionActive(false);
@@ -196,6 +199,22 @@ export default function App() {
     }
   }, [dataChannel]);
 
+  const handleStartPronunciation = async (output: any) => {
+    if (!mediaStream.current) {
+      console.error("No media stream available");
+      return;
+    }
+    const language = JSON.parse(output.arguments).language;
+    proRecognizer.current = await startRecognize(mediaStream.current, language);
+  };
+
+  const handleStopPronunciation = async () => {
+    if (proRecognizer.current) {
+      await stopRecognize(proRecognizer.current);
+      proRecognizer.current = null;
+    }
+  };
+
   return (
     <>
       <nav className="absolute top-0 left-0 right-0 h-16 flex items-center">
@@ -222,6 +241,8 @@ export default function App() {
         </section>
         <section className="absolute top-0 w-[380px] right-0 bottom-0 p-4 pt-0 overflow-y-auto">
           <ToolPanel
+            onStartPronunciation={handleStartPronunciation}
+            onStopPronunciation={handleStopPronunciation}
             sendClientEvent={sendClientEvent}
             events={events}
             isSessionActive={isSessionActive}

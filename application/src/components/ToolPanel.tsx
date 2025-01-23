@@ -1,7 +1,21 @@
 import { useEffect, useState } from "react";
 
-const functionDescription = `
-Call this function when a user asks for a color palette.
+const START_PRONUNCIATION_FN_NAME = "start_pronunciation_assessment"
+const START_PRONUNCIATION_FN_DESCRIPTION = `
+Call this function on two conditions:
+- That you will be silent when this function is called
+- That you will remain silent after this function is called, until you call "stop_pronunciation_assessment" function.
+This function will let the speech recognizer listen in on the user in the same session and assess the pronunciation.
+Once the student reaches the end of the assessment, call "stop_pronunciation_assessment" function.
+`;
+
+const STOP_PRONUNCIATION_FN_NAME = "stop_pronunciation_assessment"
+const STOP_PRONUNCIATION_FN_DESCRIPTION = `
+Call this function on two conditions:
+- That you can only call this function when a pronounciation assessment is ongoing
+- That you will be silent when this function is called
+This function will stop speech recognizer and produce the pronunciation result.
+Once the student reaches the end of the assessment, call "stop_pronunciation_assessment" function.
 `;
 
 const sessionUpdate = {
@@ -10,27 +24,31 @@ const sessionUpdate = {
     tools: [
       {
         type: "function",
-        name: "display_color_palette",
-        description: functionDescription,
+        name: START_PRONUNCIATION_FN_NAME,
+        description: START_PRONUNCIATION_FN_DESCRIPTION,
         parameters: {
           type: "object",
           strict: true,
           properties: {
-            theme: {
+            language: {
               type: "string",
-              description: "Description of the theme for the color scheme.",
-            },
-            colors: {
-              type: "array",
-              description: "Array of five hex color codes based on the theme.",
-              items: {
-                type: "string",
-                description: "Hex color code",
-              },
-            },
+              description: "The language that the user is being assessed on.",
+              enum: [
+                "zh-HK",
+                "zh-CN",
+                "zh-TW", 
+                "ar-EG", 
+                "ar-SA"
+              ],
+            }
           },
-          required: ["theme", "colors"],
+          required: ["language"],
         },
+      },
+      {
+        type: "function",
+        name: STOP_PRONUNCIATION_FN_NAME,
+        description: STOP_PRONUNCIATION_FN_DESCRIPTION
       },
     ],
     tool_choice: "auto",
@@ -38,24 +56,24 @@ const sessionUpdate = {
 };
 
 function FunctionCallOutput({ functionCallOutput }) {
-  const { theme, colors } = JSON.parse(functionCallOutput.arguments);
+  // const { theme, colors } = JSON.parse(functionCallOutput.arguments);
 
-  const colorBoxes = colors.map((color) => (
-    <div
-      key={color}
-      className="w-full h-16 rounded-md flex items-center justify-center border border-gray-200"
-      style={{ backgroundColor: color }}
-    >
-      <p className="text-sm font-bold text-black bg-slate-100 rounded-md p-2 border border-black">
-        {color}
-      </p>
-    </div>
-  ));
+  // const colorBoxes = colors.map((color) => (
+  //   <div
+  //     key={color}
+  //     className="w-full h-16 rounded-md flex items-center justify-center border border-gray-200"
+  //     style={{ backgroundColor: color }}
+  //   >
+  //     <p className="text-sm font-bold text-black bg-slate-100 rounded-md p-2 border border-black">
+  //       {color}
+  //     </p>
+  //   </div>
+  // ));
 
   return (
     <div className="flex flex-col gap-2">
-      <p>Theme: {theme}</p>
-      {colorBoxes}
+      {/* <p>Theme: {theme}</p> */}
+      {/* {colorBoxes} */}
       <pre className="text-xs bg-gray-100 rounded-md p-2 overflow-x-auto">
         {JSON.stringify(functionCallOutput, null, 2)}
       </pre>
@@ -66,7 +84,15 @@ function FunctionCallOutput({ functionCallOutput }) {
 export default function ToolPanel({
   isSessionActive,
   sendClientEvent,
+  onStartPronunciation,
+  onStopPronunciation,
   events,
+}: {
+  isSessionActive: boolean;
+  sendClientEvent: (event: any) => void;
+  onStartPronunciation: (output: any) => Promise<void>;
+  onStopPronunciation: () => Promise<void>;
+  events: any[];
 }) {
   const [functionAdded, setFunctionAdded] = useState(false);
   const [functionCallOutput, setFunctionCallOutput] = useState(null);
@@ -88,20 +114,26 @@ export default function ToolPanel({
       mostRecentEvent.response.output.forEach((output) => {
         if (
           output.type === "function_call" &&
-          output.name === "display_color_palette"
+          output.name === START_PRONUNCIATION_FN_NAME
         ) {
-          setFunctionCallOutput(output);
-          setTimeout(() => {
-            sendClientEvent({
-              type: "response.create",
-              response: {
-                instructions: `
-                ask for feedback about the color palette - don't repeat 
-                the colors, just ask if they like the colors.
-              `,
-              },
-            });
-          }, 500);
+          onStartPronunciation(output);
+
+          // setTimeout(() => {
+          //   sendClientEvent({
+          //     type: "response.create",
+          //     response: {
+          //       instructions: `
+          //       Ask for student's feedback and aspects of today's lesson they want to revisit next time.
+          //     `,
+          //     },
+          //   });
+          // }, 500);
+        }
+        if (
+          output.type === "function_call" &&
+          output.name === STOP_PRONUNCIATION_FN_NAME
+        ) {
+          onStopPronunciation();
         }
       });
     }

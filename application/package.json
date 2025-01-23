@@ -13,6 +13,7 @@
     "@fastify/vite": "^6.0.5",
     "fastify": "^4.24.3",
     "history": "^5.3.0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.42.0",
     "minipass": "^7.0.4",
     "next": "^15.1.5",
     "react": "^18.2.0",
@@ -21,7 +22,8 @@
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.20.0",
     "unihead": "^0.0.6",
-    "valtio": "^1.12.0"
+    "valtio": "^1.12.0",
+    "wav": "^1.0.2"
   },
   "devDependencies": {
     "@types/node": "22.10.7",
