@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { RealtimeUtils } from '@openai/realtime-api-beta/lib/utils.js';
-import Speaker from 'speaker';
+// import Speaker from 'speaker';
 
 export class RealtimeRelay {
   constructor(apiKey) {
@@ -25,11 +25,11 @@ export class RealtimeRelay {
     this.wss = new WebSocketServer({ port, host, path });
     this.wss.on('connection', this.connectionHandler.bind(this));
     this.log(`Listening on ws://${host}:${port}${path}`);
-    this.speaker = new Speaker({
-      channels: 1,
-      bitDepth: 16,
-      sampleRate: 24000,
-    });
+    // this.speaker = new Speaker({
+    //   channels: 1,
+    //   bitDepth: 16,
+    //   sampleRate: 24000,
+    // });
   }
 
   sendAudioBufferToESP32(ws, audioBuffer, chunkSize = 1024) {
@@ -71,8 +71,11 @@ export class RealtimeRelay {
       if (event.type === 'session.created') {
         // Update session settings after session is created
         client.updateSession({
-          voice: 'shimmer',
-          turn_detection: { type: 'server_vad', threshold: 0.1 },
+          voice: 'ash',
+          turn_detection: { type: 'server_vad', threshold: 0.5, // 0.0 to 1.0,
+            prefix_padding_ms: 300, // How much audio to include in the audio stream before the speech starts.
+            silence_duration_ms: 200, // How long to wait to mark the speech as stopped.
+            },
         });
       }
 
@@ -87,7 +90,6 @@ export class RealtimeRelay {
             if (delta?.audio) {
               const audioBuffer = Buffer.from(delta.audio.buffer);
               this.sendAudioBufferToESP32(ws, audioBuffer);
-
               // this.speaker.write(audioBuffer);
             }
             break;

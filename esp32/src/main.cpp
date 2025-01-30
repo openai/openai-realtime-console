@@ -5,10 +5,21 @@
 #include <WebSocketsClient.h>
 #include <driver/i2s.h>
 #include <driver/rtc_io.h>
+#include "Button.h"
 
 WebSocketsClient webSocket;
 String authMessage;
 int currentVolume = 50;
+
+void enterSleep()
+{
+    Serial.println("Going to sleep...");
+    webSocket.sendTXT("{\"speaker\": \"user\", \"is_ending\": true}");
+    webSocket.disconnect();
+    delay(200);
+    Serial.flush();
+    esp_deep_sleep_start();
+}
 
 void scaleAudioVolume(uint8_t *input, uint8_t *output, size_t length, int volume)
 {
@@ -79,6 +90,30 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     }
 }
 
+const char *CA_cert = R"EOF(
+-----BEGIN CERTIFICATE-----
+MIIDejCCAmKgAwIBAgIQf+UwvzMTQ77dghYQST2KGzANBgkqhkiG9w0BAQsFADBX
+MQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEQMA4GA1UE
+CxMHUm9vdCBDQTEbMBkGA1UEAxMSR2xvYmFsU2lnbiBSb290IENBMB4XDTIzMTEx
+NTAzNDMyMVoXDTI4MDEyODAwMDA0MlowRzELMAkGA1UEBhMCVVMxIjAgBgNVBAoT
+GUdvb2dsZSBUcnVzdCBTZXJ2aWNlcyBMTEMxFDASBgNVBAMTC0dUUyBSb290IFI0
+MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE83Rzp2iLYK5DuDXFgTB7S0md+8Fhzube
+Rr1r1WEYNa5A3XP3iZEwWus87oV8okB2O6nGuEfYKueSkWpz6bFyOZ8pn6KY019e
+WIZlD6GEZQbR3IvJx3PIjGov5cSr0R2Ko4H/MIH8MA4GA1UdDwEB/wQEAwIBhjAd
+BgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zAd
+BgNVHQ4EFgQUgEzW63T/STaj1dj8tT7FavCUHYwwHwYDVR0jBBgwFoAUYHtmGkUN
+l8qJUC99BM00qP/8/UswNgYIKwYBBQUHAQEEKjAoMCYGCCsGAQUFBzAChhpodHRw
+Oi8vaS5wa2kuZ29vZy9nc3IxLmNydDAtBgNVHR8EJjAkMCKgIKAehhxodHRwOi8v
+Yy5wa2kuZ29vZy9yL2dzcjEuY3JsMBMGA1UdIAQMMAowCAYGZ4EMAQIBMA0GCSqG
+SIb3DQEBCwUAA4IBAQAYQrsPBtYDh5bjP2OBDwmkoWhIDDkic574y04tfzHpn+cJ
+odI2D4SseesQ6bDrarZ7C30ddLibZatoKiws3UL9xnELz4ct92vID24FfVbiI1hY
++SW6FoVHkNeWIP0GCbaM4C6uVdF5dTUsMVs/ZbzNnIdCp5Gxmx5ejvEau8otR/Cs
+kGN+hr/W5GvT1tMBjgWKZ1i4//emhA1JG1BbPzoLJQvyEotc03lXjTaCzv8mEbep
+8RqZ7a2CPsgRbuvTPBwcOMBBmuFeU88+FSBX6+7iP0il8b4Z0QFqIwwMHfs/L6K1
+vepuoxtGzi4CZ68zJpiq1UvSqTbFJjtbD4seiMHl
+-----END CERTIFICATE-----
+)EOF";
+
 void websocket_setup(String server_domain, int port, String path)
 {
     if (WiFi.status() != WL_CONNECTED)
@@ -87,7 +122,7 @@ void websocket_setup(String server_domain, int port, String path)
         return;
     }
     Serial.println("connected to WiFi");
-    webSocket.begin(server_domain, port, path);
+    webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
     webSocket.onEvent(webSocketEvent);
     // webSocket.setAuthorization("user", "Password");
     webSocket.setReconnectInterval(1000);
@@ -95,7 +130,7 @@ void websocket_setup(String server_domain, int port, String path)
 
 void connectWithPassword()
 {
-    WiFi.begin("launchlab", "LaunchLabRocks");
+    WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
 
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -109,7 +144,9 @@ void connectWithPassword()
 
     // Connect to WebSocket if successfully registered
     Serial.println("Connecting to WebSocket server...");
-    websocket_setup("192.168.2.236", 8081, "/");
+    // websocket_setup("10.2.1.51", 8000, "/");
+    // websocket_setup("starmoon.deno.dev",443, "/");
+    websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
 }
 
 #define NOISE_THRESHOLD 100 // Adjust based on noise level
@@ -144,12 +181,65 @@ void micTask(void *parameter)
     vTaskDelete(NULL);
 }
 
+esp_err_t getErr = ESP_OK;
+
+void printOutESP32Error(esp_err_t err)
+{
+    switch (err)
+    {
+    case ESP_OK:
+        Serial.println("ESP_OK no errors");
+        break;
+    case ESP_ERR_INVALID_ARG:
+        Serial.println("ESP_ERR_INVALID_ARG if the selected GPIO is not an RTC GPIO, or the mode is invalid");
+        break;
+    case ESP_ERR_INVALID_STATE:
+        Serial.println("ESP_ERR_INVALID_STATE if wakeup triggers conflict or wireless not stopped");
+        break;
+    default:
+        Serial.printf("Unknown error code: %d\n", err);
+        break;
+    }
+}
+
+static void onButtonLongPressUpEventCb(void *button_handle, void *usr_data)
+{
+    Serial.println("Button long press end");
+    delay(10);
+    enterSleep();
+}
+
+static void onButtonDoubleClickCb(void *button_handle, void *usr_data)
+{
+    Serial.println("Button double click");
+    delay(10);
+    enterSleep();
+}
+
+
 void setup()
 {
     Serial.begin(115200);
     delay(500);
 
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
+     while (!Serial)
+        ;
+
+    // Print a welcome message to the Serial port.
+    Serial.println("\n\nCaptive Test, V0.5.0 compiled " __DATE__ " " __TIME__ " by CD_FER"); //__DATE__ is provided by the platformio ide
+    Serial.printf("%s-%d\n\r", ESP.getChipModel(), ESP.getChipRevision());
+
+    getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
+    printOutESP32Error(getErr);
+
+
+    Button *btn = new Button(BUTTON_PIN, false);
+    // Main button
+    btn->attachLongPressUpEventCb(&onButtonLongPressUpEventCb, NULL);
+    btn->attachDoubleClickEventCb(&onButtonDoubleClickCb, NULL);
+    btn->detachSingleClickEvent();
+
+    // pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
 

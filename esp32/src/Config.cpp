@@ -32,23 +32,23 @@ const int I2S_READ_LEN = 1024;
 int16_t sBuffer[bufferLen];
 
 // ----------------- Pin Definitions -----------------
+const i2s_port_t I2S_PORT_IN = I2S_NUM_0;
+const i2s_port_t I2S_PORT_OUT = I2S_NUM_1;
 
 #ifdef USE_NORMAL_ESP32
 
-// XIAO ESP32 pins
-const int LED_PIN = 2;
-const int I2S_SD = 13;
-const int I2S_WS = 5;
-const int I2S_SCK = 18;
-const i2s_port_t I2S_PORT_IN = I2S_NUM_0;
+const int LED_PIN = 13;
 
-const int I2S_WS_OUT = 32;
-const int I2S_BCK_OUT = 33;
-const int I2S_DATA_OUT = 25;
-const i2s_port_t I2S_PORT_OUT = I2S_NUM_1;
+const int I2S_SD = 14;
+const int I2S_WS = 4;
+const int I2S_SCK = 1;
+
+const int I2S_WS_OUT = 5;
+const int I2S_BCK_OUT = 6;
+const int I2S_DATA_OUT = 7;
 const int I2S_SD_OUT = -1;
 
-const gpio_num_t BUTTON_PIN GPIO_NUM_26 // Only RTC IO are allowed - ESP32 Pin example
+const gpio_num_t BUTTON_PIN = GPIO_NUM_2; // Only RTC IO are allowed - ESP32 Pin example
 
 #elif defined(USE_XIAO_ESP32)
 // Normal ESP32 pins
