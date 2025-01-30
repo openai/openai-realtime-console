@@ -10,6 +10,12 @@
 WebSocketsClient webSocket;
 String authMessage;
 int currentVolume = 50;
+static bool micEnabled = true;
+
+void setMicEnabled(bool enabled)
+{
+    micEnabled = enabled;
+}
 
 void enterSleep()
 {
@@ -48,25 +54,50 @@ void scaleAudioVolume(uint8_t *input, uint8_t *output, size_t length, int volume
     }
 }
 
+// Wait until I2S has finished playing all queued samples
+void drainI2SOutput() {
+  // Option A: If i2s_write() blocks fully, you might be done already.
+  // Option B: Force clear & small delay:
+  i2s_zero_dma_buffer(I2S_PORT_OUT);
+
+  // Give some time for final samples to finish playing 
+  // (Adjust 50ms as needed for buffer size/sample rate)
+  vTaskDelay(pdMS_TO_TICKS(50));
+}
+
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 {
     switch (type)
     {
     case WStype_DISCONNECTED:
         Serial.printf("[WSc] Disconnected!\n");
-        digitalWrite(LED_PIN, LOW);
+        digitalWrite(LED_PIN, HIGH);
         vTaskDelay(1000);
         break;
     case WStype_CONNECTED:
         Serial.printf("[WSc] Connected to url: %s\n", payload);
-        // webSocket.sendBIN(testPayload, sizeof(testPayload));
-        digitalWrite(LED_PIN, HIGH);
+        digitalWrite(LED_PIN, LOW);
         break;
     case WStype_TEXT:
         Serial.printf("[WSc] get text: %s\n", payload);
+        if (strcmp((char*)payload, "response.audio.done") == 0
+          || strcmp((char*)payload, "response.done") == 0) {
+        Serial.println("Audio stream complete. Draining I2S output...");
+        drainI2SOutput();
+
+        // Now that playback has finished, re-enable mic
+        setMicEnabled(true);
+        Serial.println("Microphone re-enabled");
+      }
         break;
     case WStype_BIN:
     {
+
+      // If this is the first audio chunk of a new TTS segment, disable the mic
+      if (micEnabled) {
+        Serial.println("Disabling mic for playback");
+        setMicEnabled(false);
+      }
 
         // Create a buffer for the scaled audio
         uint8_t *scaledAudio = (uint8_t *)malloc(length);
@@ -122,7 +153,12 @@ void websocket_setup(String server_domain, int port, String path)
         return;
     }
     Serial.println("connected to WiFi");
-    webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
+    Serial.println("Setting up websocket and debug info");
+    Serial.println(server_domain);
+    Serial.println(port);
+    Serial.println(path);
+    webSocket.begin(server_domain, port, path);
+    // webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
     webSocket.onEvent(webSocketEvent);
     // webSocket.setAuthorization("user", "Password");
     webSocket.setReconnectInterval(1000);
@@ -130,7 +166,7 @@ void websocket_setup(String server_domain, int port, String path)
 
 void connectWithPassword()
 {
-    WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
+    WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
 
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -144,12 +180,10 @@ void connectWithPassword()
 
     // Connect to WebSocket if successfully registered
     Serial.println("Connecting to WebSocket server...");
-    // websocket_setup("10.2.1.51", 8000, "/");
+    websocket_setup("192.168.1.166", 8000, "/");
     // websocket_setup("starmoon.deno.dev",443, "/");
-    websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
+    // websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
 }
-
-#define NOISE_THRESHOLD 100 // Adjust based on noise level
 
 void micTask(void *parameter)
 {
@@ -157,7 +191,7 @@ void micTask(void *parameter)
     i2s_setpin_mic();
     i2s_start(I2S_PORT_IN);
 
-    int i2s_read_len = 4096;
+    int i2s_read_len = 1024;
     size_t bytes_read;
     char *i2s_read_buff = (char *)calloc(i2s_read_len, sizeof(char));
     uint8_t *flash_write_buff = (uint8_t *)calloc(i2s_read_len, sizeof(char));
@@ -168,7 +202,7 @@ void micTask(void *parameter)
         if (i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY) == ESP_OK)
         {
             // Send directly to WebSocket
-            if (webSocket.isConnected())
+            if (webSocket.isConnected() && micEnabled)
             {
                 i2s_adc_data_scale(flash_write_buff, (uint8_t *)i2s_read_buff, i2s_read_len);
                 webSocket.sendBIN((uint8_t *)i2s_read_buff, bytes_read);
@@ -241,7 +275,7 @@ void setup()
 
     // pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, LOW);
+    digitalWrite(LED_PIN, HIGH);
 
     connectWithPassword();
 
