@@ -9,7 +9,11 @@
 
 WebSocketsClient webSocket;
 String authMessage;
-int currentVolume = 100;
+int currentVolume = 70;
+
+// Add these global variables
+unsigned long connectionStartTime = 0;
+bool micEnabled = false;
 
 void enterSleep()
 {
@@ -55,15 +59,29 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     case WStype_DISCONNECTED:
         Serial.printf("[WSc] Disconnected!\n");
         digitalWrite(LED_PIN, LOW);
+        connectionStartTime = 0;  // Reset timer
+        micEnabled = false;
         vTaskDelay(1000);
         break;
     case WStype_CONNECTED:
         Serial.printf("[WSc] Connected to url: %s\n", payload);
-        webSocket.sendTXT("{\"user\": \"Tell me a really cool story about batman\"}");
+        webSocket.sendTXT("{\"type\": \"user\", \"msg\": \"Tell me a 3 sentence story about batman\"}");
         digitalWrite(LED_PIN, HIGH);
         break;
     case WStype_TEXT:
         Serial.printf("[WSc] get text: %s\n", payload);
+        // receive response.audio.done or response.done, then start listening again
+        if (strcmp((char*)payload, "response.done") == 0 || strcmp((char*)payload, "response.audio.done") == 0) {
+            Serial.println("Received response.done, starting listening again");
+            // Start listening again
+            connectionStartTime = millis();  // Start timer
+            micEnabled = true;
+    i2s_zero_dma_buffer(I2S_PORT_OUT);
+        } else if (strcmp((char*)payload, "response.created") == 0) {
+            Serial.println("Received response.created, stopping listening");
+            connectionStartTime = 0;
+            micEnabled = false;
+        }
         break;
     case WStype_BIN:
     {
@@ -73,9 +91,12 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
         scaleAudioVolume(payload, scaledAudio, length, currentVolume);
 
         size_t bytes_written;
+        if (!micEnabled) {
         esp_err_t err = i2s_write(I2S_PORT_OUT, scaledAudio, length, &bytes_written, portMAX_DELAY);
+                Serial.printf("I2S write result: %s, bytes written: %d\n", esp_err_to_name(err), bytes_written);
 
-        Serial.printf("I2S write result: %s, bytes written: %d\n", esp_err_to_name(err), bytes_written);
+        }
+
         free(scaledAudio);
     }
     break;
@@ -153,19 +174,22 @@ void websocket_setup(String server_domain, int port, String path)
         return;
     }
     Serial.println("connected to WiFi");
-    webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
-    // webSocket.begin(server_domain.c_str(), port, path.c_str());
+    // webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
+    webSocket.begin(server_domain.c_str(), port, path.c_str());
     webSocket.onEvent(webSocketEvent);
     // webSocket.setAuthorization("user", "Password");
     webSocket.setReconnectInterval(1000);
+    
 }
 
 void connectWithPassword()
 {
     IPAddress dns1(8, 8, 8, 8);        // Google DNS
-IPAddress dns2(1, 1, 1, 1);        // Cloudflare DNS
-WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
-    WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
+    IPAddress dns2(1, 1, 1, 1);        // Cloudflare DNS
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
+
+    WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
+    // WiFi.begin("akaPhone", "akashclarkkent1");
 
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -179,51 +203,51 @@ WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
 
     // Connect to WebSocket if successfully registered
     Serial.println("Connecting to WebSocket server...");
-    // websocket_setup("192.168.1.166", 8000, "/");
-    websocket_setup("starmoon.deno.dev",443, "/");
+    websocket_setup("10.2.1.51", 8000, "/");
+    // websocket_setup("starmoon.deno.dev",443, "/");
     // websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
 }
 
-// void micTask(void *parameter)
-// {
-//     i2s_install_mic();
-//     i2s_setpin_mic();
-//     i2s_start(I2S_PORT_IN);
+void micTask(void *parameter)
+{
+    i2s_install_mic();
+    i2s_setpin_mic();
+    i2s_start(I2S_PORT_IN);
 
-//     const int i2s_read_len = 4096;
-//     size_t bytes_read;
-//     char *i2s_read_buff = (char *)calloc(i2s_read_len, 1);
-//     char *flash_write_buff = (char *)calloc(i2s_read_len, 1);
+    const int i2s_read_len = 1024;
+    size_t bytes_read;
+    char *i2s_read_buff = (char *)calloc(i2s_read_len, 1);
+    char *flash_write_buff = (char *)calloc(i2s_read_len, 1);
 
-//     while (1) {
-//         // Read audio data
-//         if (i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len,
-//                      &bytes_read, portMAX_DELAY) == ESP_OK)
-//         {
-//             if (webSocket.isConnected()) {
-//                 // Scale or convert if needed
-//                 i2s_adc_data_scale((uint8_t*)flash_write_buff,
-//                                    (uint8_t*)i2s_read_buff,
-//                                    bytes_read);
+    while (1) {
+        // Read audio data
+        if (micEnabled && webSocket.isConnected() && i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len,
+                     &bytes_read, portMAX_DELAY) == ESP_OK)
+        {
+           
+                // Scale or convert if needed
+                i2s_adc_data_scale((uint8_t*)flash_write_buff,
+                                   (uint8_t*)i2s_read_buff,
+                                   bytes_read);
 
-//                 // Allocate a temporary buffer for sending
-//                 uint8_t* safeSend = (uint8_t*) malloc(bytes_read);
-//                 memcpy(safeSend, flash_write_buff, bytes_read);
+                // Allocate a temporary buffer for sending
+                uint8_t* safeSend = (uint8_t*) malloc(bytes_read);
+                memcpy(safeSend, flash_write_buff, bytes_read);
 
-//                 // Now send
-//                 webSocket.sendBIN(safeSend, bytes_read);
+                // Now send
+                webSocket.sendBIN(safeSend, bytes_read);
 
-//                 // Free the temp buffer
-//                 free(safeSend);
-//             }
-//         }
-//         vTaskDelay(1);
-//     }
+                // Free the temp buffer
+                free(safeSend);
+            
+        }
+        vTaskDelay(1);
+    }
 
-//     free(i2s_read_buff);
-//     free(flash_write_buff);
-//     vTaskDelete(NULL);
-// }
+    free(i2s_read_buff);
+    free(flash_write_buff);
+    vTaskDelete(NULL);
+}
 
 
 esp_err_t getErr = ESP_OK;
@@ -298,10 +322,19 @@ void setup()
     Serial.printf("Actual I2S sample rate: %.0f Hz\n", real_rate);
 
     // xTaskCreate(buttonTask, "Button Task", 8192, NULL, 5, NULL);
-    // xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
+    xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
 }
 
 void loop()
 {
     webSocket.loop();
+
+    // Send detect_vad after 10 seconds
+    if (connectionStartTime && micEnabled && 
+        millis() - connectionStartTime >= 10000) {
+        webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
+        connectionStartTime = 0;
+        micEnabled = false;
+        Serial.println("Sent VAD detection request");
+    }
 }

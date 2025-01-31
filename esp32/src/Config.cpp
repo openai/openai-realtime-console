@@ -26,10 +26,7 @@ String authTokenGlobal;
 
 // I2S and Audio parameters
 const uint32_t SAMPLE_RATE = 24000;
-const int bufferCnt = 25;
-const int bufferLen = 1024;
 const int I2S_READ_LEN = 1024;
-int16_t sBuffer[bufferLen];
 
 // ----------------- Pin Definitions -----------------
 const i2s_port_t I2S_PORT_IN = I2S_NUM_0;

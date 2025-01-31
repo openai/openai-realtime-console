@@ -24,10 +24,7 @@ extern const char *auth_token;
 
 // I2S and Audio parameters
 extern const uint32_t SAMPLE_RATE;
-extern const int bufferCnt;
-extern const int bufferLen;
 extern const int I2S_READ_LEN;
-extern int16_t sBuffer[];
 
 // ----------------- Pin Definitions -----------------
 // Define which board you are using (uncomment one)
