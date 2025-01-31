@@ -9,18 +9,12 @@
 
 WebSocketsClient webSocket;
 String authMessage;
-int currentVolume = 50;
-static bool micEnabled = true;
-
-void setMicEnabled(bool enabled)
-{
-    micEnabled = enabled;
-}
+int currentVolume = 100;
 
 void enterSleep()
 {
     Serial.println("Going to sleep...");
-    webSocket.sendTXT("{\"speaker\": \"user\", \"is_ending\": true}");
+    // webSocket.sendTXT("{\"speaker\": \"user\", \"is_ending\": true}");
     webSocket.disconnect();
     delay(200);
     Serial.flush();
@@ -54,50 +48,25 @@ void scaleAudioVolume(uint8_t *input, uint8_t *output, size_t length, int volume
     }
 }
 
-// Wait until I2S has finished playing all queued samples
-void drainI2SOutput() {
-  // Option A: If i2s_write() blocks fully, you might be done already.
-  // Option B: Force clear & small delay:
-  i2s_zero_dma_buffer(I2S_PORT_OUT);
-
-  // Give some time for final samples to finish playing 
-  // (Adjust 50ms as needed for buffer size/sample rate)
-  vTaskDelay(pdMS_TO_TICKS(50));
-}
-
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 {
     switch (type)
     {
     case WStype_DISCONNECTED:
         Serial.printf("[WSc] Disconnected!\n");
-        digitalWrite(LED_PIN, HIGH);
+        digitalWrite(LED_PIN, LOW);
         vTaskDelay(1000);
         break;
     case WStype_CONNECTED:
         Serial.printf("[WSc] Connected to url: %s\n", payload);
-        digitalWrite(LED_PIN, LOW);
+        webSocket.sendTXT("{\"user\": \"Tell me a really cool story about batman\"}");
+        digitalWrite(LED_PIN, HIGH);
         break;
     case WStype_TEXT:
         Serial.printf("[WSc] get text: %s\n", payload);
-        if (strcmp((char*)payload, "response.audio.done") == 0
-          || strcmp((char*)payload, "response.done") == 0) {
-        Serial.println("Audio stream complete. Draining I2S output...");
-        drainI2SOutput();
-
-        // Now that playback has finished, re-enable mic
-        setMicEnabled(true);
-        Serial.println("Microphone re-enabled");
-      }
         break;
     case WStype_BIN:
     {
-
-      // If this is the first audio chunk of a new TTS segment, disable the mic
-      if (micEnabled) {
-        Serial.println("Disabling mic for playback");
-        setMicEnabled(false);
-      }
 
         // Create a buffer for the scaled audio
         uint8_t *scaledAudio = (uint8_t *)malloc(length);
@@ -121,27 +90,58 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     }
 }
 
+// supabase CA cert
+// const char *CA_cert = R"EOF(
+// -----BEGIN CERTIFICATE-----
+// MIIDejCCAmKgAwIBAgIQf+UwvzMTQ77dghYQST2KGzANBgkqhkiG9w0BAQsFADBX
+// MQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEQMA4GA1UE
+// CxMHUm9vdCBDQTEbMBkGA1UEAxMSR2xvYmFsU2lnbiBSb290IENBMB4XDTIzMTEx
+// NTAzNDMyMVoXDTI4MDEyODAwMDA0MlowRzELMAkGA1UEBhMCVVMxIjAgBgNVBAoT
+// GUdvb2dsZSBUcnVzdCBTZXJ2aWNlcyBMTEMxFDASBgNVBAMTC0dUUyBSb290IFI0
+// MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE83Rzp2iLYK5DuDXFgTB7S0md+8Fhzube
+// Rr1r1WEYNa5A3XP3iZEwWus87oV8okB2O6nGuEfYKueSkWpz6bFyOZ8pn6KY019e
+// WIZlD6GEZQbR3IvJx3PIjGov5cSr0R2Ko4H/MIH8MA4GA1UdDwEB/wQEAwIBhjAd
+// BgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zAd
+// BgNVHQ4EFgQUgEzW63T/STaj1dj8tT7FavCUHYwwHwYDVR0jBBgwFoAUYHtmGkUN
+// l8qJUC99BM00qP/8/UswNgYIKwYBBQUHAQEEKjAoMCYGCCsGAQUFBzAChhpodHRw
+// Oi8vaS5wa2kuZ29vZy9nc3IxLmNydDAtBgNVHR8EJjAkMCKgIKAehhxodHRwOi8v
+// Yy5wa2kuZ29vZy9yL2dzcjEuY3JsMBMGA1UdIAQMMAowCAYGZ4EMAQIBMA0GCSqG
+// SIb3DQEBCwUAA4IBAQAYQrsPBtYDh5bjP2OBDwmkoWhIDDkic574y04tfzHpn+cJ
+// odI2D4SseesQ6bDrarZ7C30ddLibZatoKiws3UL9xnELz4ct92vID24FfVbiI1hY
+// +SW6FoVHkNeWIP0GCbaM4C6uVdF5dTUsMVs/ZbzNnIdCp5Gxmx5ejvEau8otR/Cs
+// kGN+hr/W5GvT1tMBjgWKZ1i4//emhA1JG1BbPzoLJQvyEotc03lXjTaCzv8mEbep
+// 8RqZ7a2CPsgRbuvTPBwcOMBBmuFeU88+FSBX6+7iP0il8b4Z0QFqIwwMHfs/L6K1
+// vepuoxtGzi4CZ68zJpiq1UvSqTbFJjtbD4seiMHl
+// -----END CERTIFICATE-----
+// )EOF";
+
+// starmoon.deno.dev CA cert
 const char *CA_cert = R"EOF(
 -----BEGIN CERTIFICATE-----
-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
+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
+Ig46v9mFmBvyH04=
 -----END CERTIFICATE-----
 )EOF";
 
@@ -153,12 +153,8 @@ void websocket_setup(String server_domain, int port, String path)
         return;
     }
     Serial.println("connected to WiFi");
-    Serial.println("Setting up websocket and debug info");
-    Serial.println(server_domain);
-    Serial.println(port);
-    Serial.println(path);
-    webSocket.begin(server_domain, port, path);
-    // webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
+    webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
+    // webSocket.begin(server_domain.c_str(), port, path.c_str());
     webSocket.onEvent(webSocketEvent);
     // webSocket.setAuthorization("user", "Password");
     webSocket.setReconnectInterval(1000);
@@ -166,6 +162,9 @@ void websocket_setup(String server_domain, int port, String path)
 
 void connectWithPassword()
 {
+    IPAddress dns1(8, 8, 8, 8);        // Google DNS
+IPAddress dns2(1, 1, 1, 1);        // Cloudflare DNS
+WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
     WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
 
     while (WiFi.status() != WL_CONNECTED)
@@ -180,40 +179,52 @@ void connectWithPassword()
 
     // Connect to WebSocket if successfully registered
     Serial.println("Connecting to WebSocket server...");
-    websocket_setup("192.168.1.166", 8000, "/");
-    // websocket_setup("starmoon.deno.dev",443, "/");
+    // websocket_setup("192.168.1.166", 8000, "/");
+    websocket_setup("starmoon.deno.dev",443, "/");
     // websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
 }
 
-void micTask(void *parameter)
-{
-    i2s_install_mic();
-    i2s_setpin_mic();
-    i2s_start(I2S_PORT_IN);
+// void micTask(void *parameter)
+// {
+//     i2s_install_mic();
+//     i2s_setpin_mic();
+//     i2s_start(I2S_PORT_IN);
 
-    int i2s_read_len = 1024;
-    size_t bytes_read;
-    char *i2s_read_buff = (char *)calloc(i2s_read_len, sizeof(char));
-    uint8_t *flash_write_buff = (uint8_t *)calloc(i2s_read_len, sizeof(char));
+//     const int i2s_read_len = 4096;
+//     size_t bytes_read;
+//     char *i2s_read_buff = (char *)calloc(i2s_read_len, 1);
+//     char *flash_write_buff = (char *)calloc(i2s_read_len, 1);
 
-    while (1)
-    {
-        // Read audio data
-        if (i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY) == ESP_OK)
-        {
-            // Send directly to WebSocket
-            if (webSocket.isConnected() && micEnabled)
-            {
-                i2s_adc_data_scale(flash_write_buff, (uint8_t *)i2s_read_buff, i2s_read_len);
-                webSocket.sendBIN((uint8_t *)i2s_read_buff, bytes_read);
-            }
-        }
-        vTaskDelay(1); // Short delay to keep task responsive
-    }
+//     while (1) {
+//         // Read audio data
+//         if (i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len,
+//                      &bytes_read, portMAX_DELAY) == ESP_OK)
+//         {
+//             if (webSocket.isConnected()) {
+//                 // Scale or convert if needed
+//                 i2s_adc_data_scale((uint8_t*)flash_write_buff,
+//                                    (uint8_t*)i2s_read_buff,
+//                                    bytes_read);
 
-    free(i2s_read_buff); // Free if task exits, but it shouldn’t
-    vTaskDelete(NULL);
-}
+//                 // Allocate a temporary buffer for sending
+//                 uint8_t* safeSend = (uint8_t*) malloc(bytes_read);
+//                 memcpy(safeSend, flash_write_buff, bytes_read);
+
+//                 // Now send
+//                 webSocket.sendBIN(safeSend, bytes_read);
+
+//                 // Free the temp buffer
+//                 free(safeSend);
+//             }
+//         }
+//         vTaskDelay(1);
+//     }
+
+//     free(i2s_read_buff);
+//     free(flash_write_buff);
+//     vTaskDelete(NULL);
+// }
+
 
 esp_err_t getErr = ESP_OK;
 
@@ -275,7 +286,7 @@ void setup()
 
     // pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH);
+    digitalWrite(LED_PIN, LOW);
 
     connectWithPassword();
 
@@ -287,7 +298,7 @@ void setup()
     Serial.printf("Actual I2S sample rate: %.0f Hz\n", real_rate);
 
     // xTaskCreate(buttonTask, "Button Task", 8192, NULL, 5, NULL);
-    xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
+    // xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
 }
 
 void loop()
