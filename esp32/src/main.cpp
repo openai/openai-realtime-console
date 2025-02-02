@@ -226,9 +226,9 @@ void connectWithPassword()
     Serial.println("Connecting to WebSocket server...");
     // websocket_setup("10.2.1.21", 8000, "/");
     // websocket_setup("192.168.1.166", 8000, "/");
-    // websocket_setup("starmoon.deno.dev",443, "/");
+    websocket_setup("talkedge.deno.dev",443, "/");
     // websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
-    websocket_setup("https://emkmtesvjrqhvx2mo2mxslvmmy0zsuhq.lambda-url.us-east-1.on.aws/", 8000, "/");
+    // websocket_setup("https://emkmtesvjrqhvx2mo2mxslvmmy0zsuhq.lambda-url.us-east-1.on.aws/", 8000, "/");
 }
 
 void micTask(void *parameter)
@@ -237,7 +237,7 @@ void micTask(void *parameter)
     i2s_setpin_mic();
     i2s_start(I2S_PORT_IN);
 
-    const int i2s_read_len = 1024;
+    const int i2s_read_len = 2048;
     size_t bytes_read;
     char *i2s_read_buff = (char *)calloc(i2s_read_len, 1);
     char *flash_write_buff = (char *)calloc(i2s_read_len, 1);
@@ -264,7 +264,7 @@ void micTask(void *parameter)
                 free(safeSend);
             
         }
-        vTaskDelay(1);
+        vTaskDelay(10);
     }
 
     free(i2s_read_buff);
