@@ -31,7 +31,10 @@ extern const int I2S_READ_LEN;
 // #define USE_XIAO_ESP32
 #define USE_NORMAL_ESP32
 
-extern const int LED_PIN;
+extern const int BLUE_LED_PIN;
+extern const int RED_LED_PIN;
+extern const int GREEN_LED_PIN;
+
 extern const gpio_num_t BUTTON_PIN;
 
 // I2S Microphone pins

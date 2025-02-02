@@ -6,14 +6,26 @@
 #include <driver/i2s.h>
 #include <driver/rtc_io.h>
 #include "Button.h"
+#include "RingBuffer.h"
+#include "AudioTools.h"
+#include "AudioTools/Concurrency/RTOS.h"
+#include "LEDHandler.h"
+
+// Create a high‑throughput buffer for raw audio data.
+// Adjust the overall size and chunk size according to your needs.
+constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 32; // total bytes in the buffer
+constexpr size_t AUDIO_CHUNK_SIZE  = 1024;         // ideal read/write chunk size
+
+BufferRTOS<uint8_t> audioBuffer(AUDIO_BUFFER_SIZE, AUDIO_CHUNK_SIZE);
 
 WebSocketsClient webSocket;
 String authMessage;
-int currentVolume = 70;
+int currentVolume = 100;
 
 // Add these global variables
 unsigned long connectionStartTime = 0;
-bool micEnabled = false;
+
+DeviceState deviceState = IDLE;
 
 void enterSleep()
 {
@@ -58,48 +70,56 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     {
     case WStype_DISCONNECTED:
         Serial.printf("[WSc] Disconnected!\n");
-        digitalWrite(LED_PIN, LOW);
+        digitalWrite(RED_LED_PIN, LOW);
         connectionStartTime = 0;  // Reset timer
-        micEnabled = false;
-        vTaskDelay(1000);
+        deviceState = IDLE;
         break;
     case WStype_CONNECTED:
         Serial.printf("[WSc] Connected to url: %s\n", payload);
         webSocket.sendTXT("{\"type\": \"user\", \"msg\": \"Tell me a 3 sentence story about batman\"}");
-        digitalWrite(LED_PIN, HIGH);
+        digitalWrite(RED_LED_PIN, HIGH);
+        deviceState = PROCESSING;
         break;
     case WStype_TEXT:
         Serial.printf("[WSc] get text: %s\n", payload);
         // receive response.audio.done or response.done, then start listening again
-        if (strcmp((char*)payload, "response.done") == 0 || strcmp((char*)payload, "response.audio.done") == 0) {
+        if (strcmp((char*)payload, "response.done") == 0) {
             Serial.println("Received response.done, starting listening again");
+            vTaskDelay(1000);
+
             // Start listening again
             connectionStartTime = millis();  // Start timer
-            micEnabled = true;
-    i2s_zero_dma_buffer(I2S_PORT_OUT);
+            deviceState = LISTENING;
         } else if (strcmp((char*)payload, "response.created") == 0) {
             Serial.println("Received response.created, stopping listening");
             connectionStartTime = 0;
-            micEnabled = false;
+            deviceState = SPEAKING;
         }
         break;
-    case WStype_BIN:
-    {
+case WStype_BIN:
+{
+     size_t chunkSize = length;
 
-        // Create a buffer for the scaled audio
-        uint8_t *scaledAudio = (uint8_t *)malloc(length);
-        scaleAudioVolume(payload, scaledAudio, length, currentVolume);
-
-        size_t bytes_written;
-        if (!micEnabled) {
-        esp_err_t err = i2s_write(I2S_PORT_OUT, scaledAudio, length, &bytes_written, portMAX_DELAY);
-                Serial.printf("I2S write result: %s, bytes written: %d\n", esp_err_to_name(err), bytes_written);
-
+        // Allocate a temporary buffer for volume scaling.
+        uint8_t *scaledAudio = (uint8_t *)malloc(chunkSize);
+        if (!scaledAudio) {
+            Serial.println("Failed to allocate scaled audio buffer");
+            break;
         }
-
+        
+        // Scale the audio as you do currently.
+        scaleAudioVolume(payload, scaledAudio, chunkSize, currentVolume);
+        
+        // Attempt to write to the BufferRTOS.
+        size_t written = audioBuffer.writeArray(scaledAudio, chunkSize);
+        if (written < chunkSize) {
+            Serial.printf("BufferRTOS overflow: only wrote %d/%d bytes, dropping some audio data\n", written, chunkSize);
+        }
+        
         free(scaledAudio);
-    }
-    break;
+}
+break;
+
     case WStype_ERROR:
     case WStype_FRAGMENT_TEXT_START:
     case WStype_FRAGMENT_BIN_START:
@@ -174,8 +194,8 @@ void websocket_setup(String server_domain, int port, String path)
         return;
     }
     Serial.println("connected to WiFi");
-    // webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
-    webSocket.begin(server_domain.c_str(), port, path.c_str());
+    webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
+    // webSocket.begin(server_domain.c_str(), port, path.c_str());
     webSocket.onEvent(webSocketEvent);
     // webSocket.setAuthorization("user", "Password");
     webSocket.setReconnectInterval(1000);
@@ -190,6 +210,7 @@ void connectWithPassword()
 
     WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
     // WiFi.begin("akaPhone", "akashclarkkent1");
+    // WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
 
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -203,9 +224,11 @@ void connectWithPassword()
 
     // Connect to WebSocket if successfully registered
     Serial.println("Connecting to WebSocket server...");
-    websocket_setup("10.2.1.51", 8000, "/");
+    // websocket_setup("10.2.1.21", 8000, "/");
+    // websocket_setup("192.168.1.166", 8000, "/");
     // websocket_setup("starmoon.deno.dev",443, "/");
     // websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
+    websocket_setup("https://emkmtesvjrqhvx2mo2mxslvmmy0zsuhq.lambda-url.us-east-1.on.aws/", 8000, "/");
 }
 
 void micTask(void *parameter)
@@ -221,7 +244,7 @@ void micTask(void *parameter)
 
     while (1) {
         // Read audio data
-        if (micEnabled && webSocket.isConnected() && i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len,
+        if (deviceState == LISTENING && webSocket.isConnected() && i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len,
                      &bytes_read, portMAX_DELAY) == ESP_OK)
         {
            
@@ -285,6 +308,54 @@ static void onButtonDoubleClickCb(void *button_handle, void *usr_data)
     enterSleep();
 }
 
+// void setup() {
+//     Serial.begin(115200);
+
+//     delay(500);
+
+//     Serial.println("Starting setup");
+// }
+
+// void loop() {
+// }
+
+void audioPlaybackTask(void *param)
+{
+    // Allocate a local buffer to temporarily hold the audio data to be written to I2S.
+    uint8_t* localBuffer = (uint8_t*)malloc(AUDIO_CHUNK_SIZE);
+    if (!localBuffer) {
+        Serial.println("Failed to allocate local I2S buffer");
+        vTaskDelete(NULL);
+        return;
+    }
+
+    while (1) {
+        // Check how many bytes are available in the BufferRTOS.
+        size_t available = audioBuffer.available();
+
+        if (available >= AUDIO_CHUNK_SIZE && deviceState == SPEAKING) {
+            // Read a chunk from the buffer.
+            size_t bytesRead = audioBuffer.readArray(localBuffer, AUDIO_CHUNK_SIZE);
+            
+            // Now write that chunk to I2S.
+            size_t bytesWritten = 0;
+            // i2s_write writes the data to the I2S peripheral.
+            // Adjust I2S_PORT_OUT if your configuration differs.
+            esp_err_t err = i2s_write(I2S_PORT_OUT, (const char*)localBuffer, AUDIO_CHUNK_SIZE, &bytesWritten, portMAX_DELAY);
+            if (err != ESP_OK) {
+                Serial.printf("I2S write error: %d\n", err);
+            }
+        } else {
+            // Not enough data available: yield a bit to allow more data to accumulate.
+            vTaskDelay(pdMS_TO_TICKS(5));
+        }
+    }
+
+    // Clean up (this point will never be reached in this endless loop).
+    free(localBuffer);
+    vTaskDelete(NULL);
+}
+
 
 void setup()
 {
@@ -301,6 +372,8 @@ void setup()
     getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
     printOutESP32Error(getErr);
 
+    rb_mutex = xSemaphoreCreateMutex();
+
 
     Button *btn = new Button(BUTTON_PIN, false);
     // Main button
@@ -308,20 +381,21 @@ void setup()
     btn->attachDoubleClickEventCb(&onButtonDoubleClickCb, NULL);
     btn->detachSingleClickEvent();
 
-    // pinMode(BUTTON_PIN, INPUT_PULLUP);
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, LOW);
+    // setup LED
+    setupRGBLED();
+    xTaskCreate(ledTask, "LED Task", 4096, NULL, 5, NULL);
 
-    connectWithPassword();
-
+    // setup speaker
     i2s_install_speaker();
     i2s_setpin_speaker();
+    xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, NULL);
+
+    connectWithPassword();
 
     // Get the actual sample rate - updated to match new function signature
     float real_rate = i2s_get_clk(I2S_PORT_OUT);
     Serial.printf("Actual I2S sample rate: %.0f Hz\n", real_rate);
 
-    // xTaskCreate(buttonTask, "Button Task", 8192, NULL, 5, NULL);
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
 }
 
@@ -330,11 +404,11 @@ void loop()
     webSocket.loop();
 
     // Send detect_vad after 10 seconds
-    if (connectionStartTime && micEnabled && 
-        millis() - connectionStartTime >= 10000) {
+    if (connectionStartTime && deviceState == LISTENING && 
+        millis() - connectionStartTime >= 15000) {
         webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
         connectionStartTime = 0;
-        micEnabled = false;
+        deviceState = PROCESSING;
         Serial.println("Sent VAD detection request");
     }
 }
