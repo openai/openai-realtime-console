@@ -156,7 +156,7 @@ break;
 // -----END CERTIFICATE-----
 // )EOF";
 
-// starmoon.deno.dev CA cert
+// Humloop.deno.dev CA cert
 const char *CA_cert = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIIEVzCCAj+gAwIBAgIRALBXPpFzlydw27SHyzpFKzgwDQYJKoZIhvcNAQELBQAw

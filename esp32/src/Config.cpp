@@ -19,7 +19,7 @@ const char *password_personal = "LaunchLabRocks";
 // const char *backend_server = "192.168.2.179";
 // const uint16_t backend_port = 8000;
 
-// const char *websocket_path = "/starmoon";
+// const char *websocket_path = "/Humloop";
 // const char *auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWFmNjJiMGUtM2RhNC00YzQ0LWFkZjctNWIxYjdjOWM0Y2I2IiwiZW1haWwiOiJhZG1pbkBzdGFybW9vbi5hcHAiLCJpYXQiOjE3MzAyMDU2OTd9.XLqSAuDStj9PTwjZTB-d6OJRxJLtq0_KgAn4Qqb1FR4";
 
 String authTokenGlobal;
