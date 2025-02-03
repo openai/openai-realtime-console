@@ -64,7 +64,7 @@ const NavbarButtons: React.FC<NavbarButtonsProps> = ({
                             className="hidden sm:flex"
                         />
                         <p className="hidden sm:flex text-xs font-normal">
-                            {stars?.toLocaleString() ?? 430}
+                            {stars?.toLocaleString() ?? 475}
                         </p>
                     </Button>
                 </Link>

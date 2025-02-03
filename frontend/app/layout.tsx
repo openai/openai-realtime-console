@@ -27,6 +27,7 @@ const karla = Karla({
 
 
 import Script from "next/script";
+import { Navbar } from "./components/Nav/Navbar";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -316,7 +317,7 @@ export default async function RootLayout({
                     disableTransitionOnChange
                 > */}
                 <main className="flex-grow mx-auto w-full flex flex-col">
-                    {/* <Navbar user={user} stars={stars} /> */}
+                    <Navbar user={user} stars={stars} />
                     {children}
                     <Footer />
                 </main>

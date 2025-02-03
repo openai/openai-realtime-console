@@ -63,7 +63,7 @@ interface FrontPageProps {
 
 const FrontPage = ({ user }: FrontPageProps) => {
     return (
-        <div className="flex flex-col items-center text-center max-w-screen-md px-4 md:px-6 mx-auto justify-center gap-8 mt-20">
+        <div className="flex flex-col items-center text-center max-w-screen-md px-4 md:px-6 mx-auto justify-center gap-8 mt-10">
             <div className="flex flex-col gap-12">
                 {/* <Badge
                         className="w-fit flex flex-row gap-2 shadow-md items-center text-sm"

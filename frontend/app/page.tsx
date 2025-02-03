@@ -61,10 +61,7 @@ export default async function Index() {
                 id="how-it-works"
                 className="w-full max-w-screen-lg mx-auto py-12"
             >
-                <div className="container px-4 md:px-6">
-                    <div className="flex flex-col-reverse sm:flex-row items-center gap-12">
-                        <DeviceImage />
-                        <div className="space-y-4 px-4">
+                <div className="space-y-4  max-w-[400px] mx-auto">
                             <h3 className="text-3xl font-semibold">
                                 1. Choose Your Character
                             </h3>
@@ -89,8 +86,6 @@ export default async function Index() {
                                 interactions.
                             </p>
                         </div>
-                    </div>
-                </div>
             </section>
             {/* <CharacterPicker allPersonalities={allPersonalities} /> */}
             {/* <Usecases /> */}

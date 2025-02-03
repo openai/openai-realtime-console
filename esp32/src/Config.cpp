@@ -1,18 +1,6 @@
 #include "Config.h"
 #include <nvs_flash.h>
 
-// WiFi credentials
-// use this for enterprise networksxx
-const char *EAP_IDENTITY = "junru.xiong.4@city.ac.uk";
-const char *EAP_USERNAME = "junru.xiong.4@city.ac.uk";
-const char *EAP_PASSWORD = "password";
-const char *ssid = "eduroam";
-// use this for personal networks
-const char *ssid_peronal = "launchlab";
-const char *password_personal = "LaunchLabRocks";
-// const char *ssid_peronal = "SKYCFZHN-2.4G";
-// const char *password_personal = "CFaxCbZ9Y6CQ";
-
 // WebSocket server details
 // const char *backend_server = "51.8.202.78";
 // const uint16_t backend_port = 80;
@@ -22,7 +10,7 @@ const char *password_personal = "LaunchLabRocks";
 // const char *websocket_path = "/Humloop";
 // const char *auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWFmNjJiMGUtM2RhNC00YzQ0LWFkZjctNWIxYjdjOWM0Y2I2IiwiZW1haWwiOiJhZG1pbkBzdGFybW9vbi5hcHAiLCJpYXQiOjE3MzAyMDU2OTd9.XLqSAuDStj9PTwjZTB-d6OJRxJLtq0_KgAn4Qqb1FR4";
 
-String authTokenGlobal;
+String authTokenGlobal = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOGMzYWYwODctOGQ4MC00NTM2LThjNzYtMDYyNjc3NDQ4MDMzIiwiZW1haWwiOiJha2FkM2JAZ21haWwuY29tIiwiaWF0IjoxNzM4NTQ1NzQ4fQ.o_YonVBi-lKwacuQ2oOKqhiin5dC9BEfbLZBYJLkCAk";
 
 // I2S and Audio parameters
 const uint32_t SAMPLE_RATE = 24000;

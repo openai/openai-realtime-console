@@ -31,7 +31,7 @@ const HomePageSubtitles: React.FC<HomePageSubtitlesProps> = ({
         } else {
             return (
                 <p className="text-sm text-gray-600">
-                    {t("You can update your settings here")}
+                    {t("You can update your settings below")}
                 </p>
             );
         }

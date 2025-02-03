@@ -1,7 +1,6 @@
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -11,19 +10,13 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
-import { Label } from "@/components/ui/label";
+import React, { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
-import { updateUser } from "@/db/users";
-import { createClient } from "@/utils/supabase/client";
-import { Save } from "lucide-react";
-import React from "react";
-import HomePageSubtitles from "../HomePageSubtitles";
 
 interface DoctorFormProps {
     selectedUser: IUser;
     heading: React.ReactNode;
-    onClickCallback: () => void;
+    onSave: (values: any, userType: "doctor" | "user") => void;
 }
 
 export const doctorSettingsSchema = z.object({
@@ -35,14 +28,10 @@ export const doctorSettingsSchema = z.object({
 
 export type DoctorSettingsInput = z.infer<typeof doctorSettingsSchema>;
 
-const DoctorForm: React.FC<DoctorFormProps> = ({
-    selectedUser,
-    heading,
-    onClickCallback,
-}) => {
-    const supabase = createClient();
-    const { toast } = useToast();
-
+const DoctorForm = forwardRef<
+    { submitForm: () => void },
+    DoctorFormProps
+>(({ selectedUser, heading, onSave }, ref) => {
     const userMetadata = selectedUser.user_info
         .user_metadata as IDoctorMetadata;
 
@@ -57,21 +46,12 @@ const DoctorForm: React.FC<DoctorFormProps> = ({
     });
 
     async function onSubmit(values: z.infer<typeof doctorSettingsSchema>) {
-        await updateUser(
-            supabase,
-            {
-                user_info: {
-                    user_type: "doctor",
-                    user_metadata: values,
-                },
-            },
-            selectedUser!.user_id
-        );
-        toast({
-            description: "Your prefereces have been saved. Have a good day!",
-        });
-        onClickCallback();
+        onSave(values, "doctor");
     }
+
+    const handleSave = () => {
+        onSave(form.getValues(), "doctor");
+    };
 
     return (
         <Form {...form}>
@@ -192,9 +172,20 @@ const DoctorForm: React.FC<DoctorFormProps> = ({
                         )}
                     />
                 </section>
+                <Button
+                variant="default"
+                className="rounded-full w-fit mt-4"
+                size="sm"
+                onClick={handleSave}
+                type="submit"
+            >
+                Save settings
+            </Button>
             </form>
         </Form>
     );
-};
+});
+
+DoctorForm.displayName = "DoctorForm";
 
 export default DoctorForm;

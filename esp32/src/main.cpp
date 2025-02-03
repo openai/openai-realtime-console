@@ -10,6 +10,27 @@
 #include "AudioTools.h"
 #include "AudioTools/Concurrency/RTOS.h"
 #include "LEDHandler.h"
+#include "time.h"
+#include "Config.h"
+
+// Add these constants
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 0;     // UTC offset in seconds (0 for UTC)
+const int   daylightOffset_sec = 0; // Daylight savings offset (3600 for +1 hour)
+
+// Add this function
+void setupTime() {
+configTime(0, 0, "pool.ntp.org");
+setenv("TZ", "PST8PDT,M3.2.0,M11.1.0", 1);  // Set to Pacific Time (adjust for your timezone)
+tzset();
+
+    struct tm timeinfo;
+    if(!getLocalTime(&timeinfo)){
+        Serial.println("Failed to obtain time");
+        return;
+    }
+    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
 
 // Create a high‑throughput buffer for raw audio data.
 // Adjust the overall size and chunk size according to your needs.
@@ -30,10 +51,25 @@ DeviceState deviceState = IDLE;
 void enterSleep()
 {
     Serial.println("Going to sleep...");
-    // webSocket.sendTXT("{\"speaker\": \"user\", \"is_ending\": true}");
-    webSocket.disconnect();
-    delay(200);
+    
+    // First, change device state to prevent any new data processing
+    deviceState = IDLE;
+    
+    // Properly disconnect WebSocket and wait for it to complete
+    if (webSocket.isConnected()) {
+        webSocket.disconnect();
+        // Give some time for the disconnect to process
+        delay(100);
+    }
+    
+    // Stop all tasks that might be using I2S or other peripherals
+    i2s_stop(I2S_PORT_IN);
+    i2s_stop(I2S_PORT_OUT);
+    
+    // Flush any remaining serial output
     Serial.flush();
+    
+    // Now enter deep sleep
     esp_deep_sleep_start();
 }
 
@@ -64,37 +100,83 @@ void scaleAudioVolume(uint8_t *input, uint8_t *output, size_t length, int volume
     }
 }
 
+String createAuthTokenMessage(String token)
+{
+    JsonDocument doc;
+    doc["token"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOGMzYWYwODctOGQ4MC00NTM2LThjNzYtMDYyNjc3NDQ4MDMzIiwiZW1haWwiOiJha2FkM2JAZ21haWwuY29tIiwiaWF0IjoxNzM4NTQ1NzQ4fQ.o_YonVBi-lKwacuQ2oOKqhiin5dC9BEfbLZBYJLkCAk";
+    
+    struct tm timeinfo;
+    if(getLocalTime(&timeinfo)){
+        char timeStringBuff[50];
+        strftime(timeStringBuff, sizeof(timeStringBuff), "%Y-%m-%d %H:%M:%S", &timeinfo);
+        doc["timestamp"] = timeStringBuff;
+    } else {
+        doc["timestamp"] = millis(); // fallback to millis if time sync failed
+    }
+    
+    String jsonString;
+    serializeJson(doc, jsonString);
+    return jsonString;
+}
+
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 {
     switch (type)
     {
     case WStype_DISCONNECTED:
         Serial.printf("[WSc] Disconnected!\n");
-        digitalWrite(RED_LED_PIN, LOW);
         connectionStartTime = 0;  // Reset timer
         deviceState = IDLE;
         break;
     case WStype_CONNECTED:
         Serial.printf("[WSc] Connected to url: %s\n", payload);
-        webSocket.sendTXT("{\"type\": \"user\", \"msg\": \"Tell me a 3 sentence story about batman\"}");
-        digitalWrite(RED_LED_PIN, HIGH);
+        webSocket.sendTXT("{\"type\": \"user\", \"msg\": \"The user is initiating a new chat here.\"}");
         deviceState = PROCESSING;
         break;
     case WStype_TEXT:
-        Serial.printf("[WSc] get text: %s\n", payload);
-        // receive response.audio.done or response.done, then start listening again
-        if (strcmp((char*)payload, "response.done") == 0) {
-            Serial.println("Received response.done, starting listening again");
-            vTaskDelay(1000);
+    {
+Serial.printf("[WSc] get text: %s\n", payload);
 
-            // Start listening again
-            connectionStartTime = millis();  // Start timer
-            deviceState = LISTENING;
-        } else if (strcmp((char*)payload, "response.created") == 0) {
-            Serial.println("Received response.created, stopping listening");
-            connectionStartTime = 0;
-            deviceState = SPEAKING;
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, (char *)payload);
+
+        if (error)
+        {
+            Serial.println("Error deserializing JSON");
+            deviceState = IDLE;
+            return;
         }
+
+        String type = doc["type"];
+
+        // auth messages
+        if (strcmp((char*)type.c_str(), "auth") == 0) {
+            currentVolume = doc["volume_control"].as<int>();
+
+            // todo: update usage
+            String is_ota = doc["is_ota"];
+            String is_reset = doc["is_reset"];
+        }
+
+        // oai messages
+        if (strcmp((char*)type.c_str(), "oai") == 0) {
+            String msg = doc["msg"];
+
+            // receive response.audio.done or response.done, then start listening again
+            if (strcmp((char*)msg.c_str(), "response.done") == 0) {
+                Serial.println("Received response.done, starting listening again");
+                vTaskDelay(1000);
+
+                // Start listening again
+                connectionStartTime = millis();  // Start timer
+                deviceState = LISTENING;
+            } else if (strcmp((char*)msg.c_str(), "response.created") == 0) {
+                Serial.println("Received response.created, stopping listening");
+                connectionStartTime = 0;
+                deviceState = SPEAKING;
+            }
+        }
+    }
         break;
 case WStype_BIN:
 {
@@ -194,8 +276,25 @@ void websocket_setup(String server_domain, int port, String path)
         return;
     }
     Serial.println("connected to WiFi");
-    webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
-    // webSocket.begin(server_domain.c_str(), port, path.c_str());
+
+    // websocket settings
+    char timeStringBuff[50];
+    struct tm timeinfo;
+    String headers;
+    
+if(getLocalTime(&timeinfo)) {
+    char timeStringBuff[50];
+    // Format: YYYY-MM-DDTHH:mm:ss.sssZ or YYYY-MM-DDTHH:mm:ss.sss+HH:mm
+    strftime(timeStringBuff, sizeof(timeStringBuff), "%FT%T%z", &timeinfo);
+    headers = "Authorization: Bearer " + String(authTokenGlobal) + "\r\nTimestamp: " + String(timeStringBuff);
+} else {
+    // Fallback if time sync failed
+    headers = "Authorization: Bearer " + String(authTokenGlobal) + "\r\nTimestamp: " + String(millis());
+}
+    webSocket.setExtraHeaders(headers.c_str());
+
+    // webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
+    webSocket.begin(server_domain.c_str(), port, path.c_str());
     webSocket.onEvent(webSocketEvent);
     // webSocket.setAuthorization("user", "Password");
     webSocket.setReconnectInterval(1000);
@@ -211,6 +310,7 @@ void connectWithPassword()
     WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
     // WiFi.begin("akaPhone", "akashclarkkent1");
     // WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
+    setupTime();
 
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -224,9 +324,9 @@ void connectWithPassword()
 
     // Connect to WebSocket if successfully registered
     Serial.println("Connecting to WebSocket server...");
-    // websocket_setup("10.2.1.21", 8000, "/");
+    websocket_setup("10.2.1.21", 8000, "/");
     // websocket_setup("192.168.1.166", 8000, "/");
-    websocket_setup("talkedge.deno.dev",443, "/");
+    // websocket_setup("talkedge.deno.dev",443, "/");
     // websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
     // websocket_setup("https://emkmtesvjrqhvx2mo2mxslvmmy0zsuhq.lambda-url.us-east-1.on.aws/", 8000, "/");
 }
@@ -307,17 +407,6 @@ static void onButtonDoubleClickCb(void *button_handle, void *usr_data)
     delay(10);
     enterSleep();
 }
-
-// void setup() {
-//     Serial.begin(115200);
-
-//     delay(500);
-
-//     Serial.println("Starting setup");
-// }
-
-// void loop() {
-// }
 
 void audioPlaybackTask(void *param)
 {
@@ -405,7 +494,7 @@ void loop()
 
     // Send detect_vad after 10 seconds
     if (connectionStartTime && deviceState == LISTENING && 
-        millis() - connectionStartTime >= 15000) {
+        millis() - connectionStartTime >= 10000) {
         webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
         connectionStartTime = 0;
         deviceState = PROCESSING;

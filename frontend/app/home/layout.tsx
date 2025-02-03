@@ -28,11 +28,6 @@ const sidebarNavItems = (languageCode: LanguageCodeType) => {
             icon: <Gamepad2 size={ICON_SIZE} />,
         },
         {
-            title: t("Trends"),
-            href: "/home/track",
-            icon: <Flame size={ICON_SIZE} />,
-        },
-        {
             title: t("Settings"),
             href: "/home/settings",
             icon: <Settings size={ICON_SIZE} />,

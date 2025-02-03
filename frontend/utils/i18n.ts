@@ -13,7 +13,7 @@ export type EnglishCopy =
     | "credits remaining"
     | "Get unlimited access"
     | "Upgrade to continue"
-    | "You can update your settings here"
+    | "You can update your settings below"
     | "Track your patients' progress and trends here"
     | "Use this playground or your device to engage your patients"
     | "For children"
@@ -37,7 +37,7 @@ export const tx = (languageCode: LanguageCodeType) => {
                 "credits remaining": "credits remaining",
                 "Get unlimited access": "Get unlimited access",
                 "Upgrade to continue": "Upgrade to continue",
-                "You can update your settings here":
+                "You can update your settings below":
                     "You can update your settings here",
                 "Track your patients' progress and trends here":
                     "Track your patients' progress and trends here",
@@ -61,8 +61,8 @@ export const tx = (languageCode: LanguageCodeType) => {
                 "credits remaining": "Kredite verbleibend",
                 "Get unlimited access": "Unbegrenzten Zugang erhalten",
                 "Upgrade to continue": "Upgrade um fortzufahren",
-                "You can update your settings here":
-                    "Hier können Sie Ihre Einstellungen aktualisieren",
+                "You can update your settings below":
+                    "Hier können Sie Ihre Einstellungen unten aktualisieren",
                 "Track your patients' progress and trends here":
                     "Hier können Sie die Fortschitte Ihrer Patienten verfolgen",
                 "Use this playground or your device to engage your patients":
@@ -85,8 +85,8 @@ export const tx = (languageCode: LanguageCodeType) => {
                 "credits remaining": "Créditos restantes",
                 "Get unlimited access": "Obtener acceso ilimitado",
                 "Upgrade to continue": "Actualizar para continuar",
-                "You can update your settings here":
-                    "Aquí puede actualizar sus configuraciones",
+                "You can update your settings below":
+                    "Aquí puede actualizar su configuración",
                 "Track your patients' progress and trends here":
                     "Aquí puede seguir el progreso y las tendencias de sus pacientes",
                 "Use this playground or your device to engage your patients":
@@ -109,7 +109,7 @@ export const tx = (languageCode: LanguageCodeType) => {
                 "credits remaining": "Créditos restantes",
                 "Get unlimited access": "Obtener acceso ilimitado",
                 "Upgrade to continue": "Actualizar para continuar",
-                "You can update your settings here":
+                "You can update your settings below":
                     "Aquí puede actualizar sus configuraciones",
                 "Track your patients' progress and trends here":
                     "Aquí puede seguir el progreso y las tendencias de sus pacientes",
@@ -133,7 +133,7 @@ export const tx = (languageCode: LanguageCodeType) => {
                 "credits remaining": "剩余积分",
                 "Get unlimited access": "获取无限访问",
                 "Upgrade to continue": "升级以继续",
-                "You can update your settings here": "您可以在此处更新您的设置",
+                "You can update your settings below": "您可以在此处更新您的设置",
                 "Track your patients' progress and trends here":
                     "您可以在此处跟踪您的患者的进展和趋势",
                 "Use this playground or your device to engage your patients":

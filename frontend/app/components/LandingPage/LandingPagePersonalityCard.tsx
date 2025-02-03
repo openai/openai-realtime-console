@@ -17,17 +17,17 @@ const LandingPagePersonalityCard = ({
     return (
         <Card
             className={cn(
-                "p-0 sm:rounded-3xl rounded-xl cursor-pointer min-w-[180px] border-none shadow-none bg-transparent transition-all hover:scale-103 flex flex-col"
+                "p-0 rounded-full cursor-pointer sm:min-w-[180px] min-w-[120px] border-none shadow-none bg-transparent transition-all hover:scale-103 flex flex-col"
             )}
             // onClick={() => onPersonalityPicked(personality)}
         >
-            <CardContent className="flex-shrink-0 p-0 h-[180px]">
+            <CardContent className="flex-shrink-0 p-0 sm:h-[180px] h-[120px]">
                 <Image
                     src={getPersonalityImageSrc(personality.key)}
                     alt={personality.key}
                     width={180}
                     height={140}
-                    className="sm:rounded-3xl rounded-xl w-full h-full object-cover"
+                    className="rounded-full w-full h-full object-cover"
                 />
             </CardContent>
         </Card>

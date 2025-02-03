@@ -11,21 +11,19 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
-import { updateUser } from "@/db/users";
-import { createClient } from "@/utils/supabase/client";
-import React from "react";
+import React, { forwardRef } from "react";
 import {
     userFormAgeDescription,
     userFormAgeLabel,
     userFormPersonaLabel,
     userFormPersonaPlaceholder,
 } from "@/lib/data";
+import { Button } from "@/components/ui/button";
 
 interface GeneralUserFormProps {
     selectedUser: IUser;
     heading: React.ReactNode;
-    onClickCallback: () => void;
+    onSave: (values: any, userType: "doctor" | "user") => void;
 }
 
 export const UserSettingsSchema = z.object({
@@ -41,13 +39,10 @@ export const UserSettingsSchema = z.object({
 
 export type GeneralUserInput = z.infer<typeof UserSettingsSchema>;
 
-const GeneralUserForm: React.FC<GeneralUserFormProps> = ({
-    selectedUser,
-    heading,
-    onClickCallback,
-}) => {
-    const supabase = createClient();
-    const { toast } = useToast();
+const GeneralUserForm = forwardRef<
+    { submitForm: () => void },
+    GeneralUserFormProps
+>(({ selectedUser, heading, onSave }, ref) => {
     const form = useForm<GeneralUserInput>({
         defaultValues: {
             supervisee_name: selectedUser?.supervisee_name ?? "",
@@ -58,22 +53,12 @@ const GeneralUserForm: React.FC<GeneralUserFormProps> = ({
     });
 
     async function onSubmit(values: z.infer<typeof UserSettingsSchema>) {
-        await updateUser(
-            supabase,
-            {
-                ...values,
-                user_info: {
-                    user_type: "user",
-                    user_metadata: {},
-                },
-            },
-            selectedUser!.user_id
-        );
-        toast({
-            description: "Your prefereces have been saved. Have a good day!",
-        });
-        onClickCallback();
+        onSave(values, "user");
     }
+
+    const handleSave = () => {
+        onSave(form.getValues(), "user");
+    };
 
     return (
         <Form {...form}>
@@ -169,9 +154,20 @@ const GeneralUserForm: React.FC<GeneralUserFormProps> = ({
                         />
                     </div>
                 </section>
+                <Button
+                variant="default"
+                className="rounded-full w-fit mt-4"
+                size="sm"
+                onClick={handleSave}
+                type="submit"
+            >
+                Save settings
+            </Button>
             </form>
         </Form>
     );
-};
+});
+
+GeneralUserForm.displayName = "GeneralUserForm";
 
 export default GeneralUserForm;

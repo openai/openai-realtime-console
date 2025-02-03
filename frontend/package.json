@@ -54,6 +54,7 @@
         "embla-carousel-react": "^8.2.1",
         "framer-motion": "^11.3.31",
         "geist": "^1.2.1",
+        "jose": "^5.9.6",
         "jsonwebtoken": "^9.0.2",
         "lucide-react": "^0.436.0",
         "next": "latest",
