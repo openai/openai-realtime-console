@@ -3,14 +3,13 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Copy, Key } from "lucide-react";
-import { generateStarmoonAuthKey } from "../actions";
+import { Check, Key } from "lucide-react";
+import { checkIfUserHasApiKey, storeUserApiKey } from "../actions";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -20,8 +19,8 @@ interface AuthTokenModalProps {
 
 const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user }) => {
     const { toast } = useToast();
-
-    const [apiKey, setApiKey] = useState<string | null>(null);
+    const [apiKey, setApiKey] = useState<string>("");
+    const [hasApiKey, setHasApiKey] = useState<boolean>(false);
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -30,40 +29,46 @@ const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user }) => {
                     variant="outline"
                     className="font-normal flex flex-row items-center gap-2"
                     onClick={async () => {
-                        setApiKey(await generateStarmoonAuthKey(user));
+                        const hasApiKey = await checkIfUserHasApiKey(user.user_id);
+                        setHasApiKey(hasApiKey);
                     }}
                 >
                     <Key size={16} />
-                    <span>Generate Key</span>
+                    <span>Set your key</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Your Humloop API Key</DialogTitle>
+                    <DialogTitle>Set your OpenAI API Key</DialogTitle>
                     <DialogDescription>
-                        This key will be hidden once you close this dialog. Keep
-                        it safe!
+                        This key is kept encrypted and never stored on our servers as plain text.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-row gap-2 py-4">
                     <Input
                         id="api_key"
-                        value={apiKey ?? ""}
-                        disabled
-                        placeholder="Loading your API Key"
+                        value={apiKey}
+                        disabled={hasApiKey}
+                        placeholder={hasApiKey ? "sk-... (OpenAI API Key set)" : "sk-..."}
+                        onChange={(e) => {
+                            setApiKey(e.target.value);
+                        }}
                     />
                     <Button
                         size="icon"
                         variant="ghost"
+                        disabled={!apiKey}
                         onClick={() => {
-                            navigator.clipboard.writeText(apiKey ?? "");
+                            if (!hasApiKey) {
+                            storeUserApiKey(user.user_id, apiKey);
                             toast({
                                 description:
-                                    "Humloop API Key copied to clipboard",
-                            });
+                                    "OpenAI API Key added",
+                                });
+                            }
                         }}
                     >
-                        <Copy size={18} />
+                        <Check className="flex-shrink-0" size={18} />
                     </Button>
                 </div>
             </DialogContent>

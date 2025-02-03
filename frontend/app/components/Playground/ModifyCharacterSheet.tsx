@@ -35,11 +35,6 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
     const [isSent, setIsSent] = useState(false);
     const t = tx(languageState);
 
-    const lang_specific_personality =
-        openPersonality.personalities_translations.find(
-            (translation) => translation.language_code === languageState
-        )!;
-
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
     const ButtonsComponent = () => {
@@ -67,7 +62,7 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                         ? t("Sent")
                         : t("Send to device")}
                 </Button>
-                <SheetClose asChild>
+                {/* <SheetClose asChild>
                     <Button
                         size="lg"
                         variant={disableButtons ? "upsell_outline" : "outline"}
@@ -85,7 +80,7 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                         <Phone className="flex-shrink-0 h-5 w-5 md:h-6 md:w-6" />
                         {t("Chat")}
                     </Button>
-                </SheetClose>
+                </SheetClose> */}
             </div>
         );
     };
@@ -97,7 +92,7 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                     <div className="relative w-full h-[300px] sm:h-[400px]">
                         <Image
                             src={`/personality/${openPersonality.key}.jpeg`}
-                            alt={lang_specific_personality.title}
+                            alt={openPersonality.title}
                             className="rounded-lg object-top sm:object-center object-cover"
                             fill
                             // style={{
@@ -109,15 +104,15 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                     <div className="space-y-2">
                         <div className="flex flex-row items-center gap-2">
                             <h3 className="text-xl font-semibold">
-                                {lang_specific_personality.title}
+                                {openPersonality.title}
                             </h3>
                         </div>
 
                         <p className="text-gray-400">
-                            {lang_specific_personality.subtitle}
+                            {openPersonality.subtitle}
                         </p>
                         <p className=" text-gray-600">
-                            {lang_specific_personality.trait_short_description}
+                            {openPersonality.short_description}
                         </p>
                     </div>
                 </div>
@@ -131,7 +126,7 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                 <SheetTrigger asChild>{children}</SheetTrigger>
                 <SheetContent
                     className="rounded-tl-xl gap-0 rounded-bl-xl overflow-y-auto p-0"
-                    style={{ maxWidth: "600px" }}
+                    style={{ maxWidth: "500px" }}
                     side="right"
                 >
                     <div className="min-h-[100dvh] flex flex-col">

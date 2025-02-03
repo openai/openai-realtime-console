@@ -19,12 +19,12 @@ const DoctorPersonalities: React.FC<DoctorPersonalitiesProps> = ({
     disableButtons,
     selectedFilters,
 }) => {
-    const doctorPersonalitiesTranslations = allPersonalities.filter(
+    const doctorPersonalities = allPersonalities.filter(
         (personality) => {
             return personality.is_doctor;
         }
     );
-    const nonDoctorPersonalitiesTranslations = allPersonalities.filter(
+    const nonDoctorPersonalities = allPersonalities.filter(
         (personality) => {
             return !personality.is_doctor;
         }
@@ -33,7 +33,7 @@ const DoctorPersonalities: React.FC<DoctorPersonalitiesProps> = ({
         <div className="flex flex-col gap-8 w-full">
             <CharacterSection
                 selectedFilters={selectedFilters}
-                allPersonalities={doctorPersonalitiesTranslations}
+                allPersonalities={doctorPersonalities}
                 languageState={languageState}
                 personalityIdState={personalityIdState}
                 onPersonalityPicked={onPersonalityPicked}
@@ -43,7 +43,7 @@ const DoctorPersonalities: React.FC<DoctorPersonalitiesProps> = ({
             />
             <CharacterSection
                 selectedFilters={selectedFilters}
-                allPersonalities={nonDoctorPersonalitiesTranslations}
+                allPersonalities={nonDoctorPersonalities}
                 languageState={languageState}
                 personalityIdState={personalityIdState}
                 onPersonalityPicked={onPersonalityPicked}

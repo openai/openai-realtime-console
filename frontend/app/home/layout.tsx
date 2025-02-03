@@ -59,12 +59,12 @@ export default async function RootLayout({
     return (
         <div className="flex flex-1 flex-col mx-auto w-full max-w-[1400px] gap-2 py-2 md:flex-row">
             <aside className="w-full md:w-[270px] sm:py-6 pt-2 md:overflow-y-auto md:fixed md:h-screen">
-                <SidebarNav items={sidebarNavItems(dbUser.language_code)} />
+                <SidebarNav items={sidebarNavItems(`en-US`)} />
             </aside>
             <main className="flex-1 sm:py-6 px-4 flex justify-center md:ml-[270px]">
                 <div className="max-w-5xl w-full">{children}</div>
             </main>
-            <MobileNav items={sidebarNavItems(dbUser.language_code)} />
+            <MobileNav items={sidebarNavItems(`en-US`)} />
         </div>
     );
 }

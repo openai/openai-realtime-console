@@ -1,4 +1,5 @@
 import SettingsDashboard from "@/app/components/Settings/SettingsDashboard";
+import { getAllLanguages } from "@/db/languages";
 import { getUserById } from "@/db/users";
 import { getOpenGraphMetadata } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
@@ -17,10 +18,16 @@ export default async function Home() {
     } = await supabase.auth.getUser();
 
     const dbUser = user ? await getUserById(supabase, user.id) : null;
+    const allLanguages = await getAllLanguages(supabase);
 
     return (
         <div className="pb-4 flex flex-col gap-2">
-            {dbUser && <SettingsDashboard selectedUser={dbUser} />}
+            {dbUser && (
+                <SettingsDashboard
+                    selectedUser={dbUser}
+                    allLanguages={allLanguages}
+                />
+            )}
         </div>
     );
 }

@@ -14,9 +14,11 @@ import _ from "lodash";
 import AddCreditsModal from "../Upsell/AddCreditsModal";
 import HomePageSubtitles from "../HomePageSubtitles";
 import MessageHeader from "./MessageHeader";
-import PickLanguage from "./PickLanguage";
 import { tx } from "@/utils/i18n";
 import PersonalityFilters from "./PersonalityFilters";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const sortPersonalities = (
     personalities: IPersonality[],
@@ -37,13 +39,11 @@ const sortPersonalities = (
 interface PlaygroundProps {
     currentUser: IUser;
     allPersonalities: IPersonality[];
-    allLanguages: ILanguage[];
 }
 
 const Playground: React.FC<PlaygroundProps> = ({
     currentUser,
     allPersonalities,
-    allLanguages,
 }) => {
     const supabase = createClient();
 
@@ -65,15 +65,12 @@ const Playground: React.FC<PlaygroundProps> = ({
     const [personalityIdState, setPersonalityIdState] = useState<string>(
         currentUser.personality!.personality_id // Initial value from props
     );
-    const [languageState, setLanguageState] = useState<LanguageCodeType>(
-        currentUser.language_code! // Initial value from props
-    );
 
     const [selectedFilters, setSelectedFilters] = useState<PersonalityFilter[]>(
         []
     );
 
-    const t = tx(languageState);
+    const t = tx('en-US');
 
     const creditsRemaining = getCreditsRemaining(currentUser);
     const outOfCredits = creditsRemaining <= 0 && !currentUser.is_premium;
@@ -98,43 +95,12 @@ const Playground: React.FC<PlaygroundProps> = ({
         );
     };
 
-    const onLanguagePicked = async (languagePicked: LanguageCodeType) => {
-        setLanguageState(languagePicked);
-        await updateUser(
-            supabase,
-            {
-                language_code: languagePicked,
-            },
-            currentUser.user_id
-        );
-    };
-
     const startCall = useCallback(
         (personalityId: string) => {
-            const personalityInLanguage = allPersonalities
-                .find(
-                    (personality) =>
-                        personality.personality_id === personalityId
-                )!
-                .personalities_translations.find(
-                    (translation) => translation.language_code === languageState
-                )!;
-            handleClickOpenConnection(
-                personalityInLanguage.personalities_translation_id
-            );
+            handleClickOpenConnection(personalityId);
         },
-        [languageState, allPersonalities, handleClickOpenConnection]
+        [handleClickOpenConnection]
     );
-
-    const personalityTranslation =
-        allPersonalities
-            .find(
-                (personality) =>
-                    personality.personality_id === personalityIdState
-            )
-            ?.personalities_translations.find(
-                (translation) => translation.language_code === languageState
-            ) ?? undefined;
 
     return (
         <div className="flex flex-col">
@@ -165,11 +131,12 @@ const Playground: React.FC<PlaygroundProps> = ({
                                     </Button>
                                 </AddCreditsModal>
                             ) : (
+                                <Popover>
+                                <PopoverTrigger asChild>
                                 <Button
                                     disabled={
                                         !currentUser ||
-                                        isSelectDisabled ||
-                                        !personalityTranslation
+                                        isSelectDisabled 
                                     }
                                     className={
                                         "z-50 flex items-center gap-1.5 rounded-full"
@@ -188,29 +155,29 @@ const Playground: React.FC<PlaygroundProps> = ({
                                         {t("Play")}
                                     </span>
                                 </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80" align="center" side="bottom">
+                                  <div className="grid gap-2 p-2 text-sm">
+                                    <span>The online playground will be back soon. Tap your Humloop device and hear your character come to life!</span>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
                             )}
                         </div>
                     </div>
-
-                    <PickLanguage
-                        onLanguagePicked={onLanguagePicked}
-                        allLanguages={allLanguages}
-                        languageState={languageState}
-                        isDisabled={isSelectDisabled}
-                    />
                 </div>
 
                 <HomePageSubtitles
                     user={currentUser}
                     page="home"
-                    languageCode={languageState}
+                    languageCode={'en-US'}
                 />
                 {connectionStatus != "Open" ? (
                     <div className="flex flex-col gap-2">
                         <PersonalityFilters
                             setSelectedFilters={setSelectedFilters}
                             selectedFilters={selectedFilters}
-                            languageState={languageState}
+                            languageState={'en-US'}
                             currentUser={currentUser}
                         />
                         <PickPersonality
@@ -220,14 +187,14 @@ const Playground: React.FC<PlaygroundProps> = ({
                             personalityIdState={personalityIdState}
                             currentUser={currentUser}
                             startCall={startCall}
-                            languageState={languageState}
+                            languageState={'en-US'}
                             disableButtons={outOfCredits}
                         />
                     </div>
                 ) : null}
             </div>
 
-            {connectionStatus === "Open" && personalityTranslation && (
+            {/* {connectionStatus === "Open" && personalityTranslation && (
                 <div className="flex flex-col gap-2 mt-2">
                     <MessageHeader
                         personalityTranslation={personalityTranslation}
@@ -239,7 +206,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                         emotionDictionary={emotionDictionary}
                     />
                 </div>
-            )}
+            )} */}
             <ControlPanel
                 connectionStatus={connectionStatus}
                 isMuted={isMuted}

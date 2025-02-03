@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/button";
 interface DoctorFormProps {
     selectedUser: IUser;
     heading: React.ReactNode;
-    onSave: (values: any, userType: "doctor" | "user") => void;
+    onSave?: (values: any, userType: "doctor" | "user") => void;
+    onClickCallback: () => void;
 }
 
 export const doctorSettingsSchema = z.object({
@@ -28,10 +29,7 @@ export const doctorSettingsSchema = z.object({
 
 export type DoctorSettingsInput = z.infer<typeof doctorSettingsSchema>;
 
-const DoctorForm = forwardRef<
-    { submitForm: () => void },
-    DoctorFormProps
->(({ selectedUser, heading, onSave }, ref) => {
+const DoctorForm = ({ selectedUser, heading, onSave, onClickCallback }: DoctorFormProps) => {
     const userMetadata = selectedUser.user_info
         .user_metadata as IDoctorMetadata;
 
@@ -46,11 +44,12 @@ const DoctorForm = forwardRef<
     });
 
     async function onSubmit(values: z.infer<typeof doctorSettingsSchema>) {
-        onSave(values, "doctor");
+        onSave && onSave(values, "doctor");
     }
 
     const handleSave = () => {
-        onSave(form.getValues(), "doctor");
+        onSave && onSave(form.getValues(), "doctor");
+        onClickCallback();
     };
 
     return (
@@ -184,7 +183,7 @@ const DoctorForm = forwardRef<
             </form>
         </Form>
     );
-});
+};
 
 DoctorForm.displayName = "DoctorForm";
 

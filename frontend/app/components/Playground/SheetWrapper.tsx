@@ -27,14 +27,6 @@ const SheetWrapper: React.FC<SheetWrapperProps> = ({
     languageState,
     disableButtons,
 }) => {
-    const personality_translation = personality.personalities_translations.find(
-        (translation) => translation.language_code === languageState
-    );
-
-    if (!personality_translation) {
-        return null;
-    }
-
     return (
         <ModifyCharacterSheet
             key={personality.personality_id}
@@ -56,18 +48,18 @@ const SheetWrapper: React.FC<SheetWrapperProps> = ({
                 )}
                 // onClick={() => onPersonalityPicked(personality)}
             >
-                <CardContent className="flex-shrink-0 p-0 h-[160px] sm:h-[200px]">
+                <CardContent className="flex-shrink-0 p-0 h-[160px] sm:h-[180px]">
                     <Image
                         src={getPersonalityImageSrc(personality.key)}
                         alt={personality.key}
-                        width={220}
+                        width={100}
                         height={180}
                         className="rounded-3xl rounded-br-none rounded-bl-none w-full h-full object-cover"
                     />
                 </CardContent>
                 <CardHeader className="flex-shrink-0 gap-0 px-4 py-2">
                     <CardTitle className="font-semibold text-md flex flex-row items-center gap-2">
-                        {personality_translation.title}{" "}
+                        {personality.title}{" "}
                         {personalityIdState === personality.personality_id && (
                             <CircleCheck
                                 size={20}
@@ -77,7 +69,7 @@ const SheetWrapper: React.FC<SheetWrapperProps> = ({
                         )}
                     </CardTitle>
                     <CardDescription className="text-sm font-normal">
-                        {personality_translation.subtitle}
+                        {personality.subtitle}
                     </CardDescription>
                 </CardHeader>
             </Card>

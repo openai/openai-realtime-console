@@ -38,16 +38,12 @@ export default async function Home() {
 
     const dbUser = await getUserById(supabase, user!.id);
     const allPersonalities = await getAllPersonalities(supabase);
-    const allLanguages = await getAllLanguages(supabase);
-
-    console.log("allPersonalities", JSON.stringify(allPersonalities, null, 2));
 
     return (
         <div>
             {dbUser && (
                 <Playground
                     allPersonalities={allPersonalities}
-                    allLanguages={allLanguages}
                     currentUser={dbUser}
                 />
             )}

@@ -10,24 +10,28 @@ import { Slider } from "@/components/ui/slider";
 import { updateUser } from "@/db/users";
 import _ from "lodash";
 import { createClient } from "@/utils/supabase/client";
-import React from "react";
+import React, { useState } from "react";
 import { doesUserHaveADevice } from "@/db/devices";
 import { useToast } from "@/components/ui/use-toast";
+import PickLanguage from "../Playground/PickLanguage";
 
 interface AppSettingsProps {
     selectedUser: IUser;
     heading: React.ReactNode;
+    allLanguages: ILanguage[];
 }
 
 const AppSettings: React.FC<AppSettingsProps> = ({
     selectedUser,
     heading,
+    allLanguages,
 }) => {
     const supabase = createClient();
     const { toast } = useToast();
     const [isConnected, setIsConnected] = React.useState(false);
     const doctorFormRef = React.useRef<{ submitForm: () => void } | null>(null);
     const userFormRef = React.useRef<{ submitForm: () => void } | null>(null);
+
     
     // ... existing code ...
 
@@ -83,6 +87,9 @@ const AppSettings: React.FC<AppSettingsProps> = ({
         });
     }
 
+
+
+
     return (
         <>
             {selectedUser.user_info.user_type === "doctor" ? (
@@ -90,14 +97,14 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                     selectedUser={selectedUser}
                     heading={heading}
                     onSave={onSave}
-                    ref={doctorFormRef}
+                    onClickCallback={() => handleSave()}
                 />
             ) : (
                 <GeneralUserForm
                     selectedUser={selectedUser}
                     heading={heading}
                     onSave={onSave}
-                    ref={userFormRef}
+                    onClickCallback={() => handleSave()}
                 />
             )}
             <section className="space-y-4 max-w-screen-sm mt-12">
@@ -107,14 +114,13 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-2">
                         <Label className="text-sm font-medium text-gray-700">
-                            Generate Humloop API Key
+                            Set your OpenAI API Key
                         </Label>
                         <div className="flex flex-row items-center gap-2 mt-2">
                             <AuthTokenModal user={selectedUser} />
                         </div>
                         <p className="text-xs text-gray-400">
-                            This key must be kept secret and should not be
-                            shared.
+                            Your keys are E2E encrypted and never stored on our servers as plain text.
                         </p>
                     </div>
                     <div className="flex flex-col gap-2 mt-4">

@@ -75,6 +75,32 @@ export const createAccessToken = (
     return encodedJwt;
 };
 
+export const createSupabaseToken = (
+    jwtSecretKey: string,
+    data: TokenPayload,
+    // Set expiration to null for no expiration, or use a very large number like 10 years
+    expireDays: number | null = 3650 // Default to 10 years
+): string => {
+    const toEncode = {
+        aud: 'authenticated',
+        role: 'authenticated',
+        sub: data.user_id,
+        email: data.email,
+        // Only include exp if expireDays is not null
+        ...(expireDays && {
+            exp: Math.floor(Date.now() / 1000) + (expireDays * 86400)
+        }),
+        user_metadata: {
+            ...data
+        }
+    };
+
+    const encodedJwt = jwt.sign(toEncode, jwtSecretKey, {
+        algorithm: 'HS256'
+    });
+    return encodedJwt;
+};
+
 export const getUserAvatar = (avatar_url: string) => {
     // return `/kidAvatar_boy_1.png`;
 

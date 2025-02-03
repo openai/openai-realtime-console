@@ -23,7 +23,8 @@ import { Button } from "@/components/ui/button";
 interface GeneralUserFormProps {
     selectedUser: IUser;
     heading: React.ReactNode;
-    onSave: (values: any, userType: "doctor" | "user") => void;
+    onSave?: (values: any, userType: "doctor" | "user") => void;
+    onClickCallback: () => void;
 }
 
 export const UserSettingsSchema = z.object({
@@ -39,10 +40,7 @@ export const UserSettingsSchema = z.object({
 
 export type GeneralUserInput = z.infer<typeof UserSettingsSchema>;
 
-const GeneralUserForm = forwardRef<
-    { submitForm: () => void },
-    GeneralUserFormProps
->(({ selectedUser, heading, onSave }, ref) => {
+const GeneralUserForm = ({ selectedUser, heading, onSave, onClickCallback }: GeneralUserFormProps) => {
     const form = useForm<GeneralUserInput>({
         defaultValues: {
             supervisee_name: selectedUser?.supervisee_name ?? "",
@@ -53,11 +51,12 @@ const GeneralUserForm = forwardRef<
     });
 
     async function onSubmit(values: z.infer<typeof UserSettingsSchema>) {
-        onSave(values, "user");
+        onSave && onSave(values, "user");
     }
 
     const handleSave = () => {
-        onSave(form.getValues(), "user");
+        onSave && onSave(form.getValues(), "user");
+        onClickCallback();
     };
 
     return (
@@ -166,8 +165,6 @@ const GeneralUserForm = forwardRef<
             </form>
         </Form>
     );
-});
-
-GeneralUserForm.displayName = "GeneralUserForm";
+};
 
 export default GeneralUserForm;

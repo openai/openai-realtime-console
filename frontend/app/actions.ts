@@ -4,7 +4,7 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createAccessToken } from "@/lib/utils";
+import { createAccessToken, createSupabaseToken } from "@/lib/utils";
 import { addUserToDevice, dbCheckUserCode } from "@/db/devices";
 import { getSimpleUserById } from "@/db/users";
 
@@ -214,3 +214,39 @@ export const setDeviceOta = async (userId: string) => {
     const supabase = createClient();
     await supabase.from("users").update({ is_ota: true }).eq("user_id", userId);
 };
+
+export async function storeUserApiKey(userId: string, rawApiKey: string) {
+    const supabase = createClient();
+    // const { iv, encryptedData } = encryptSecret(rawApiKey, masterKey);
+  
+    const { error } = await supabase
+      .from('api_keys')
+      .upsert({
+        user_id: userId,
+        encrypted_key: rawApiKey,
+        iv: "",
+      });
+  
+    if (error) {
+      console.error('Error inserting or updating user secret:', error);
+      throw error;
+    }
+  
+    console.log(`Encrypted API key for user ${userId} stored successfully.`);
+  }
+
+  export async function checkIfUserHasApiKey(userId: string): Promise<boolean> {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('api_keys')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    if (error) {
+        console.error('Error checking if user has API key:', error);
+        throw error;
+    }
+
+    return data.length > 0;
+  }
+

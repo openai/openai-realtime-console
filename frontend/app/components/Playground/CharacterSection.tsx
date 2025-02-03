@@ -24,8 +24,6 @@ const CharacterSection = ({
 }: CharacterSectionProps) => {
     const t = tx(languageState);
 
-    console.log(selectedFilters);
-
     const filteredPersonalities = allPersonalities.filter((personality) => {
         return selectedFilters.every((filter) => {
             return personality[filter] === true;

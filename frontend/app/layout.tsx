@@ -285,7 +285,7 @@ export default async function RootLayout({
 }) {
     const supabase = createClient();
 
-    const { stars } = await fetchGithubStars("StarmoonAI/Humloop");
+    const { stars } = await fetchGithubStars("StarmoonAI/Starmoon");
 
     const {
         data: { user },
