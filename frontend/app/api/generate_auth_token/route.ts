@@ -8,7 +8,7 @@ interface TokenPayload {
     [key: string]: any;
 }
 
-export const createSupabaseToken = (
+const createSupabaseToken = (
     jwtSecretKey: string,
     data: TokenPayload,
     // Set expiration to null for no expiration, or use a very large number like 10 years
