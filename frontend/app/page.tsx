@@ -31,7 +31,7 @@ export default async function Index() {
             <div className="flex flex-row gap-4 items-center justify-center mt-8">
                 <PreorderButton
                     size="lg"
-                    buttonText="Preorder Now"
+                    buttonText="Buy Now"
                     className="h-10"
                 />
                 <Link href={user ? "/home" : "/login"}>

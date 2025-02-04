@@ -32,7 +32,7 @@ export default function EndingSection() {
                 <div className="flex items-center justify-center gap-8 flex-wrap">
                     <PreorderButton
                         size="lg"
-                        buttonText="Preorder Now"
+                        buttonText="Buy Now"
                         className="h-10"
                     />
                     <Link href={businessDemoLink} passHref>

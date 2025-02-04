@@ -40,7 +40,7 @@ const NavbarButtons: React.FC<NavbarButtonsProps> = ({
             {isHealthcare ? (
                 <GetInTouchButton size="sm" iconOnMobile={isMobile} />
             ) : (
-                <PreorderButton size="sm" buttonText="Preorder" iconOnMobile />
+                <PreorderButton size="sm" buttonText="Buy" iconOnMobile />
             )}
 
             {!isHome && (

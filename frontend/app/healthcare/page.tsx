@@ -81,7 +81,7 @@ export default async function Healthcare() {
                                 </span>
                             </h1>
                             <p className="mt-6 text-2xl leading-8 text-stone-600">
-                                Elato is a device that makes toys
+                                The Elato device makes toys
                                 conversational using familiar superhero voices
                                 to explain procedures and provide comfort{" "}
                                 <Stethoscope
