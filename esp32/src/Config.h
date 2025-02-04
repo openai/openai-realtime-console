@@ -4,6 +4,20 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <driver/i2s.h>
+#include <Preferences.h>
+
+extern Preferences preferences;
+
+enum DeviceState
+{
+    SETUP,
+    IDLE,
+    LISTENING,
+    SPEAKING,
+    PROCESSING,
+};
+
+extern DeviceState deviceState;
 
 // WiFi credentials
 extern const char *EAP_IDENTITY;
@@ -17,10 +31,13 @@ extern const char *password_personal;
 extern String authTokenGlobal;
 
 // WebSocket server details
+extern const char *ws_server;
+extern const uint16_t ws_port;
+extern const char *ws_path;
+
+// Backend server details
 extern const char *backend_server;
 extern const uint16_t backend_port;
-extern const char *websocket_path;
-extern const char *auth_token;
 
 // I2S and Audio parameters
 extern const uint32_t SAMPLE_RATE;

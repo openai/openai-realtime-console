@@ -89,7 +89,7 @@ const DoctorForm = ({ selectedUser, heading, onSave, onClickCallback }: DoctorFo
                         )}
                     />
                 </section>
-                <section className="space-y-4">
+                <section className="space-y-4 flex flex-col gap-2">
                     <h2 className="text-lg font-semibold border-b border-gray-200 pb-2">
                         Clinic Details
                     </h2>

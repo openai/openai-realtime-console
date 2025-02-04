@@ -1,19 +1,30 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import jwt from "jsonwebtoken";
 import {
     defaultPersonalityId,
     defaultToyId,
     INITIAL_CREDITS,
     SECONDS_PER_CREDIT,
 } from "./data";
-
+import crypto from "crypto";
 export const getOpenGraphMetadata = (title: string) => {
     return {
         openGraph: {
             title: `${title} | Humloop AI`,
         },
     };
+};
+
+// code in the form: aabbccddeeff
+export const isValidMacAddress = (macAddress: string): boolean => {
+    // Check if macAddress is a valid MAC address without separators
+    const macRegex = /^[0-9A-Fa-f]{12}$/;
+    return macRegex.test(macAddress);
+};
+
+export const getMacAddressFromDeviceCode = (deviceCode: string): string => {
+    // add colons to the device code
+    return deviceCode.substring(0, 2) + ":" + deviceCode.substring(2, 4) + ":" + deviceCode.substring(4, 6) + ":" + deviceCode.substring(6, 8) + ":" + deviceCode.substring(8, 10) + ":" + deviceCode.substring(10, 12);
 };
 
 export const getPersonalityImageSrc = (title: string) => {
@@ -42,63 +53,6 @@ export const getBaseUrl = () => {
     return process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
         ? "https://Humloop.app"
         : "http://localhost:3000";
-};
-
-const ALGORITHM = "HS256";
-
-interface TokenPayload {
-    [key: string]: any;
-}
-
-export const createAccessToken = (
-    jwtSecretKey: string,
-    data: TokenPayload,
-    expireDays?: number | null
-): string => {
-    // console.log(jwtSecretKey);
-    const toEncode = { ...data };
-
-    if (expireDays) {
-        const expire = new Date();
-        expire.setDate(expire.getDate() + expireDays);
-        toEncode.exp = Math.floor(expire.getTime() / 1000); // JWT expects 'exp' in seconds since epoch
-    }
-
-    // Convert created_time to ISO format string
-    if (toEncode.created_time) {
-        toEncode.created_time = new Date(toEncode.created_time).toISOString();
-    }
-
-    const encodedJwt = jwt.sign(toEncode, jwtSecretKey, {
-        algorithm: ALGORITHM,
-    });
-    return encodedJwt;
-};
-
-export const createSupabaseToken = (
-    jwtSecretKey: string,
-    data: TokenPayload,
-    // Set expiration to null for no expiration, or use a very large number like 10 years
-    expireDays: number | null = 3650 // Default to 10 years
-): string => {
-    const toEncode = {
-        aud: 'authenticated',
-        role: 'authenticated',
-        sub: data.user_id,
-        email: data.email,
-        // Only include exp if expireDays is not null
-        ...(expireDays && {
-            exp: Math.floor(Date.now() / 1000) + (expireDays * 86400)
-        }),
-        user_metadata: {
-            ...data
-        }
-    };
-
-    const encodedJwt = jwt.sign(toEncode, jwtSecretKey, {
-        algorithm: 'HS256'
-    });
-    return encodedJwt;
 };
 
 export const getUserAvatar = (avatar_url: string) => {
@@ -130,3 +84,29 @@ export const getMessageRoleName = (
         return selectedPersonalityTranslation.title;
     }
 };
+
+export function encryptSecret(secret: string, masterKey: string) {
+    // Decode the base64 master key
+    const decodedKey = Buffer.from(masterKey, 'base64');
+    if (decodedKey.length !== 32) {
+      throw new Error('ENCRYPTION_KEY must be 32 bytes when decoded from base64.');
+    }
+  
+    // Generate a 16-byte IV
+    const ivBuf = crypto.randomBytes(16);
+  
+    // Use type assertion to string for algorithm and force the types for key and iv
+    const cipher = crypto.createCipheriv(
+        'aes-256-cbc' as string,
+        decodedKey as unknown as crypto.CipherKey,
+        ivBuf as unknown as crypto.BinaryLike
+    );
+  
+    let encrypted = cipher.update(secret, 'utf8', 'base64');
+    encrypted += cipher.final('base64');
+  
+    return {
+      iv: ivBuf.toString('base64'),
+      encryptedData: encrypted,
+    };
+}

@@ -12,11 +12,24 @@
 #include "LEDHandler.h"
 #include "time.h"
 #include "Config.h"
+#include <SPIFFS.h> 
+#include "AudioTools/AudioLibs/AudioSourceSPIFFS.h"
+#include "AudioTools/AudioCodecs/CodecMP3Helix.h"
+#include "WifiSetup.h"
 
 // Add these constants
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 0;     // UTC offset in seconds (0 for UTC)
 const int   daylightOffset_sec = 0; // Daylight savings offset (3600 for +1 hour)
+
+// We'll store our MP3 in SPIFFS at /startup.mp3
+static const char* MP3_FILE = "/startup.mp3";
+
+// Create the AudioTools pipeline components
+AudioSourceSPIFFS source;       // Will read from SPIFFS
+MP3DecoderHelix   decoder;      // MP3 decoder
+I2SStream         i2s;          // Send output to I2S
+AudioPlayer       player(source, i2s, decoder);
 
 // Add this function
 void setupTime() {
@@ -63,8 +76,8 @@ void enterSleep()
     }
     
     // Stop all tasks that might be using I2S or other peripherals
-    i2s_stop(I2S_PORT_IN);
-    i2s_stop(I2S_PORT_OUT);
+    i2s_driver_uninstall(I2S_PORT_IN);
+    i2s_driver_uninstall(I2S_PORT_OUT);
     
     // Flush any remaining serial output
     Serial.flush();
@@ -100,25 +113,6 @@ void scaleAudioVolume(uint8_t *input, uint8_t *output, size_t length, int volume
     }
 }
 
-String createAuthTokenMessage(String token)
-{
-    JsonDocument doc;
-    doc["token"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOGMzYWYwODctOGQ4MC00NTM2LThjNzYtMDYyNjc3NDQ4MDMzIiwiZW1haWwiOiJha2FkM2JAZ21haWwuY29tIiwiaWF0IjoxNzM4NTQ1NzQ4fQ.o_YonVBi-lKwacuQ2oOKqhiin5dC9BEfbLZBYJLkCAk";
-    
-    struct tm timeinfo;
-    if(getLocalTime(&timeinfo)){
-        char timeStringBuff[50];
-        strftime(timeStringBuff, sizeof(timeStringBuff), "%Y-%m-%d %H:%M:%S", &timeinfo);
-        doc["timestamp"] = timeStringBuff;
-    } else {
-        doc["timestamp"] = millis(); // fallback to millis if time sync failed
-    }
-    
-    String jsonString;
-    serializeJson(doc, jsonString);
-    return jsonString;
-}
-
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 {
     switch (type)
@@ -130,7 +124,6 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
         break;
     case WStype_CONNECTED:
         Serial.printf("[WSc] Connected to url: %s\n", payload);
-        webSocket.sendTXT("{\"type\": \"user\", \"msg\": \"The user is initiating a new chat here.\"}");
         deviceState = PROCESSING;
         break;
     case WStype_TEXT:
@@ -298,8 +291,64 @@ if(getLocalTime(&timeinfo)) {
     webSocket.onEvent(webSocketEvent);
     // webSocket.setAuthorization("user", "Password");
     webSocket.setReconnectInterval(1000);
-    
 }
+
+// plays when new wifi network connects
+void playStartupSound() {
+      // Check if startup.mp3 actually exists
+  // 2) Mount SPIFFS
+    // Check if startup.mp3 actually exists
+    if(!SPIFFS.begin(true)) {
+        Serial.println("SPIFFS mount failed!");
+        while(true) { delay(10); }
+    }
+
+    File f = SPIFFS.open(MP3_FILE, "r");
+    if(!f){
+        Serial.println("startup.mp3 missing in SPIFFS!");
+        while(true) { delay(10); }
+    } else {
+        Serial.printf("startup.mp3 found, size=%d bytes\n", f.size());
+        f.close();
+    }
+
+    // Configure I2S in TX mode
+    auto cfg = i2s.defaultConfig(TX_MODE);
+    cfg.pin_bck  = 6;
+    cfg.pin_ws   = 5;
+    cfg.pin_data = 7;
+    cfg.channels = 1;
+    cfg.sample_rate = 44100;
+    // cfg.port_no = I2S_PORT_OUT;
+
+    if(!i2s.begin(cfg)) {
+        Serial.println("I2S begin failed!");
+        while(true) { delay(10); }
+    }
+
+    // Initialize the player
+    player.setVolume(1.3f);    
+    if(!player.begin()) {
+        Serial.println("Player begin() failed!");
+        while(true) { delay(10); }
+    }
+
+  // **THIS IS THE MISSING LOOP!**
+    Serial.println("Playing startup sound...");
+    while(true) {
+        size_t copied = player.copy();
+        if (copied == 0) {
+            Serial.println("Playback finished.");
+            break;
+        }
+        delay(1);  // Give CPU time for other tasks
+    }
+
+    Serial.println("Startup sound played, set up websocket");
+    Serial.println("Connecting to WebSocket server...");
+    websocket_setup(ws_server, ws_port, ws_path);
+}
+
 
 void connectWithPassword()
 {
@@ -323,12 +372,7 @@ void connectWithPassword()
     WiFi.setSleep(false);
 
     // Connect to WebSocket if successfully registered
-    Serial.println("Connecting to WebSocket server...");
-    websocket_setup("10.2.1.21", 8000, "/");
-    // websocket_setup("192.168.1.166", 8000, "/");
-    // websocket_setup("talkedge.deno.dev",443, "/");
-    // websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
-    // websocket_setup("https://emkmtesvjrqhvx2mo2mxslvmmy0zsuhq.lambda-url.us-east-1.on.aws/", 8000, "/");
+    playStartupSound();
 }
 
 void micTask(void *parameter)
@@ -344,10 +388,11 @@ void micTask(void *parameter)
 
     while (1) {
         // Read audio data
-        if (deviceState == LISTENING && webSocket.isConnected() && i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len,
-                     &bytes_read, portMAX_DELAY) == ESP_OK)
+        if (deviceState == LISTENING && webSocket.isConnected())
         {
-           
+            if (i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len,
+                     &bytes_read, portMAX_DELAY) == ESP_OK)
+            {
                 // Scale or convert if needed
                 i2s_adc_data_scale((uint8_t*)flash_write_buff,
                                    (uint8_t*)i2s_read_buff,
@@ -362,7 +407,7 @@ void micTask(void *parameter)
 
                 // Free the temp buffer
                 free(safeSend);
-            
+            }
         }
         vTaskDelay(10);
     }
@@ -410,6 +455,9 @@ static void onButtonDoubleClickCb(void *button_handle, void *usr_data)
 
 void audioPlaybackTask(void *param)
 {
+    i2s_install_speaker();
+    i2s_setpin_speaker();
+    i2s_start(I2S_PORT_OUT);
     // Allocate a local buffer to temporarily hold the audio data to be written to I2S.
     uint8_t* localBuffer = (uint8_t*)malloc(AUDIO_CHUNK_SIZE);
     if (!localBuffer) {
@@ -445,6 +493,38 @@ void audioPlaybackTask(void *param)
     vTaskDelete(NULL);
 }
 
+void connectToWifiAndWebSocket()
+{
+    int result = wifiConnect();
+    if (result == 1 && !authTokenGlobal.isEmpty()) // Successfully connected and has auth token
+    {
+        Serial.println("WiFi connected with existing network!");
+        websocket_setup(ws_server, ws_port, ws_path);
+        return; // Connection successful
+    }
+
+    openAP(); // Start the AP immediately as a fallback
+
+    // Wait for user interaction or timeout
+    unsigned long startTime = millis();
+    const unsigned long timeout = 600000; // 10 minutes
+
+    Serial.println("Waiting for user interaction or timeout...");
+    while ((millis() - startTime) < timeout)
+    {
+        dnsServer.processNextRequest(); // Process DNS requests
+        if (WiFi.status() == WL_CONNECTED && !authTokenGlobal.isEmpty())
+        {
+            Serial.println("WiFi connected while AP was active!");
+            websocket_setup(ws_server, ws_port, ws_path);
+            return;
+        }
+        yield();
+    }
+
+    Serial.println("Timeout expired. Going to sleep.");
+    enterSleep();
+}
 
 void setup()
 {
@@ -461,36 +541,33 @@ void setup()
     getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
     printOutESP32Error(getErr);
 
-    rb_mutex = xSemaphoreCreateMutex();
-
-
-    Button *btn = new Button(BUTTON_PIN, false);
     // Main button
+    Button *btn = new Button(BUTTON_PIN, false);
     btn->attachLongPressUpEventCb(&onButtonLongPressUpEventCb, NULL);
     btn->attachDoubleClickEventCb(&onButtonDoubleClickCb, NULL);
     btn->detachSingleClickEvent();
 
-    // setup LED
+    // setup
     setupRGBLED();
+    getAuthTokenFromNVS();
+
+    // playStartupSound();
+    // connectWithPassword();
+    connectToWifiAndWebSocket();
+
+    // setup RTOS tasks
     xTaskCreate(ledTask, "LED Task", 4096, NULL, 5, NULL);
-
-    // setup speaker
-    i2s_install_speaker();
-    i2s_setpin_speaker();
     xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, NULL);
-
-    connectWithPassword();
-
-    // Get the actual sample rate - updated to match new function signature
-    float real_rate = i2s_get_clk(I2S_PORT_OUT);
-    Serial.printf("Actual I2S sample rate: %.0f Hz\n", real_rate);
-
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
 }
 
 void loop()
 {
     webSocket.loop();
+    if (WiFi.getMode() == WIFI_MODE_AP)
+        {
+            dnsServer.processNextRequest();
+        }
 
     // Send detect_vad after 10 seconds
     if (connectionStartTime && deviceState == LISTENING && 

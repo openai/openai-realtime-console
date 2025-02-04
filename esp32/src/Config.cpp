@@ -1,15 +1,23 @@
 #include "Config.h"
 #include <nvs_flash.h>
 
-// WebSocket server details
-// const char *backend_server = "51.8.202.78";
-// const uint16_t backend_port = 80;
-// const char *backend_server = "192.168.2.179";
-// const uint16_t backend_port = 8000;
+// ! define preferences
+Preferences preferences;
 
-// const char *websocket_path = "/Humloop";
-// const char *auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWFmNjJiMGUtM2RhNC00YzQ0LWFkZjctNWIxYjdjOWM0Y2I2IiwiZW1haWwiOiJhZG1pbkBzdGFybW9vbi5hcHAiLCJpYXQiOjE3MzAyMDU2OTd9.XLqSAuDStj9PTwjZTB-d6OJRxJLtq0_KgAn4Qqb1FR4";
+// websocket_setup("192.168.1.166", 8000, "/");
+// websocket_setup("talkedge.deno.dev",443, "/");
+// websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
+// websocket_setup("https://emkmtesvjrqhvx2mo2mxslvmmy0zsuhq.lambda-url.us-east-1.on.aws/", 8000, "/");
+// Runtime WebSocket server details
+const char *ws_server = "10.2.1.21";
+const uint16_t ws_port = 8000;
+const char *ws_path = "/";
 
+// Backend server details 
+const char *backend_server = "10.2.1.21";
+const uint16_t backend_port = 3000;
+
+// Temp auth token
 String authTokenGlobal = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJzdWIiOiI4YzNhZjA4Ny04ZDgwLTQ1MzYtOGM3Ni0wNjI2Nzc0NDgwMzMiLCJlbWFpbCI6ImFrYWQzYkBnbWFpbC5jb20iLCJleHAiOjIwNTM5Nzc1NzAsInVzZXJfbWV0YWRhdGEiOnsidXNlcl9pZCI6IjhjM2FmMDg3LThkODAtNDUzNi04Yzc2LTA2MjY3NzQ0ODAzMyIsImVtYWlsIjoiYWthZDNiQGdtYWlsLmNvbSJ9LCJpYXQiOjE3Mzg2MTc1NzB9.FvMqCZ-pNrdkCTAut4sgOPel8mki_ADP6cRBNFB97A4";
 
 // I2S and Audio parameters
@@ -44,12 +52,10 @@ const int LED_PIN = D10;
 const int I2S_SD = D9;
 const int I2S_WS = D8;
 const int I2S_SCK = D7;
-const i2s_port_t I2S_PORT_IN = I2S_NUM_0;
 
 const int I2S_WS_OUT = D0;
 const int I2S_BCK_OUT = D1;
 const int I2S_DATA_OUT = D2;
-const i2s_port_t I2S_PORT_OUT = I2S_NUM_1;
 const int I2S_SD_OUT = D3;
 
 const gpio_num_t BUTTON_PIN = GPIO_NUM_6;

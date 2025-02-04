@@ -7,8 +7,6 @@ import {
   playAudio,
 } from "./useAudioService";
 import _ from "lodash";
-import { generateStarmoonAuthKey } from "@/app/actions";
-
 export const useWebSocketHandler = (selectedUser: IUser) => {
   const [socketUrl, setSocketUrl] = useState<string | null>(null);
   const [personalityTranslationId, setPersonalityTranslationId] = useState<
@@ -48,9 +46,7 @@ export const useWebSocketHandler = (selectedUser: IUser) => {
   };
 
   const onOpen = async () => {
-    const accessToken = await generateStarmoonAuthKey(selectedUser);
-    console.log("accessToken", accessToken);
-    await onOpenAuth(accessToken);
+    await onOpenAuth("");
     setConnectionStatus("Open");
     // startRecording(
     //   setMicrophoneStream,

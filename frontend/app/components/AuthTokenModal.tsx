@@ -21,16 +21,21 @@ const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user }) => {
     const { toast } = useToast();
     const [apiKey, setApiKey] = useState<string>("");
     const [hasApiKey, setHasApiKey] = useState<boolean>(false);
+
+    const userHasApiKey = async () => {
+        const hasApiKey = await checkIfUserHasApiKey(user.user_id);
+        setHasApiKey(hasApiKey);
+    }
+
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button
                     size="sm"
                     variant="outline"
-                    className="font-normal flex flex-row items-center gap-2"
+                    className="flex flex-row items-center gap-2"
                     onClick={async () => {
-                        const hasApiKey = await checkIfUserHasApiKey(user.user_id);
-                        setHasApiKey(hasApiKey);
+                        userHasApiKey();
                     }}
                 >
                     <Key size={16} />
@@ -57,14 +62,16 @@ const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user }) => {
                     <Button
                         size="icon"
                         variant="ghost"
-                        disabled={!apiKey}
-                        onClick={() => {
+                        disabled={!apiKey || hasApiKey}
+                        onClick={async () => {
                             if (!hasApiKey) {
-                            storeUserApiKey(user.user_id, apiKey);
-                            toast({
-                                description:
-                                    "OpenAI API Key added",
+                                await storeUserApiKey(user.user_id, apiKey);
+                                setHasApiKey(true);  // Set this immediately
+                                userHasApiKey();
+                                toast({
+                                    description: "OpenAI API Key added",
                                 });
+                                setApiKey("********************");
                             }
                         }}
                     >

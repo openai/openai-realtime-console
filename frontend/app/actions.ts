@@ -4,39 +4,10 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createAccessToken, createSupabaseToken } from "@/lib/utils";
+import { encryptSecret, getMacAddressFromDeviceCode, isValidMacAddress } from "@/lib/utils";
 import { addUserToDevice, dbCheckUserCode } from "@/db/devices";
 import { getSimpleUserById } from "@/db/users";
 
-export const signUpAction = async (formData: FormData) => {
-    const email = formData.get("email")?.toString();
-    const password = formData.get("password")?.toString();
-    const supabase = createClient();
-    const origin = headers().get("origin");
-
-    if (!email || !password) {
-        return { error: "Email and password are required" };
-    }
-
-    const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            emailRedirectTo: `${origin}/auth/callback`,
-        },
-    });
-
-    if (error) {
-        console.error(error.code + " " + error.message);
-        return encodedRedirect("error", "/login", error.message);
-    } else {
-        return encodedRedirect(
-            "success",
-            "/login",
-            "Thanks for signing up! Please check your email for a verification link."
-        );
-    }
-};
 
 export const signInAction = async (formData: FormData) => {
     const email = formData.get("email") as string;
@@ -140,13 +111,6 @@ export const checkDoctorAction = async (authCode: string) => {
     return authCode === "kiwi-subtle-emu";
 };
 
-export const generateStarmoonAuthKey = async (user: IUser) => {
-    return createAccessToken(process.env.JWT_SECRET_KEY!, {
-        user_id: user.user_id,
-        email: user.email,
-    });
-};
-
 export const connectUserToDevice = async (
     userId: string,
     userDeviceCode: string
@@ -217,14 +181,14 @@ export const setDeviceOta = async (userId: string) => {
 
 export async function storeUserApiKey(userId: string, rawApiKey: string) {
     const supabase = createClient();
-    // const { iv, encryptedData } = encryptSecret(rawApiKey, masterKey);
+    const { iv, encryptedData } = encryptSecret(rawApiKey, process.env.ENCRYPTION_KEY!);
   
     const { error } = await supabase
       .from('api_keys')
       .upsert({
         user_id: userId,
-        encrypted_key: rawApiKey,
-        iv: "",
+        encrypted_key: encryptedData,
+        iv: iv,
       });
   
     if (error) {
@@ -250,3 +214,22 @@ export async function storeUserApiKey(userId: string, rawApiKey: string) {
     return data.length > 0;
   }
 
+
+  export async function registerDevice(userId: string, deviceCode: string) {
+    // check if deviceCode is valid mac address
+    if (!isValidMacAddress(deviceCode)) {
+         return { error: "Invalid device code" };
+    }
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('devices')
+      .insert({ user_id: userId, user_code: deviceCode.toLowerCase(), mac_address: getMacAddressFromDeviceCode(deviceCode).toUpperCase() });
+
+    if (error) {
+        console.log(error)
+        return { error: "Error registering device" };
+    }
+
+    return { error: null };
+  }

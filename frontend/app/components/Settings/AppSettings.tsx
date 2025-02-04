@@ -1,4 +1,4 @@
-import { setDeviceOta, setDeviceReset, signOutAction } from "@/app/actions";
+import { registerDevice, setDeviceOta, setDeviceReset, signOutAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,9 @@ import { Slider } from "@/components/ui/slider";
 import { updateUser } from "@/db/users";
 import _ from "lodash";
 import { createClient } from "@/utils/supabase/client";
-import React, { useState } from "react";
+import React, { useCallback } from "react";
 import { doesUserHaveADevice } from "@/db/devices";
 import { useToast } from "@/components/ui/use-toast";
-import PickLanguage from "../Playground/PickLanguage";
 
 interface AppSettingsProps {
     selectedUser: IUser;
@@ -31,7 +30,8 @@ const AppSettings: React.FC<AppSettingsProps> = ({
     const [isConnected, setIsConnected] = React.useState(false);
     const doctorFormRef = React.useRef<{ submitForm: () => void } | null>(null);
     const userFormRef = React.useRef<{ submitForm: () => void } | null>(null);
-
+    const [deviceCode, setDeviceCode] = React.useState("");
+    const [error, setError] = React.useState("");
     
     // ... existing code ...
 
@@ -43,14 +43,15 @@ const AppSettings: React.FC<AppSettingsProps> = ({
         }
     };
 
+    const checkIfUserHasDevice = useCallback(async () => {
+        setIsConnected(
+            await doesUserHaveADevice(supabase, selectedUser.user_id)
+        );
+    }, [selectedUser.user_id, supabase]);
+
     React.useEffect(() => {
-        const checkIfUserHasDevice = async () => {
-            setIsConnected(
-                await doesUserHaveADevice(supabase, selectedUser.user_id)
-            );
-        };
         checkIfUserHasDevice();
-    }, [selectedUser.user_id]);
+    }, [checkIfUserHasDevice]);
 
     const [volume, setVolume] = React.useState([
         selectedUser.volume_control ?? 50,
@@ -87,9 +88,6 @@ const AppSettings: React.FC<AppSettingsProps> = ({
         });
     }
 
-
-
-
     return (
         <>
             {selectedUser.user_info.user_type === "doctor" ? (
@@ -111,7 +109,40 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                 <h2 className="text-lg font-semibold border-b border-gray-200 pb-2">
                     Device settings
                 </h2>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-2">
+                        <Label className="text-sm font-medium text-gray-700">
+                            Register your device
+                        </Label>
+                        <div className="flex flex-row items-center gap-2 mt-2">
+                            <Input
+                                value={deviceCode}
+                                disabled={isConnected}
+                                onChange={(e) => setDeviceCode(e.target.value)}
+                                placeholder={isConnected ? "**********" : "Enter your device code"}
+                            />
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={isConnected}
+                                onClick={async () => {
+                                    const result = await registerDevice(selectedUser.user_id, deviceCode);
+                                    if (result.error) {
+                                        setError(result.error);
+                                    }
+                                    checkIfUserHasDevice();
+                                }}
+                            >
+                                Register
+                            </Button>
+                        </div>
+                        <p className="text-xs text-gray-400">
+                            {isConnected ? <span className="font-medium text-gray-800">Registered!</span> :
+                                error ? <span className="text-red-500">{error}.</span> :
+                                "Add your device code to your account to register it."
+                        }
+                        </p>
+                    </div>
                     <div className="flex flex-col gap-2">
                         <Label className="text-sm font-medium text-gray-700">
                             Set your OpenAI API Key

@@ -1,6 +1,8 @@
 // code to get mac address of the device
 #include <WiFi.h> // Include the WiFi library
 
+String macAddress;
+
 void setup()
 {
     // Start the Serial communication to send and receive data
@@ -10,7 +12,7 @@ void setup()
     delay(1000);
 
     // Get and print the MAC address
-    String macAddress = WiFi.macAddress();
+    macAddress = WiFi.macAddress();
     Serial.print("ESP32 MAC Address: ");
     Serial.println(macAddress);
 }
@@ -18,4 +20,7 @@ void setup()
 void loop()
 {
     // Nothing needed in loop for this example
+    Serial.println(macAddress);
+    delay(1000);
+
 }

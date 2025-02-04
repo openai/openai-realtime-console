@@ -21,7 +21,7 @@ import AnimatedText from "./AnimatedText";
 
 const HeaderText = "Humloop";
 const SubHeaderText =
-    "With the Humloop device, you can talk to natural-sounding AI characters with one-tap for every occasion including";
+    "With the Humloop device, use OpenAI's Realtime voice to talk to natural-sounding AI characters for every occasion including";
 
 interface FrontPageProps {
     user?: User;
