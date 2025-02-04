@@ -9,16 +9,24 @@ Preferences preferences;
 // websocket_setup("xygbupeczfhwamhqnucy.supabase.co", 443, "/functions/v1/relay");
 // websocket_setup("https://emkmtesvjrqhvx2mo2mxslvmmy0zsuhq.lambda-url.us-east-1.on.aws/", 8000, "/");
 // Runtime WebSocket server details
-const char *ws_server = "10.2.1.21";
-const uint16_t ws_port = 8000;
-const char *ws_path = "/";
 
+// LOCAL
+// const char *ws_server = "10.2.1.21";
+// const uint16_t ws_port = 8000;
+// const char *ws_path = "/";
+// // Backend server details 
+// const char *backend_server = "10.2.1.21";
+// const uint16_t backend_port = 3000;
+
+// PROD
+const char *ws_server = "talkedge.deno.dev";
+const uint16_t ws_port = 443;
+const char *ws_path = "/";
 // Backend server details 
-const char *backend_server = "10.2.1.21";
+const char *backend_server = "humloop.vercel.app";
 const uint16_t backend_port = 3000;
 
-// Temp auth token
-String authTokenGlobal = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJzdWIiOiI4YzNhZjA4Ny04ZDgwLTQ1MzYtOGM3Ni0wNjI2Nzc0NDgwMzMiLCJlbWFpbCI6ImFrYWQzYkBnbWFpbC5jb20iLCJleHAiOjIwNTM5Nzc1NzAsInVzZXJfbWV0YWRhdGEiOnsidXNlcl9pZCI6IjhjM2FmMDg3LThkODAtNDUzNi04Yzc2LTA2MjY3NzQ0ODAzMyIsImVtYWlsIjoiYWthZDNiQGdtYWlsLmNvbSJ9LCJpYXQiOjE3Mzg2MTc1NzB9.FvMqCZ-pNrdkCTAut4sgOPel8mki_ADP6cRBNFB97A4";
+String authTokenGlobal;
 
 // I2S and Audio parameters
 const uint32_t SAMPLE_RATE = 24000;

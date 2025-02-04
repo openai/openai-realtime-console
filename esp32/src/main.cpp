@@ -263,12 +263,8 @@ Ig46v9mFmBvyH04=
 
 void websocket_setup(String server_domain, int port, String path)
 {
-    if (WiFi.status() != WL_CONNECTED)
-    {
-        Serial.println("Not connected to WiFi. Abandoning setup websocket");
-        return;
-    }
-    Serial.println("connected to WiFi");
+    Serial.println("Closing access point");
+    closeAP();
 
     // websocket settings
     char timeStringBuff[50];
@@ -286,8 +282,8 @@ if(getLocalTime(&timeinfo)) {
 }
     webSocket.setExtraHeaders(headers.c_str());
 
-    // webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
-    webSocket.begin(server_domain.c_str(), port, path.c_str());
+    webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
+    // webSocket.begin(server_domain.c_str(), port, path.c_str());
     webSocket.onEvent(webSocketEvent);
     // webSocket.setAuthorization("user", "Password");
     webSocket.setReconnectInterval(1000);
@@ -387,6 +383,15 @@ void micTask(void *parameter)
     char *flash_write_buff = (char *)calloc(i2s_read_len, 1);
 
     while (1) {
+        // Check for VAD timeout
+        if (connectionStartTime && deviceState == LISTENING && 
+            millis() - connectionStartTime >= 10000) {
+            webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
+            connectionStartTime = 0;
+            deviceState = PROCESSING;
+            Serial.println("Sent VAD detection request");
+        }
+
         // Read audio data
         if (deviceState == LISTENING && webSocket.isConnected())
         {
@@ -495,6 +500,10 @@ void audioPlaybackTask(void *param)
 
 void connectToWifiAndWebSocket()
 {
+    IPAddress dns1(8, 8, 8, 8);        // Google DNS
+    IPAddress dns2(1, 1, 1, 1);        // Cloudflare DNS
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
+
     int result = wifiConnect();
     if (result == 1 && !authTokenGlobal.isEmpty()) // Successfully connected and has auth token
     {
@@ -568,13 +577,4 @@ void loop()
         {
             dnsServer.processNextRequest();
         }
-
-    // Send detect_vad after 10 seconds
-    if (connectionStartTime && deviceState == LISTENING && 
-        millis() - connectionStartTime >= 10000) {
-        webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
-        connectionStartTime = 0;
-        deviceState = PROCESSING;
-        Serial.println("Sent VAD detection request");
-    }
 }
