@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 
 const includedItems = [
-    "The Humloop AI Device",
+    "The Elato AI Device",
     "USB-C Charging Cable",
     // "Quick Start Guide",
     "2 Months FREE Premium Subscription",
@@ -12,7 +12,7 @@ const technicalSpecs = [
     "Dimensions: 4.5cm x 3.8cm x 1.9cm",
     "Battery Life: 4+ days standby, 6 hours active use",
     "Connectivity: Bluetooth 2.4 GHz, Wi-Fi + Hotspot",
-    "Access any AI character from Humloop",
+    "Access any AI character from Elato",
     "Create your AI character with any voice and a bespoke personality",
     "Conversational insights and trends analysis",
 ];

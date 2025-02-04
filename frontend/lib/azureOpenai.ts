@@ -75,7 +75,7 @@ export const generateSuggestion = async (
         lineData.length === 0 &&
         pieData.length === 0
     ) {
-        return "Talk to a character in the Playground or on your Humloop device to view your trends.";
+        return "Talk to a character in the Playground or on your Elato device to view your trends.";
     }
 
     return result.choices[0].message.content;

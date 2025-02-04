@@ -20,7 +20,7 @@ const features = [
         icon: MessageSquare,
         title: "Personalized Experience",
         description:
-            "The more you interact, the more your Humloop AI adapts to your preferences and personality.",
+            "The more you interact, the more your Elato AI adapts to your preferences and personality.",
         // color: "#059669",
     },
 ];
@@ -29,7 +29,7 @@ const KeyFeatures = () => {
     return (
         <div className="mb-16">
             <h2 className="text-4xl font-semibold mb-8 text-center">
-                Why You&apos;ll Love Humloop
+                Why You&apos;ll Love Elato
             </h2>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
                 {features.map((feature) => (

@@ -24,7 +24,7 @@ export default function EndingSection() {
                 </h1>
 
                 <h1 className="text-4xl md:text-5xl mt-8 text-light">
-                    Get your Humloop today.
+                    Get your Elato today.
                 </h1>
             </div>
 

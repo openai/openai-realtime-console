@@ -54,9 +54,9 @@ function ProfileForm({ className }: React.ComponentProps<"form">) {
 const AddCreditsModal: React.FC<AddCreditsModalProps> = ({ children }) => {
     const [open, setOpen] = React.useState(false);
     const isDesktop = useMediaQuery("(min-width: 768px)");
-    const title = "Explore Humloop's Voice Subscription Plans";
+    const title = "Explore Elato's Voice Subscription Plans";
     const subtitle =
-        "Unlock more features and get more done with Humloop Voice Premium Plans.";
+        "Unlock more features and get more done with Elato Voice Premium Plans.";
 
     if (isDesktop) {
         return (

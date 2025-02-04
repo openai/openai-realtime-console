@@ -19,7 +19,7 @@ export const DeviceImage = () => {
             >
                 <Image
                     src="/products/box43.png"
-                    alt="Humloop AI Device"
+                    alt="Elato AI Device"
                     fill
                     className="object-contain object-center mr-6 rounded-3xl"
                 />

@@ -231,7 +231,7 @@ break;
 // -----END CERTIFICATE-----
 // )EOF";
 
-// Humloop.deno.dev CA cert
+// Elato.deno.dev CA cert
 const char *CA_cert = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIIEVzCCAj+gAwIBAgIRALBXPpFzlydw27SHyzpFKzgwDQYJKoZIhvcNAQELBQAw

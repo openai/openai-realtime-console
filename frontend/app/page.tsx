@@ -73,7 +73,7 @@ export default async function Index() {
                                 2. Connect Your Device
                             </h3>
                             <p className="text-gray-500 dark:text-gray-400">
-                                Easily set up your Humloop device with your
+                                Easily set up your Elato device with your
                                 home Wi-Fi network or Personal hotspot.
                             </p>
                             <h3 className="text-3xl font-semibold">

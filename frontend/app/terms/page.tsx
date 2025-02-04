@@ -11,18 +11,18 @@ export default async function Index() {
     return (
         <div className="flex max-w-xl mx-auto w-full mt-8 flex-col lg:w-1/2 px-4  gap-2 text-left m-2">
             <p className="font-semibold text-2xl">
-                Terms and Conditions for Humloop AI
+                Terms and Conditions for Elato AI
             </p>
             <p className="font-light text-md">Last Updated: 9/29/24</p>
             <div className="flex flex-col gap-4 my-4">
                 <p>
-                    {`Welcome to Humloop AI ("we," "us," "our"). We offer engaging AI-characters on Humloop devices that you can also converse with anytime through our website `}
+                    {`Welcome to Elato AI ("we," "us," "our"). We offer engaging AI-characters on Elato devices that you can also converse with anytime through our website `}
                     <a
-                        href="https://www.Humloop.app"
+                        href="https://www.Elato.app"
                         className="text-blue-400 underline"
                         target="_blank"
                     >
-                        https://www.Humloop.app
+                        https://www.Elato.app
                     </a>
                     {` (the "Service").`}
                 </p>
@@ -54,14 +54,14 @@ export default async function Index() {
                 <p>
                     The Service and its original content, features, and
                     functionality are and will remain the exclusive property of
-                    Humloop AI and its licensors.
+                    Elato AI and its licensors.
                 </p>
                 <p className="text-lg font-semibold">
                     4. Links to Other Web Sites
                 </p>
                 <p>
                     Our Service may contain links to third-party web sites or
-                    services that are not owned or controlled by Humloop AI. We
+                    services that are not owned or controlled by Elato AI. We
                     have no control over, and assume no responsibility for, the
                     content, privacy policies, or practices of any third-party
                     web sites or services.
@@ -77,7 +77,7 @@ export default async function Index() {
                     6. Limitation of Liability
                 </p>
                 <p>
-                    In no event shall Humloop AI, nor its directors, employees,
+                    In no event shall Elato AI, nor its directors, employees,
                     partners, agents, suppliers, or affiliates, be liable for
                     any indirect, incidental, special, consequential, or
                     punitive damages resulting from your use of the Service.

@@ -204,7 +204,7 @@ export function NavbarDropdownMenu({ user, stars }: NavbarMenuButtonProps) {
                             Preorder
                         </span>
                         <span className="text-xs text-amber-600 dark:text-amber-400">
-                            Humloop AI Device
+                            Elato AI Device
                         </span>
                     </div>
                 </Link>

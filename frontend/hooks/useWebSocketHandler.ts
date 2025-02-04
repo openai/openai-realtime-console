@@ -360,11 +360,11 @@ export const useWebSocketHandler = (selectedUser: IUser) => {
     (personalityTranslationId: string) => {
       const wsUrl =
         process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
-          ? "wss://api.Humloop.app/live"
+          ? "wss://api.Elato.app/live"
           : "ws://localhost:8000/live";
       // // console.log("opening ws connection", wsUrl);
       setSocketUrl(wsUrl);
-      setPersonalityTranslationId(personalityTranslationId); // setSocketUrl("wss://api.Humloop.app/Humloop");
+      setPersonalityTranslationId(personalityTranslationId); // setSocketUrl("wss://api.Elato.app/Elato");
     },
     []
   );

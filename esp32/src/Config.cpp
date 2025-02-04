@@ -23,7 +23,7 @@ const char *ws_server = "talkedge.deno.dev";
 const uint16_t ws_port = 443;
 const char *ws_path = "/";
 // Backend server details 
-const char *backend_server = "humloop.vercel.app";
+const char *backend_server = "elato.vercel.app";
 const uint16_t backend_port = 3000;
 
 String authTokenGlobal;

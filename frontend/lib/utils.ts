@@ -10,7 +10,7 @@ import crypto from "crypto";
 export const getOpenGraphMetadata = (title: string) => {
     return {
         openGraph: {
-            title: `${title} | Humloop AI`,
+            title: `${title} | Elato AI`,
         },
     };
 };
@@ -51,7 +51,7 @@ export const isDefaultVoice = (toy: IToy) => {
 
 export const getBaseUrl = () => {
     return process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
-        ? "https://humloop.vercel.app"
+        ? "https://elato.vercel.app"
         : "http://localhost:3000";
 };
 

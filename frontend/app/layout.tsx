@@ -84,13 +84,13 @@ export const metadata: Metadata = {
     metadataBase: new URL(defaultUrl),
     title: {
         default:
-            "Humloop AI: The Compact Device to Bring AI Characters to Life",
+            "Elato AI: The Compact Device to Bring AI Characters to Life",
         template:
-            "%s | Humloop AI - The Compact Device to Bring AI Characters to Life",
+            "%s | Elato AI - The Compact Device to Bring AI Characters to Life",
     },
-    applicationName: "Humloop AI",
+    applicationName: "Elato AI",
     description:
-        "Humloop is an AI-enabled device that brings objects to life through conversational AI. More than a device, it's your gateway to a world where AI brings magic to the ordinary.",
+        "Elato is an AI-enabled device that brings objects to life through conversational AI. More than a device, it's your gateway to a world where AI brings magic to the ordinary.",
     authors: [
         {
             name: "Akashdeep Deb and Junru Xiong",
@@ -105,7 +105,7 @@ export const metadata: Metadata = {
         "empathetic companion",
         "voice assistant",
         "emotional growth",
-        "Humloop AI",
+        "Elato AI",
         "conversational AI",
         "google home",
         "amazon echo",
@@ -117,18 +117,18 @@ export const metadata: Metadata = {
         "smart AI device",
     ],
     openGraph: {
-        title: "Humloop AI: The Compact Device to Bring AI Characters to Life",
+        title: "Elato AI: The Compact Device to Bring AI Characters to Life",
         description:
-            "Humloop brings objects to life through engaging, conversational AI experiences. More than a device, it's your gateway to a world where AI brings magic to the ordinary.",
-        siteName: "Humloop AI",
+            "Elato brings objects to life through engaging, conversational AI experiences. More than a device, it's your gateway to a world where AI brings magic to the ordinary.",
+        siteName: "Elato AI",
         locale: "en-US",
         type: "website",
         images: [
             {
-                url: "https://Humloop.app/images/orange.png",
+                url: "https://Elato.app/images/orange.png",
                 width: 1200,
                 height: 630,
-                alt: "Humloop AI conversational device - Front View",
+                alt: "Elato AI conversational device - Front View",
             },
         ],
     },
@@ -137,33 +137,33 @@ export const metadata: Metadata = {
         follow: true,
     },
     generator: "Next.js",
-    creator: "Humloop Team",
-    publisher: "Humloop AI Ltd.",
+    creator: "Elato Team",
+    publisher: "Elato AI Ltd.",
     alternates: {
-        canonical: "https://Humloop.app",
+        canonical: "https://Elato.app",
         languages: {
-            "en-US": "https://Humloop.app",
-            "zh-CN": "https://Humloop.app",
+            "en-US": "https://Elato.app",
+            "zh-CN": "https://Elato.app",
         },
     },
     icons: {
-        icon: "https://Humloop.app/favicon.ico",
-        apple: "https://Humloop.app/favicon.ico",
+        icon: "https://Elato.app/favicon.ico",
+        apple: "https://Elato.app/favicon.ico",
     },
     twitter: {
         card: "summary_large_image",
-        title: "Humloop - An AI-powered device that brings objects to life through engaging, conversational experiences",
+        title: "Elato - An AI-powered device that brings objects to life through engaging, conversational experiences",
         description:
-            "More than a device, Humloop is your gateway to a world where AI brings magic to the ordinary through engaging learning and interactive experiences.",
-        images: ["https://Humloop.app/images/orange.png"],
+            "More than a device, Elato is your gateway to a world where AI brings magic to the ordinary through engaging learning and interactive experiences.",
+        images: ["https://Elato.app/images/orange.png"],
     },
-    assets: "https://Humloop.app/images",
+    assets: "https://Elato.app/images",
     formatDetection: {
         telephone: false,
     },
     appleWebApp: {
         capable: true,
-        title: "Humloop AI",
+        title: "Elato AI",
         statusBarStyle: "black-translucent",
     },
     category: "AI device",
@@ -179,23 +179,23 @@ export const viewport: Viewport = {
 const jsonLd: WithContext<Product> = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: "Humloop AI",
+    name: "Elato AI",
     description:
-        "Humloop is an AI-enabled device that brings objects to life through conversational AI. More than a device, it's your gateway to a world where AI brings magic to the ordinary.",
+        "Elato is an AI-enabled device that brings objects to life through conversational AI. More than a device, it's your gateway to a world where AI brings magic to the ordinary.",
     brand: {
         "@type": "Brand",
-        name: "Humloop AI",
+        name: "Elato AI",
     },
     offers: {
         "@type": "Offer",
-        url: "https://Humloop.app",
+        url: "https://Elato.app",
         priceCurrency: "USD",
         price: "57.99",
         priceValidUntil: "2024-12-31", // set a realistic date in the future
         availability: "https://schema.org/InStock",
         seller: {
             "@type": "Organization",
-            name: "Humloop AI Ltd.",
+            name: "Elato AI Ltd.",
         },
         hasMerchantReturnPolicy: {
             "@type": "MerchantReturnPolicy",
@@ -274,7 +274,7 @@ const jsonLd: WithContext<Product> = {
                 "Really cool project you've got going on, hoping one day it might use a local llm",
         },
     ],
-    image: "https://Humloop.app/images/orange.png",
+    image: "https://Elato.app/images/orange.png",
     category: "Interactive AI Device",
 };
 
@@ -298,7 +298,7 @@ export default async function RootLayout({
             suppressHydrationWarning
         >
             <head>
-                <link rel="canonical" href="https://www.Humloop.app" />
+                <link rel="canonical" href="https://www.Elato.app" />
                 <Script
                     id="product-schema"
                     type="application/ld+json"

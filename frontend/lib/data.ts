@@ -4,8 +4,8 @@ export const defaultPersonalityId: string =
 
 export const starmoonProductsLink = "https://starmoon.app/products";
 export const discordInviteLink = "https://discord.gg/KJWxDPBRUj";
-export const githubPublicLink = "https://github.com/StarmoonAI/Humloop";
-export const businessDemoLink = "https://calendly.com/akadeb/Humloop-ai-demo";
+export const githubPublicLink = "https://github.com/StarmoonAI/Elato";
+export const businessDemoLink = "https://calendly.com/akadeb/Elato-ai-demo";
 export const feedbackFormLink = "https://forms.gle/2QmukEG2FXNwBdee7";
 export const voiceSampleUrl =
     "https://xygbupeczfhwamhqnucy.supabase.co/storage/v1/object/public/voices/";
@@ -17,7 +17,7 @@ export const userFormPersonaPlaceholder =
     "Don't get me started on the guitar...I love to shred it like Hendrix. I also like a good challenge. Challenge me to be better and I'll rise to the occasion.";
 export const userFormAgeLabel = "Your Age";
 export const userFormAgeDescription =
-    "Users under 13 years old must have a parent or guardian to setup Humloop.";
+    "Users under 13 years old must have a parent or guardian to setup Elato.";
 export const userFormNameLabel = "Your Name";
 
 export const INITIAL_CREDITS = 50;

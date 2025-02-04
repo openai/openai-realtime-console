@@ -10,32 +10,32 @@ import Image from "next/image";
 const images = [
     {
         src: "/products/box43.png",
-        alt: "Humloop Device - white",
+        alt: "Elato Device - white",
         objectFit: "contain",
     },
     // {
     //     src: "/products/multi3.png",
-    //     alt: "Humloop Device Decomposition",
+    //     alt: "Elato Device Decomposition",
     //     objectFit: "contain",
     // },
     {
         src: "/products/multi3.png",
-        alt: "Humloop Device - gray",
+        alt: "Elato Device - gray",
         objectFit: "contain",
     },
     {
         src: "/products/multi2.png",
-        alt: "Humloop Device - black",
+        alt: "Elato Device - black",
         objectFit: "contain",
     },
     // {
     //     src: "/products/orange.jpg",
-    //     alt: "Humloop AI Device",
+    //     alt: "Elato AI Device",
     //     objectFit: "contain",
     // },
     // {
     //     src: "/products/multi_black.jpg",
-    //     alt: "Humloop Device Decomposition",
+    //     alt: "Elato Device Decomposition",
     //     objectFit: "contain",
     // },
     // {

@@ -13,18 +13,18 @@ export default async function Index() {
     return (
         <div className="flex w-full  max-w-xl mx-auto mt-8 flex-col lg:w-1/2 px-4  gap-2 text-left m-2">
             <p className="font-semibold text-2xl">
-                Privacy Policy for Humloop AI
+                Privacy Policy for Elato AI
             </p>
             <p className="font-light text-md">Last Updated: 9/29/24</p>
             <div className="flex flex-col gap-4 my-4">
                 <p>
-                    {`Welcome to Humloop AI ("we," "us," "our"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy outlines how we handle, store, and use the information you provide us when you use our website, `}
+                    {`Welcome to Elato AI ("we," "us," "our"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy outlines how we handle, store, and use the information you provide us when you use our website, `}
                     <a
-                        href="https://www.Humloop.app"
+                        href="https://www.Elato.app"
                         className="text-blue-400 underline"
                         target="_blank"
                     >
-                        https://www.Humloop.app
+                        https://www.Elato.app
                     </a>
                     {`, and our services.`}
                 </p>

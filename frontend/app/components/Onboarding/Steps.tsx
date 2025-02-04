@@ -132,19 +132,19 @@ const Steps: React.FC<{
         );
     };
 
-    let heading = "Let's get your Humloop device & account set up";
+    let heading = "Let's get your Elato device & account set up";
     let subHeading =
-        "We want to make sure that your Humloop is set up to provide you the best experience possible.";
+        "We want to make sure that your Elato is set up to provide you the best experience possible.";
 
     if (step === 1) {
         if (selectedType === "doctor") {
             heading = "Hello Doctor!";
             subHeading =
-                "With the following details we will be able to personalize your and your patients' Humloop experience.";
+                "With the following details we will be able to personalize your and your patients' Elato experience.";
         } else {
             heading = "Hello there!";
             subHeading =
-                "With the following details we will be able to personalize your Humloop experience.";
+                "With the following details we will be able to personalize your Elato experience.";
         }
     }
 

@@ -158,7 +158,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                                 </PopoverTrigger>
                                 <PopoverContent className="w-80" align="center" side="bottom">
                                   <div className="grid gap-2 p-2 text-sm">
-                                    <span>The online playground will be back soon. Tap your Humloop device and hear your character come to life!</span>
+                                    <span>The online playground will be back soon. Tap your Elato device and hear your character come to life!</span>
                                   </div>
                                 </PopoverContent>
                               </Popover>

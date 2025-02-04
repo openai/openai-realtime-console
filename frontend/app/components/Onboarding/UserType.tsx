@@ -21,7 +21,7 @@ const UserTypes: IUserType[] = [
     {
         type: "user",
         name: "Personal user",
-        title: "You are looking to use Humloop for personal use",
+        title: "You are looking to use Elato for personal use",
         icon: <User />,
     },
     {

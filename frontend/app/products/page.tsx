@@ -35,14 +35,14 @@ export default function Component() {
                         </Badge>
                     </div>
                     <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl mb-4">
-                        Humloop AI Device
+                        Elato AI Device
                     </h1>
                     <p className="text-lg text-muted-foreground mb-6 -mt-2">
                         {SubtitleText}
                     </p>
                     <Checkout />
                     <p className="text-sm text-muted-foreground/90">
-                        *Preorder now to get access to Humloop Voice Premium
+                        *Preorder now to get access to Elato Voice Premium
                         FREE for 2 months. Deliveries starting December 2024.
                     </p>
                 </div>
@@ -65,10 +65,10 @@ export default function Component() {
                     Ready to Meet Your New AI-in-a-Box?
                 </h2>
                 <p className="text-xl text-muted-foreground mb-8">
-                    Order now and start your adventure with Humloop AI!
+                    Order now and start your adventure with Elato AI!
                 </p>
                 <Button size="lg" className="text-lg px-8">
-                    Get Your Humloop AI Today{" "}
+                    Get Your Elato AI Today{" "}
                     <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
             </div> */}

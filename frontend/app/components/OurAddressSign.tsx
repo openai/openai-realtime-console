@@ -3,21 +3,21 @@ const OurAddressSign = () => {
         <p>
             Akashdeep Deb, [
             <a
-                href="mailto:akash@Humloop.app"
+                href="mailto:akash@Elato.app"
                 className="text-blue-400 underline"
             >
-                akash@Humloop.app
+                akash@Elato.app
             </a>
             ] <br />
             Junru Xiong, [
             <a
-                href="mailto:junru@Humloop.app"
+                href="mailto:junru@Elato.app"
                 className="text-blue-400 underline"
             >
-                junru@Humloop.app
+                junru@Elato.app
             </a>
             ] <br />
-            Co-founders, Humloop AI
+            Co-founders, Elato AI
             <br />
             <br />
             <span className="underline">US</span>

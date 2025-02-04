@@ -30,7 +30,7 @@ interface AddCreditsModalProps {
 }
 
 function ProfileForm({ className }: React.ComponentProps<"form">) {
-    const buttonText = "Proceed to your Humloop Kit - $59";
+    const buttonText = "Proceed to your Elato Kit - $59";
     return (
         <form className={cn("grid items-start gap-4", className)}>
             <div className="grid gap-2">
@@ -55,7 +55,7 @@ function ProfileForm({ className }: React.ComponentProps<"form">) {
 const PreorderModal: React.FC<AddCreditsModalProps> = ({ children }) => {
     const [open, setOpen] = React.useState(false);
     const isDesktop = useMediaQuery("(min-width: 768px)");
-    const title = "Preorder a Humloop Kit";
+    const title = "Preorder a Elato Kit";
     const subtitle = "Get early access to our latest product.";
 
     if (isDesktop) {

@@ -25,25 +25,25 @@ interface Product {
 
 const DeliveryString = "Delivery starting November 2024";
 const SubscriptionString =
-    "Preorder now to get access to Humloop Voice Premium FREE for 2 months. $5/month after.";
+    "Preorder now to get access to Elato Voice Premium FREE for 2 months. $5/month after.";
 
 const products: Product[] = [
     {
-        title: "Humloop AI Device",
+        title: "Elato AI Device",
         description:
-            "The Humloop AI device provides all AI characters packed into one fully assembled compact device that can be added to any object.",
+            "The Elato AI device provides all AI characters packed into one fully assembled compact device that can be added to any object.",
         imageSrc: "/images/front_view.png",
         features: [
             "Dimensions: 4.5cm x 3.8cm x 1.9cm",
-            "Unlimited access to Humloop characters till we deliver your device",
+            "Unlimited access to Elato characters till we deliver your device",
             "On-the-go empathic companion for anyone",
-            "Access any AI character from the Humloop universe",
+            "Access any AI character from the Elato universe",
             "Compact and easy to use",
             "Customizable to fit any object",
             "Over 4 days standby and 6 hours of continuous voice interaction",
             "Understand your conversational insights",
         ],
-        components: ["The Humloop AI device", "USB-C cable"],
+        components: ["The Elato AI device", "USB-C cable"],
         originalPrice: 89,
         price: 57.99,
         // paymentLink: "https://buy.stripe.com/5kAg0q8dg9SUcCceUU",
@@ -51,17 +51,17 @@ const products: Product[] = [
         shadow: "0 4px 6px rgba(255, 215, 0, 0.2), 0 8px 24px rgba(218, 165, 32, 0.5) !important;",
     },
     {
-        title: "Humloop AI DIY Dev Kit",
+        title: "Elato AI DIY Dev Kit",
         description:
-            "The Humloop AI Dev Kit is a fully programmable set of components for developers to create their own AI characters and integrate them into their projects.",
+            "The Elato AI Dev Kit is a fully programmable set of components for developers to create their own AI characters and integrate them into their projects.",
         imageSrc: "/images/devkit.png",
         features: [
-            "All hardware components included in your Humloop kit. No soldering required.",
-            "Unlimited access to Humloop characters on our website till we deliver your device",
+            "All hardware components included in your Elato kit. No soldering required.",
+            "Unlimited access to Elato characters on our website till we deliver your device",
             "Tools to create your own AI character",
             "Integrate your AI character into your projects",
-            "Access to the Humloop AI SDK",
-            "Access to the Humloop AI Discord community",
+            "Access to the Elato AI SDK",
+            "Access to the Elato AI Discord community",
         ],
         components: [
             "Mini ESP32-S3 device",

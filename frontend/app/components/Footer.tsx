@@ -38,7 +38,7 @@ export default function Footer() {
                     </Button>
                 </a>
                 <Label className="font-normal text-xs text-gray-500">
-                    Humloop AI © {new Date().getFullYear()} All rights
+                    Elato AI © {new Date().getFullYear()} All rights
                     reserved.
                 </Label>
             </div>

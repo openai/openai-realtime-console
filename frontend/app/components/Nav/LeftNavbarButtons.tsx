@@ -24,7 +24,7 @@ export default function LeftNavbarButtons() {
                 <p
                     className={`flex items-center font-chewy font-bold text-xl text-stone-800 dark:text-stone-100`}
                 >
-                    Humloop AI
+                    Elato AI
                 </p>
             </a>
             {!isHome && (
