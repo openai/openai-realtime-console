@@ -1,4 +1,4 @@
-import { registerDevice, setDeviceOta, setDeviceReset, signOutAction } from "@/app/actions";
+import { checkIfUserHasApiKey, registerDevice, setDeviceOta, setDeviceReset, signOutAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,12 @@ const AppSettings: React.FC<AppSettingsProps> = ({
     const userFormRef = React.useRef<{ submitForm: () => void } | null>(null);
     const [deviceCode, setDeviceCode] = React.useState("");
     const [error, setError] = React.useState("");
+    const [hasApiKey, setHasApiKey] = React.useState<boolean>(false);
+
+    const userHasApiKey = useCallback(async () => {
+        const hasApiKey = await checkIfUserHasApiKey(selectedUser.user_id);
+        setHasApiKey(hasApiKey);
+    }, [selectedUser.user_id]);
     
     // ... existing code ...
 
@@ -51,7 +57,8 @@ const AppSettings: React.FC<AppSettingsProps> = ({
 
     React.useEffect(() => {
         checkIfUserHasDevice();
-    }, [checkIfUserHasDevice]);
+        userHasApiKey();
+    }, [checkIfUserHasDevice, userHasApiKey]);
 
     const [volume, setVolume] = React.useState([
         selectedUser.volume_control ?? 50,
@@ -111,9 +118,16 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                 </h2>
                 <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
-                        <Label className="text-sm font-medium text-gray-700">
+                    <div className="flex flex-row items-center gap-2">
+                    <Label className="text-sm font-medium text-gray-700">
                             Register your device
                         </Label>
+                        <div 
+                            className={`rounded-full flex-shrink-0 h-2 w-2 ${
+                                isConnected ? 'bg-green-500' : 'bg-amber-500'
+                            }`} 
+                        />                    </div>
+                        
                         <div className="flex flex-row items-center gap-2 mt-2">
                             <Input
                                 value={deviceCode}
@@ -144,11 +158,17 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                         </p>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <Label className="text-sm font-medium text-gray-700">
+                    <div className="flex flex-row items-center gap-2">
+                    <Label className="text-sm font-medium text-gray-700">
                             Set your OpenAI API Key
                         </Label>
+                        <div 
+                            className={`rounded-full flex-shrink-0 h-2 w-2 ${
+                                hasApiKey ? 'bg-green-500' : 'bg-amber-500'
+                            }`} 
+                        />                    </div>
                         <div className="flex flex-row items-center gap-2 mt-2">
-                            <AuthTokenModal user={selectedUser} />
+                            <AuthTokenModal user={selectedUser} userHasApiKey={userHasApiKey} hasApiKey={hasApiKey} setHasApiKey={setHasApiKey} />
                         </div>
                         <p className="text-xs text-gray-400">
                             Your keys are E2E encrypted and never stored on our servers as plain text.

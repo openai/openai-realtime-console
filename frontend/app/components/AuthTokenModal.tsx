@@ -15,17 +15,15 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface AuthTokenModalProps {
     user: IUser;
+    userHasApiKey: () => void;
+    hasApiKey: boolean;
+    setHasApiKey: (hasApiKey: boolean) => void;
 }
 
-const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user }) => {
+const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user, userHasApiKey, hasApiKey, setHasApiKey }) => {
     const { toast } = useToast();
     const [apiKey, setApiKey] = useState<string>("");
-    const [hasApiKey, setHasApiKey] = useState<boolean>(false);
 
-    const userHasApiKey = async () => {
-        const hasApiKey = await checkIfUserHasApiKey(user.user_id);
-        setHasApiKey(hasApiKey);
-    }
 
     return (
         <Dialog>
