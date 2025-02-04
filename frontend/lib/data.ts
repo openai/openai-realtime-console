@@ -2,7 +2,7 @@ export const defaultToyId: string = "56224f7f-250d-4351-84ee-e4a13b881c7b";
 export const defaultPersonalityId: string =
     "a1c073e6-653d-40cf-acc1-891331689409";
 
-export const starmoonProductsLink = "https://Humloop.app/products";
+export const starmoonProductsLink = "https://starmoon.app/products";
 export const discordInviteLink = "https://discord.gg/KJWxDPBRUj";
 export const githubPublicLink = "https://github.com/StarmoonAI/Humloop";
 export const businessDemoLink = "https://calendly.com/akadeb/Humloop-ai-demo";
