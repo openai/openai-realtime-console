@@ -17,6 +17,8 @@
 #include "AudioTools/AudioCodecs/CodecMP3Helix.h"
 #include "WifiSetup.h"
 
+// #define WEBSOCKETS_DEBUG_LEVEL WEBSOCKETS_LEVEL_ALL
+
 // Add these constants
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 0;     // UTC offset in seconds (0 for UTC)
@@ -47,14 +49,14 @@ tzset();
 
 // Create a high‑throughput buffer for raw audio data.
 // Adjust the overall size and chunk size according to your needs.
-constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 32; // total bytes in the buffer
+constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 64; // total bytes in the buffer
 constexpr size_t AUDIO_CHUNK_SIZE  = 1024;         // ideal read/write chunk size
 
 BufferRTOS<uint8_t> audioBuffer(AUDIO_BUFFER_SIZE, AUDIO_CHUNK_SIZE);
 
 WebSocketsClient webSocket;
 String authMessage;
-int currentVolume = 100;
+int currentVolume = 70;
 
 // Add these global variables
 unsigned long connectionStartTime = 0;
@@ -158,7 +160,9 @@ Serial.printf("[WSc] get text: %s\n", payload);
             // receive response.audio.done or response.done, then start listening again
             if (strcmp((char*)msg.c_str(), "response.done") == 0) {
                 Serial.println("Received response.done, starting listening again");
-                vTaskDelay(1000);
+                
+                // differs with wifi speeds
+                delay(2000);
 
                 // Start listening again
                 connectionStartTime = millis();  // Start timer
@@ -196,6 +200,8 @@ case WStype_BIN:
 break;
 
     case WStype_ERROR:
+        Serial.printf("[WSc] Error: %s\n", payload);    
+        break;
     case WStype_FRAGMENT_TEXT_START:
     case WStype_FRAGMENT_BIN_START:
     case WStype_FRAGMENT:
@@ -231,7 +237,7 @@ break;
 // -----END CERTIFICATE-----
 // )EOF";
 
-// Elato.deno.dev CA cert
+// talkedge.deno.dev CA cert
 const char *CA_cert = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIIEVzCCAj+gAwIBAgIRALBXPpFzlydw27SHyzpFKzgwDQYJKoZIhvcNAQELBQAw
@@ -281,12 +287,12 @@ if(getLocalTime(&timeinfo)) {
     headers = "Authorization: Bearer " + String(authTokenGlobal) + "\r\nTimestamp: " + String(millis());
 }
     webSocket.setExtraHeaders(headers.c_str());
+    webSocket.onEvent(webSocketEvent);
+    webSocket.setReconnectInterval(1000);
+    webSocket.enableHeartbeat(25000, 5000, 3);
 
     webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
     // webSocket.begin(server_domain.c_str(), port, path.c_str());
-    webSocket.onEvent(webSocketEvent);
-    // webSocket.setAuthorization("user", "Password");
-    webSocket.setReconnectInterval(1000);
 }
 
 // plays when new wifi network connects
@@ -323,7 +329,7 @@ void playStartupSound() {
     }
 
     // Initialize the player
-    player.setVolume(1.3f);    
+    player.setVolume(1.0f);    
     if(!player.begin()) {
         Serial.println("Player begin() failed!");
         while(true) { delay(10); }
@@ -335,6 +341,7 @@ void playStartupSound() {
         size_t copied = player.copy();
         if (copied == 0) {
             Serial.println("Playback finished.");
+            delay(500);
             break;
         }
         delay(1);  // Give CPU time for other tasks
@@ -345,14 +352,13 @@ void playStartupSound() {
     websocket_setup(ws_server, ws_port, ws_path);
 }
 
-
 void connectWithPassword()
 {
     IPAddress dns1(8, 8, 8, 8);        // Google DNS
     IPAddress dns2(1, 1, 1, 1);        // Cloudflare DNS
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
 
-    WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
+    WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
     // WiFi.begin("akaPhone", "akashclarkkent1");
     // WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
     setupTime();
@@ -366,9 +372,12 @@ void connectWithPassword()
     Serial.println("WiFi connected");
 
     WiFi.setSleep(false);
+    esp_wifi_set_ps(WIFI_PS_NONE);  // Disable power saving completely
+
+    websocket_setup(ws_server, ws_port, ws_path);
 
     // Connect to WebSocket if successfully registered
-    playStartupSound();
+    // playStartupSound();
 }
 
 void micTask(void *parameter)
@@ -421,7 +430,6 @@ void micTask(void *parameter)
     free(flash_write_buff);
     vTaskDelete(NULL);
 }
-
 
 esp_err_t getErr = ESP_OK;
 
@@ -560,21 +568,20 @@ void setup()
     setupRGBLED();
     getAuthTokenFromNVS();
 
-    // playStartupSound();
-    // connectWithPassword();
-    connectToWifiAndWebSocket();
-
     // setup RTOS tasks
     xTaskCreate(ledTask, "LED Task", 4096, NULL, 5, NULL);
     xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, NULL);
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
+
+    // playStartupSound();
+    // connectWithPassword();
+    connectToWifiAndWebSocket();
 }
 
 void loop()
 {
     webSocket.loop();
-    if (WiFi.getMode() == WIFI_MODE_AP)
-        {
-            dnsServer.processNextRequest();
-        }
+    if (WiFi.getMode() == WIFI_MODE_STA) {
+        dnsServer.processNextRequest();
+    }
 }

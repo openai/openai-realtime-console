@@ -26,6 +26,8 @@ void getAuthTokenFromNVS()
     preferences.begin("auth", false);
     authTokenGlobal = preferences.getString("auth_token", "");
     preferences.end();
+
+    authTokenGlobal = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJzdWIiOiI4YzNhZjA4Ny04ZDgwLTQ1MzYtOGM3Ni0wNjI2Nzc0NDgwMzMiLCJlbWFpbCI6ImFrYWQzYkBnbWFpbC5jb20iLCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoiYWthZDNiQGdtYWlsLmNvbSIsInVzZXJfaWQiOiI4YzNhZjA4Ny04ZDgwLTQ1MzYtOGM3Ni0wNjI2Nzc0NDgwMzMiLCJjcmVhdGVkX3RpbWUiOiIyMDI1LTAyLTA0VDE5OjQxOjA5LjQ0NFoifSwiaWF0IjoxNzM4Njk4MDY5fQ.wh_33g-MH-nQ63BJOJM3cgQM72avTPb8663vLrwUx3Y";
         
     Serial.println(authTokenGlobal);
 }
