@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://www.Elato.app/sitemap.xml
+Sitemap: https://www.elatoai.com/sitemap.xml

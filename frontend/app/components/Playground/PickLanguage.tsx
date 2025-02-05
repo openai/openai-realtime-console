@@ -40,7 +40,7 @@ const PickLanguage: React.FC<PickLanguageProps> = ({
     };
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 mr-1">
             <Select
                 onValueChange={(value: string) => {
                     onLanguagePicked(value as LanguageCodeType);
@@ -53,19 +53,19 @@ const PickLanguage: React.FC<PickLanguageProps> = ({
                 >
                     <Languages size={18} />
                     <FlagComponent flag={languageSelected?.flag} />
-                    {!isMobile && <span>{languageState}</span>}
+                    {!isMobile && <span>{languageSelected?.name}</span>}
                 </SelectTrigger>
                 <SelectContent>
                     {allLanguages.map((language) => (
                         <SelectItem
                             key={language.language_id}
                             value={language.code}
-                            className="p-2 flex justify-center"
+                            className="p-2 flex justify-start"
                         >
-                            <div className="flex flex-row items-center gap-2">
+                            <div className="flex flex-row items-center gap-2 pl-6">
                                 <FlagComponent flag={language.flag} />
                                 <div className="flex flex-col text-sm items-start">
-                                    <p>{language.code}</p>
+                                    <p>{language.name}</p>
                                 </div>
                             </div>
                         </SelectItem>

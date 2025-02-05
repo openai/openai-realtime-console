@@ -18,11 +18,11 @@ export default async function Index() {
                 <p>
                     {`Welcome to Elato AI ("we," "us," "our"). We offer engaging AI-characters on Elato devices that you can also converse with anytime through our website `}
                     <a
-                        href="https://www.Elato.app"
+                        href="https://www.elatoai.com"
                         className="text-blue-400 underline"
                         target="_blank"
                     >
-                        https://www.Elato.app
+                        https://www.elatoai.com
                     </a>
                     {` (the "Service").`}
                 </p>

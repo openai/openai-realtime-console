@@ -3,21 +3,13 @@ const OurAddressSign = () => {
         <p>
             Akashdeep Deb, [
             <a
-                href="mailto:akash@Elato.app"
+                href="mailto:akash@elatoai.com"
                 className="text-blue-400 underline"
             >
-                akash@Elato.app
+                akash@elatoai.com
             </a>
             ] <br />
-            Junru Xiong, [
-            <a
-                href="mailto:junru@Elato.app"
-                className="text-blue-400 underline"
-            >
-                junru@Elato.app
-            </a>
-            ] <br />
-            Co-founders, Elato AI
+            Founder, Elato AI
             <br />
             <br />
             <span className="underline">US</span>
@@ -30,10 +22,10 @@ const OurAddressSign = () => {
             <span className="underline">UK</span>
             <br />
             Floor 4, <br />
-            City Launch Lab, <br />
-            124 Goswell Rd., <br />
-            Greater, London, <br />
-            EC1V 0DP
+            Makerversity, Ltd, <br />
+            Somerset House, <br />
+            London, <br />
+            WC2R 1LA
         </p>
     );
 };

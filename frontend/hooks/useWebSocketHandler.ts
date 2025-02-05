@@ -360,11 +360,11 @@ export const useWebSocketHandler = (selectedUser: IUser) => {
     (personalityTranslationId: string) => {
       const wsUrl =
         process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
-          ? "wss://api.Elato.app/live"
+          ? "wss://api.elatoai.com/live"
           : "ws://localhost:8000/live";
       // // console.log("opening ws connection", wsUrl);
       setSocketUrl(wsUrl);
-      setPersonalityTranslationId(personalityTranslationId); // setSocketUrl("wss://api.Elato.app/Elato");
+      setPersonalityTranslationId(personalityTranslationId); // setSocketUrl("wss://api.elatoai.com/Elato");
     },
     []
   );

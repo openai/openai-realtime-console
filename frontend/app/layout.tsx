@@ -93,7 +93,7 @@ export const metadata: Metadata = {
         "Elato is an AI-enabled device that brings objects to life through conversational AI. More than a device, it's your gateway to a world where AI brings magic to the ordinary.",
     authors: [
         {
-            name: "Akashdeep Deb and Junru Xiong",
+            name: "Akashdeep Deb",
             url: "https://linkedin.com/in/akashdeep-deb",
         },
     ],
@@ -125,7 +125,7 @@ export const metadata: Metadata = {
         type: "website",
         images: [
             {
-                url: "https://Elato.app/images/orange.png",
+                url: "https://elatoai.com/images/orange.png",
                 width: 1200,
                 height: 630,
                 alt: "Elato AI conversational device - Front View",
@@ -140,24 +140,24 @@ export const metadata: Metadata = {
     creator: "Elato Team",
     publisher: "Elato AI Ltd.",
     alternates: {
-        canonical: "https://Elato.app",
+        canonical: "https://elatoai.com",
         languages: {
-            "en-US": "https://Elato.app",
-            "zh-CN": "https://Elato.app",
+            "en-US": "https://elatoai.com",
+            "zh-CN": "https://elatoai.com",
         },
     },
     icons: {
-        icon: "https://Elato.app/favicon.ico",
-        apple: "https://Elato.app/favicon.ico",
+        icon: "https://elatoai.com/favicon.ico",
+        apple: "https://elatoai.com/favicon.ico",
     },
     twitter: {
         card: "summary_large_image",
         title: "Elato - An AI-powered device that brings objects to life through engaging, conversational experiences",
         description:
             "More than a device, Elato is your gateway to a world where AI brings magic to the ordinary through engaging learning and interactive experiences.",
-        images: ["https://Elato.app/images/orange.png"],
+        images: ["https://elatoai.com/images/orange.png"],
     },
-    assets: "https://Elato.app/images",
+    assets: "https://elatoai.com/images",
     formatDetection: {
         telephone: false,
     },
@@ -188,7 +188,7 @@ const jsonLd: WithContext<Product> = {
     },
     offers: {
         "@type": "Offer",
-        url: "https://Elato.app",
+        url: "https://elatoai.com",
         priceCurrency: "USD",
         price: "57.99",
         priceValidUntil: "2024-12-31", // set a realistic date in the future
@@ -274,7 +274,7 @@ const jsonLd: WithContext<Product> = {
                 "Really cool project you've got going on, hoping one day it might use a local llm",
         },
     ],
-    image: "https://Elato.app/images/orange.png",
+    image: "https://elatoai.com/images/orange.png",
     category: "Interactive AI Device",
 };
 
@@ -298,7 +298,7 @@ export default async function RootLayout({
             suppressHydrationWarning
         >
             <head>
-                <link rel="canonical" href="https://www.Elato.app" />
+                <link rel="canonical" href="https://www.elatoai.com" />
                 <Script
                     id="product-schema"
                     type="application/ld+json"

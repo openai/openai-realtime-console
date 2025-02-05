@@ -567,14 +567,14 @@ void setup()
     setupRGBLED();
     getAuthTokenFromNVS();
 
+    // playStartupSound();
+    // connectWithPassword();
+    connectToWifiAndWebSocket();
+
     // setup RTOS tasks
     xTaskCreate(ledTask, "LED Task", 4096, NULL, 5, NULL);
     xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, NULL);
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
-
-    // playStartupSound();
-    // connectWithPassword();
-    connectToWifiAndWebSocket();
 }
 
 void loop()

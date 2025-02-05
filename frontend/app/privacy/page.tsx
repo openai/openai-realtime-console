@@ -20,11 +20,11 @@ export default async function Index() {
                 <p>
                     {`Welcome to Elato AI ("we," "us," "our"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy outlines how we handle, store, and use the information you provide us when you use our website, `}
                     <a
-                        href="https://www.Elato.app"
+                        href="https://www.elatoai.com"
                         className="text-blue-400 underline"
                         target="_blank"
                     >
-                        https://www.Elato.app
+                        https://www.elatoai.com
                     </a>
                     {`, and our services.`}
                 </p>
