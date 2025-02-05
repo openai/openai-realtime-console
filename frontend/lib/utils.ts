@@ -51,7 +51,7 @@ export const isDefaultVoice = (toy: IToy) => {
 
 export const getBaseUrl = () => {
     return process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
-        ? "https://elato.vercel.app"
+        ? "https://elatoai.com"
         : "http://localhost:3000";
 };
 

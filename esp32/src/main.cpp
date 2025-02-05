@@ -348,8 +348,6 @@ void playStartupSound() {
     }
 
     Serial.println("Startup sound played, set up websocket");
-    Serial.println("Connecting to WebSocket server...");
-    websocket_setup(ws_server, ws_port, ws_path);
 }
 
 void connectWithPassword()
@@ -533,6 +531,7 @@ void connectToWifiAndWebSocket()
         if (WiFi.status() == WL_CONNECTED && !authTokenGlobal.isEmpty())
         {
             Serial.println("WiFi connected while AP was active!");
+            playStartupSound();
             websocket_setup(ws_server, ws_port, ws_path);
             return;
         }
