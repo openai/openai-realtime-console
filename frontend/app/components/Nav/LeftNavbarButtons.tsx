@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import StarmoonLogo from "../StarmoonLogo";
-import { Hospital, Sparkle, ChevronDown } from "lucide-react";
+import { Hospital, Sparkle, ChevronDown, Dog, Bird, Hop, Wand } from "lucide-react";
 import {
     DropdownMenuSeparator,
     DropdownMenu,
@@ -21,6 +20,7 @@ export default function LeftNavbarButtons() {
     return (
         <div className="flex flex-row gap-6 sm:gap-10 items-center">
             <a className="flex flex-row gap-3 items-center" href="/">
+                <Wand size={ICON_SIZE} />
                 <p
                     className={`flex items-center font-chewy font-bold text-xl text-stone-800 dark:text-stone-100`}
                 >
