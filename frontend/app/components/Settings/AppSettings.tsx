@@ -17,13 +17,11 @@ import { useToast } from "@/components/ui/use-toast";
 interface AppSettingsProps {
     selectedUser: IUser;
     heading: React.ReactNode;
-    allLanguages: ILanguage[];
 }
 
 const AppSettings: React.FC<AppSettingsProps> = ({
     selectedUser,
     heading,
-    allLanguages,
 }) => {
     const supabase = createClient();
     const { toast } = useToast();
@@ -80,6 +78,8 @@ const AppSettings: React.FC<AppSettingsProps> = ({
     };
 
     const onSave = async (values: any, userType: "doctor" | "user") => {
+        console.log("onSave", values, userType);
+       if (userType === "doctor") {
         await updateUser(
             supabase,
             {
@@ -88,12 +88,25 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                     user_metadata: values,
                 },
             },
-            selectedUser!.user_id
-        );
-        toast({
-            description: "Your prefereces have been saved!",
-        });
+            selectedUser!.user_id);
+    } else {
+        await updateUser(
+            supabase,
+            {
+                supervisee_age: values.supervisee_age,
+                supervisee_name: values.supervisee_name,
+                supervisee_persona: values.supervisee_persona,
+                user_info: {
+                    user_type: userType,
+                    user_metadata: values,
+                },  
+            },
+            selectedUser!.user_id);
     }
+    toast({
+        description: "Your prefereces have been saved!",
+    });
+}
 
     return (
         <>

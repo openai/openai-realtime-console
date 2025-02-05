@@ -85,7 +85,6 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
             <AppSettings
                 heading={<Heading />}
                 selectedUser={selectedUser}
-                allLanguages={allLanguages}
             />
         </div>
     );
