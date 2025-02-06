@@ -7,6 +7,7 @@ import {
     SECONDS_PER_CREDIT,
 } from "./data";
 import crypto from "crypto";
+import { createClient } from "@/utils/supabase/client";
 export const getOpenGraphMetadata = (title: string) => {
     return {
         openGraph: {

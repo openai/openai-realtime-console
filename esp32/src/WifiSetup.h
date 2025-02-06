@@ -2,8 +2,11 @@
 #include <DNSServer.h>
 #include <ESPAsyncWebServer.h> //https://github.com/me-no-dev/ESPAsyncWebServer using the latest dev version from @me-no-dev
 #include <esp_wifi.h>          //Used for mpdu_rx_disable android workaround
-#include <HTTPClient.h>
-#include <Config.h>
+#include <driver/i2s.h>
+#include <SPIFFS.h> 
+#include "AudioTools/AudioLibs/AudioSourceSPIFFS.h"
+#include "AudioTools/AudioCodecs/CodecMP3Helix.h"
+#include "DBHandlers.h"
 
 #define uS_TO_S_FACTOR 1000000ULL
 
@@ -21,15 +24,28 @@ AsyncWebServer server(80);
 
 int AP_status = 0;
 
+// We'll store our MP3 in SPIFFS at /startup.mp3
+static const char* MP3_FILE = "/startup.mp3";
+
+// Create the AudioTools pipeline components
+AudioSourceSPIFFS source;       // Will read from SPIFFS
+MP3DecoderHelix   decoder;      // MP3 decoder
+I2SStream         i2s;          // Send output to I2S
+AudioPlayer       player(source, i2s, decoder);
+
 void getAuthTokenFromNVS()
 {
     preferences.begin("auth", false);
     authTokenGlobal = preferences.getString("auth_token", "");
     preferences.end();
-
-    authTokenGlobal = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJzdWIiOiI4YzNhZjA4Ny04ZDgwLTQ1MzYtOGM3Ni0wNjI2Nzc0NDgwMzMiLCJlbWFpbCI6ImFrYWQzYkBnbWFpbC5jb20iLCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoiYWthZDNiQGdtYWlsLmNvbSIsInVzZXJfaWQiOiI4YzNhZjA4Ny04ZDgwLTQ1MzYtOGM3Ni0wNjI2Nzc0NDgwMzMiLCJjcmVhdGVkX3RpbWUiOiIyMDI1LTAyLTA0VDE5OjQxOjA5LjQ0NFoifSwiaWF0IjoxNzM4Njk4MDY5fQ.wh_33g-MH-nQ63BJOJM3cgQM72avTPb8663vLrwUx3Y";
-        
     Serial.println(authTokenGlobal);
+}
+
+void getOTAStatusFromNVS()
+{
+    preferences.begin("ota", false);
+    ota_status = preferences.getBool("ota_status", false);
+    preferences.end();
 }
 
 String urlEncode(const String &msg)
@@ -68,6 +84,61 @@ String urlEncode(const String &msg)
         }
     }
     return encodedMsg;
+}
+
+// plays when new wifi network connects
+void playStartupSound() {
+      // Check if startup.mp3 actually exists
+  // 2) Mount SPIFFS
+    // Check if startup.mp3 actually exists
+    if(!SPIFFS.begin(true)) {
+        Serial.println("SPIFFS mount failed!");
+        while(true) { delay(10); }
+    }
+
+    File f = SPIFFS.open(MP3_FILE, "r");
+    if(!f){
+        Serial.println("startup.mp3 missing in SPIFFS!");
+        while(true) { delay(10); }
+    } else {
+        Serial.printf("startup.mp3 found, size=%d bytes\n", f.size());
+        f.close();
+    }
+
+    // Configure I2S in TX mode
+    auto cfg = i2s.defaultConfig(TX_MODE);
+    cfg.pin_bck  = 6;
+    cfg.pin_ws   = 5;
+    cfg.pin_data = 7;
+    cfg.channels = 1;
+    cfg.sample_rate = 44100;
+    // cfg.port_no = I2S_PORT_OUT;
+
+    if(!i2s.begin(cfg)) {
+        Serial.println("I2S begin failed!");
+        while(true) { delay(10); }
+    }
+
+    // Initialize the player
+    player.setVolume(1.0f);    
+    if(!player.begin()) {
+        Serial.println("Player begin() failed!");
+        while(true) { delay(10); }
+    }
+
+  // **THIS IS THE MISSING LOOP!**
+    Serial.println("Playing startup sound...");
+    while(true) {
+        size_t copied = player.copy();
+        if (copied == 0) {
+            Serial.println("Playback finished.");
+            delay(500);
+            break;
+        }
+        delay(1);  // Give CPU time for other tasks
+    }
+
+    Serial.println("Startup sound played, set up websocket");
 }
 
 int wifiConnect()
@@ -141,48 +212,6 @@ int wifiConnect()
     return 0;
 }
 
-
-bool isDeviceRegistered(AsyncWebServerRequest *request) {
-    HTTPClient http;
-    String url = "http://" + String(backend_server) + ":" + String(backend_port) +
-                 "/api/generate_auth_token?macAddress=" + WiFi.macAddress();
-
-    http.begin(url);
-    http.setTimeout(10000);
-
-    int httpCode = http.GET();
-
-    if (httpCode == HTTP_CODE_OK) {
-        String payload = http.getString();
-        JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, payload);
-
-        if (error) {
-            Serial.print("JSON parsing failed: ");
-            Serial.println(error.c_str());
-            http.end();
-            return false;
-        }
-
-        String authToken = doc["token"];
-        if (!authToken.isEmpty()) {
-            // Store the auth token in NVS
-            preferences.begin("auth", false);
-            preferences.putString("auth_token", authToken);
-            preferences.end();
-
-            authTokenGlobal = String(authToken);
-            http.end();
-            return true;
-        }
-    }
-
-    // If we get here, either the request failed or no token was found
-    http.end();
-    return false;
-}
-
-
 void handleComplete(AsyncWebServerRequest *request)
 {
     bool isRegistered = !authTokenGlobal.isEmpty();
@@ -224,7 +253,7 @@ void handleComplete(AsyncWebServerRequest *request)
                                     "</head>"
                                     "<body>"
                                     "<div class='container'>"
-                                    "<div class='header'>Starmoon AI - Setup Complete</div>"
+                                    "<div class='header'>Elato AI - Setup Complete</div>"
                                     "<div class='content'>" +
                                     content +
                                     "</div>"
@@ -259,7 +288,7 @@ void handleRoot(AsyncWebServerRequest *request)
                       "</head>"
                       "<body>"
                       "<div class='container'>"
-                      "<div class='header'>Starmoon AI</div>"
+                      "<div class='header'>Elato AI</div>"
                       "<div class='content'>"
                       "<h1>Connect to Wi-Fi</h1>";
         if (strcmp(notConnected.c_str(), "true") == 0)
@@ -443,7 +472,7 @@ String getAPSSIDName()
     String macAddress = WiFi.macAddress();
     macAddress.replace(":", "");
     String lastFourMac = macAddress.substring(macAddress.length() - 4); // Get the last 4 characters
-    String ssid = "Starmoon-" + lastFourMac;
+    String ssid = "Elato-" + lastFourMac;
     return ssid;
 }
 

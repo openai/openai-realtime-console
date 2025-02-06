@@ -187,43 +187,10 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                             Your keys are E2E encrypted and never stored on our servers as plain text.
                         </p>
                     </div>
-                    <div className="flex flex-col gap-2 mt-4">
+                    {/* <div className="flex flex-col gap-4 flex-nowrap">
                         <Label className="text-sm font-medium text-gray-700">
-                            Logged in as
+                            Over-the-air (OTA) updates
                         </Label>
-                        <Input
-                            // autoFocus
-                            disabled
-                            value={selectedUser?.email}
-                            className="max-w-screen-sm h-10 bg-white"
-                            autoComplete="on"
-                            style={{
-                                fontSize: 16,
-                            }}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-4 mt-6">
-                        <Label className="text-sm font-medium text-gray-700">
-                            Device volume
-                        </Label>
-                        <div className="flex flex-row gap-2 items-center flex-nowrap">
-                            <Slider
-                                value={volume}
-                                onValueChange={updateVolume}
-                                className="sm:w-1/2"
-                                defaultValue={[50]}
-                                max={100}
-                                min={1}
-                                step={1}
-                            />
-                            <p className="text-gray-500 text-sm">{volume}%</p>
-                        </div>
-                    </div>
-                    {/* <div className="flex flex-col gap-4 mt-6">
-                        <Label className="text-sm font-medium text-gray-700">
-                            Device update
-                        </Label>
-                        <div className="flex flex-col gap-4 flex-nowrap">
                             <div className="flex flex-col gap-2">
                                 <Button
                                     size="sm"
@@ -256,6 +223,9 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                                     </p>
                                 )}
                             </div>
+                            <Label className="text-sm font-medium text-gray-700">
+                            Factory reset
+                        </Label>
                             <div className="flex flex-col gap-2">
                                 <Button
                                     size="sm"
@@ -278,18 +248,48 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                                             size={16}
                                             className="inline-block mr-1"
                                         />
-                                        Your device will be reset on next start
+                                        Your device will be factory reset on next start
                                     </p>
                                 ) : (
                                     <p className="text-xs text-gray-400">
-                                        Caution: This will reset your device to
-                                        factory settings.
+                                        Caution: This will reset your wifi and authentication details on your device.
                                     </p>
                                 )}
                             </div>
+                        </div> */}
+
+                    <div className="flex flex-col gap-2 mt-4">
+                        <Label className="text-sm font-medium text-gray-700">
+                            Logged in as
+                        </Label>
+                        <Input
+                            // autoFocus
+                            disabled
+                            value={selectedUser?.email}
+                            className="max-w-screen-sm h-10 bg-white"
+                            autoComplete="on"
+                            style={{
+                                fontSize: 16,
+                            }}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-4 mt-6">
+                        <Label className="text-sm font-medium text-gray-700">
+                            Device volume
+                        </Label>
+                        <div className="flex flex-row gap-2 items-center flex-nowrap">
+                            <Slider
+                                value={volume}
+                                onValueChange={updateVolume}
+                                className="sm:w-1/2"
+                                defaultValue={[50]}
+                                max={100}
+                                min={1}
+                                step={1}
+                            />
+                            <p className="text-gray-500 text-sm">{volume}%</p>
                         </div>
-                    </div> */}
-                                       
+                    </div>                                   
             <form
                             action={signOutAction}
                         className="flex flex-row justify-between mt-4"

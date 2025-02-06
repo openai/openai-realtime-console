@@ -7,6 +7,7 @@
 #include <Preferences.h>
 
 extern Preferences preferences;
+extern bool ota_status;
 
 enum DeviceState
 {
@@ -15,6 +16,7 @@ enum DeviceState
     LISTENING,
     SPEAKING,
     PROCESSING,
+    OTA,
 };
 
 extern DeviceState deviceState;
@@ -68,8 +70,10 @@ extern const i2s_port_t I2S_PORT_OUT;
 extern const int I2S_SD_OUT;
 
 // SSL certificate
-extern const char *rootCACertificate;
+extern const char *CA_cert;
+extern const char *Vercel_CA_cert;
 void clearNVS();
 void goToSleep();
+void factoryResetDevice();
 
 #endif
