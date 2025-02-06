@@ -5,6 +5,8 @@
 #include <ArduinoJson.h>
 #include <driver/i2s.h>
 #include <Preferences.h>
+#include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 
 extern Preferences preferences;
 extern bool ota_status;

@@ -6,8 +6,7 @@
 #include <SPIFFS.h> 
 #include "AudioTools/AudioLibs/AudioSourceSPIFFS.h"
 #include "AudioTools/AudioCodecs/CodecMP3Helix.h"
-#include "DBHandlers.h"
-
+#include "FactoryReset.h"
 #define uS_TO_S_FACTOR 1000000ULL
 
 #define MAX_CLIENTS 4  // ESP32 supports up to 10 but I have not tested it yet
@@ -41,11 +40,47 @@ void getAuthTokenFromNVS()
     Serial.println(authTokenGlobal);
 }
 
-void getOTAStatusFromNVS()
-{
-    preferences.begin("ota", false);
-    ota_status = preferences.getBool("ota_status", false);
-    preferences.end();
+bool isDeviceRegistered(AsyncWebServerRequest *request) {
+    HTTPClient http;
+    WiFiClientSecure client;
+    client.setCACert(Vercel_CA_cert);
+
+    String url = "https://" + String(backend_server) +
+                 "/api/generate_auth_token?macAddress=" + WiFi.macAddress();
+
+    http.begin(client, url);
+    http.setTimeout(10000);
+
+    int httpCode = http.GET();
+
+    if (httpCode == HTTP_CODE_OK) {
+        String payload = http.getString();
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, payload);
+
+        if (error) {
+            Serial.print("JSON parsing failed: ");
+            Serial.println(error.c_str());
+            http.end();
+            return false;
+        }
+
+        String authToken = doc["token"];
+        if (!authToken.isEmpty()) {
+            // Store the auth token in NVS
+            preferences.begin("auth", false);
+            preferences.putString("auth_token", authToken);
+            preferences.end();
+
+            authTokenGlobal = String(authToken);
+            http.end();
+            return true;
+        }
+    }
+
+    // If we get here, either the request failed or no token was found
+    http.end();
+    return false;
 }
 
 String urlEncode(const String &msg)

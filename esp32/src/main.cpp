@@ -1,6 +1,7 @@
 
 
 #include <Arduino.h>
+#include "OTA.h"
 #include "I2SHandler.h"
 #include <WebSocketsClient.h>
 #include <driver/rtc_io.h>
