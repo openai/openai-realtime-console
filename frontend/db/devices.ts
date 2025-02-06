@@ -16,6 +16,17 @@ export const dbCheckUserCode = async (
     return !!data;
 };
 
+export const updateDevice = async (
+    supabase: SupabaseClient,
+    device: Partial<IDevice>,
+    device_id: string
+) => {
+    const { error } = await supabase.from("devices").update(device).eq("device_id", device_id);
+    if (error) {
+        throw error;
+    }
+};
+
 export const addUserToDevice = async (
     supabase: SupabaseClient,
     userCode: string,

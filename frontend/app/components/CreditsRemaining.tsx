@@ -4,13 +4,11 @@ import { Button } from "@/components/ui/button";
 import { getCreditsRemaining } from "@/lib/utils";
 import { Sparkles } from "lucide-react";
 import AddCreditsModal from "./Upsell/AddCreditsModal";
-import { tx } from "@/utils/i18n";
 
 const CreditsRemaining: React.FC<{
     user: IUser;
-    languageCode: LanguageCodeType;
+    languageCode: string;
 }> = ({ user, languageCode }) => {
-    const t = tx(languageCode);
     const creditsRemaining = getCreditsRemaining(user);
     const hasNoCredits = creditsRemaining <= 0;
 
@@ -23,7 +21,7 @@ const CreditsRemaining: React.FC<{
             <p
                 className={`text-sm ${hasNoCredits ? "text-gray-400" : "text-gray-400"}`}
             >
-                {creditsRemaining} {t("credits remaining")}
+                {creditsRemaining} {"credits remaining"}
             </p>
             {creditsRemaining <= 50 && (
                 <AddCreditsModal>
@@ -34,8 +32,8 @@ const CreditsRemaining: React.FC<{
                     >
                         <Sparkles size={16} />
                         {hasNoCredits
-                            ? t("Upgrade to continue")
-                            : t("Get unlimited access")}
+                            ? "Upgrade to continue"
+                            : "Get unlimited access"}
                     </Button>
                 </AddCreditsModal>
             )}

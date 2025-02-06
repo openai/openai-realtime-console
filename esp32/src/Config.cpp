@@ -13,20 +13,20 @@ bool factory_reset_status = false;
 // Runtime WebSocket server details
 
 // LOCAL
-// const char *ws_server = "192.168.1.166";
-// const uint16_t ws_port = 8000;
-// const char *ws_path = "/";
-// // Backend server details 
-// const char *backend_server = "192.168.1.166";
-// const uint16_t backend_port = 3000;
-
-// PROD
-const char *ws_server = "talkedge.deno.dev";
-const uint16_t ws_port = 443;
+const char *ws_server = "10.2.1.21";
+const uint16_t ws_port = 8000;
 const char *ws_path = "/";
 // Backend server details 
-const char *backend_server = "www.elatoai.com";
+const char *backend_server = "10.2.1.21";
 const uint16_t backend_port = 3000;
+
+// PROD
+// const char *ws_server = "talkedge.deno.dev";
+// const uint16_t ws_port = 443;
+// const char *ws_path = "/";
+// // Backend server details 
+// const char *backend_server = "www.elatoai.com";
+// const uint16_t backend_port = 3000;
 
 String authTokenGlobal;
 

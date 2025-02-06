@@ -14,7 +14,6 @@ import _ from "lodash";
 import AddCreditsModal from "../Upsell/AddCreditsModal";
 import HomePageSubtitles from "../HomePageSubtitles";
 import MessageHeader from "./MessageHeader";
-import { tx } from "@/utils/i18n";
 import PersonalityFilters from "./PersonalityFilters";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
@@ -70,8 +69,6 @@ const Playground: React.FC<PlaygroundProps> = ({
         []
     );
 
-    const t = tx('en-US');
-
     const creditsRemaining = getCreditsRemaining(currentUser);
     const outOfCredits = creditsRemaining <= 0 && !currentUser.is_premium;
     // const ref: any = useRef<ComponentRef<typeof Messages> | null>(null);
@@ -108,7 +105,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                 <div className="flex flex-row items-center gap-4 sm:gap-8 justify-between">
                     <div className="flex flex-row items-center gap-4 sm:gap-8">
                         <h1 className="text-3xl font-normal">
-                            {t("Playground")}
+                            {"Playground"}
                         </h1>
                         <div className="flex flex-col gap-8 items-center justify-center">
                             {outOfCredits ? (
@@ -126,7 +123,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                                             stroke={"currentColor"}
                                         />
                                         <span className="text-md font-semibold">
-                                            {t("Upgrade")}
+                                            {"Upgrade"}
                                         </span>
                                     </Button>
                                 </AddCreditsModal>
@@ -152,7 +149,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                                         stroke={"currentColor"}
                                     />
                                     <span className="text-md font-semibold">
-                                        {t("Play")}
+                                        {"Play"}
                                     </span>
                                 </Button>
                                 </PopoverTrigger>

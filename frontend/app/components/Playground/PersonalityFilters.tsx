@@ -1,5 +1,4 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { tx } from "@/utils/i18n";
 import { X } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import { FaHandHoldingMedical } from "react-icons/fa";
@@ -18,7 +17,6 @@ const PersonalityFilters = ({
     languageState,
     currentUser,
 }: PersonalityFiltersProps) => {
-    const t = tx(languageState as LanguageCodeType);
     const isDoctor = currentUser.user_info?.user_type === "doctor";
 
     return (
@@ -38,7 +36,7 @@ const PersonalityFilters = ({
                 className="rounded-full flex items-center gap-2 text-xs [&[data-state=on]]:bg-gray-200"
             >
                 <FaChild className="h-4 w-4 text-gray-800" />
-                {t("For children")}
+                {"For children"}
                 {selectedFilters.includes("is_child_voice") && (
                     <X className="h-4 w-4" aria-hidden="true" />
                 )}
@@ -50,7 +48,7 @@ const PersonalityFilters = ({
                     className="rounded-full flex items-center gap-2 text-xs [&[data-state=on]]:bg-gray-200"
                 >
                     <FaHandHoldingMedical className="h-4 w-4 text-gray-800" />
-                    {t("For doctors")}
+                    {"For doctors"}
                     {selectedFilters.includes("is_doctor") && (
                         <X className="h-4 w-4" aria-hidden="true" />
                     )}

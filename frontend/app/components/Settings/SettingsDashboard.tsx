@@ -25,12 +25,12 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
 }) => {
     const supabase = createClient();
 
-    const [languageState, setLanguageState] = useState<LanguageCodeType>(
+    const [languageState, setLanguageState] = useState<string>(
         selectedUser.language_code! // Initial value from props
     );
 
 
-    const onLanguagePicked = async (languagePicked: LanguageCodeType) => {
+    const onLanguagePicked = async (languagePicked: string) => {
         setLanguageState(languagePicked);
         await updateUser(
             supabase,

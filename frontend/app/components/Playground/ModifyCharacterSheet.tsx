@@ -11,7 +11,6 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Airplay, MonitorSmartphone, Phone } from "lucide-react";
 import { useState } from "react";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import { tx } from "@/utils/i18n";
 
 interface ModifyCharacterSheetProps {
     openPersonality: IPersonality;
@@ -19,7 +18,7 @@ interface ModifyCharacterSheetProps {
     children: React.ReactNode;
     onPersonalityPicked: (personalityIdPicked: string) => void;
     startCall: (personalityIdSelected: string) => void;
-    languageState: LanguageCodeType;
+    languageState: string;
     disableButtons: boolean;
 }
 
@@ -33,7 +32,6 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
     disableButtons,
 }) => {
     const [isSent, setIsSent] = useState(false);
-    const t = tx(languageState);
 
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -59,8 +57,8 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                 >
                     <MonitorSmartphone className="flex-shrink-0 h-5 w-5 md:h-6 md:w-6" />
                     {isSent || isCurrentPersonality
-                        ? t("Sent")
-                        : t("Send to device")}
+                        ? "Sent"
+                        : "Send to device"}
                 </Button>
                 {/* <SheetClose asChild>
                     <Button
@@ -78,7 +76,7 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                         }}
                     >
                         <Phone className="flex-shrink-0 h-5 w-5 md:h-6 md:w-6" />
-                        {t("Chat")}
+                        {"Chat"}
                     </Button>
                 </SheetClose> */}
             </div>

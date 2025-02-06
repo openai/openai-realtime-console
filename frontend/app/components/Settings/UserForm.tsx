@@ -46,7 +46,6 @@ const GeneralUserForm = ({ selectedUser, heading, onSave, onClickCallback }: Gen
             supervisee_name: selectedUser?.supervisee_name ?? "",
             supervisee_age: selectedUser?.supervisee_age ?? 0,
             supervisee_persona: selectedUser?.supervisee_persona ?? "",
-            modules: selectedUser?.modules ?? [],
         },
     });
 

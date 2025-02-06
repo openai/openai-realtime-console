@@ -6,7 +6,6 @@ import { Metadata } from "next";
 import { getOpenGraphMetadata } from "@/lib/utils";
 import { MobileNav } from "../components/Nav/MobileNav";
 import { getUserById } from "@/db/users";
-import { tx } from "@/utils/i18n";
 
 const ICON_SIZE = 20;
 
@@ -19,16 +18,15 @@ export const metadata: Metadata = {
     ...getOpenGraphMetadata("Home"),
 };
 
-const sidebarNavItems = (languageCode: LanguageCodeType) => {
-    const t = tx(languageCode);
+const sidebarNavItems = (languageCode: string) => {
     return [
         {
-            title: t("Playground"),
+            title: "Playground",
             href: "/home",
             icon: <Gamepad2 size={ICON_SIZE} />,
         },
         {
-            title: t("Settings"),
+            title: "Settings",
             href: "/home/settings",
             icon: <Settings size={ICON_SIZE} />,
         },

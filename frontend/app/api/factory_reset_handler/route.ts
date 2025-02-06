@@ -24,9 +24,9 @@ export async function POST(req: Request) {
         }
 
         // set is_reset to false
-        const { data, error } = await supabase.from('users').update({
+        const { data, error } = await supabase.from('devices').update({
             is_reset: false,
-        }).eq('id', user.user.id).select();
+        }).eq('user_id', user.user.id).select();
 
         return NextResponse.json({ success: true });
     } catch (error) {

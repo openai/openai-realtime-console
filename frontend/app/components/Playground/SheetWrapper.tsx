@@ -15,7 +15,7 @@ interface SheetWrapperProps {
     personalityIdState: string;
     onPersonalityPicked: (personalityId: string) => void;
     startCall: (personalityId: string) => void;
-    languageState: LanguageCodeType;
+    languageState: string;
     disableButtons: boolean;
 }
 

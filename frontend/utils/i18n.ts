@@ -19,8 +19,14 @@ export type EnglishCopy =
     | "For children"
     | "For doctors";
 
-export const tx = (languageCode: LanguageCodeType) => {
+const tx = (languageCode: "en-US" | "de-DE" | "es-ES" | "es-AR" | "zh-CN") => {
     return (key: EnglishCopy) => {
+        if (!languageCode) {
+            languageCode = "en-US";
+        }
+        if (!key) {
+            key = "Playground";
+        }
         return {
             "en-US": {
                 Playground: "Playground",

@@ -7,7 +7,7 @@ interface PickPersonalityProps {
     personalityIdState: string;
     currentUser: IUser;
     startCall: (personalityIdSelected: string) => void;
-    languageState: LanguageCodeType;
+    languageState: string;
     disableButtons: boolean;
     selectedFilters: PersonalityFilter[];
 }

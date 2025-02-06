@@ -10,9 +10,9 @@ import Twemoji from "react-twemoji";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface PickLanguageProps {
-    onLanguagePicked: (languagePicked: LanguageCodeType) => void;
+    onLanguagePicked: (languagePicked: string) => void;
     allLanguages: ILanguage[];
-    languageState: LanguageCodeType;
+    languageState: string;
     isDisabled?: boolean;
 }
 
@@ -43,7 +43,7 @@ const PickLanguage: React.FC<PickLanguageProps> = ({
         <div className="flex flex-col gap-2 mr-1">
             <Select
                 onValueChange={(value: string) => {
-                    onLanguagePicked(value as LanguageCodeType);
+                    onLanguagePicked(value as string);
                 }}
                 defaultValue={languageState}
             >

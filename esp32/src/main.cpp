@@ -204,8 +204,8 @@ void websocket_setup(String server_domain, int port, String path)
     webSocket.setReconnectInterval(1000);
     webSocket.enableHeartbeat(25000, 5000, 3);
 
-    webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
-    // webSocket.begin(server_domain.c_str(), port, path.c_str());
+    // webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
+    webSocket.begin(server_domain.c_str(), port, path.c_str());
 }
 
 void micTask(void *parameter)

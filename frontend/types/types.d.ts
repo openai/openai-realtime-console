@@ -17,27 +17,38 @@ declare global {
 
     type ProductColor = "black" | "white" | "gray";
 
+    interface IDevice {
+        device_id: string;
+        is_reset: boolean;
+        is_ota: boolean;
+        volume: number;
+        mac_address: string;
+        user_code: string;
+    }
+
     interface IUser {
         user_id: string;
         avatar_url: string;
         is_premium: boolean;
-        supervisor_name: string;
         email: string;
+        supervisor_name: string;
         supervisee_name: string;
         supervisee_persona: string;
         supervisee_age: number;
-        // language_id: string;
-        volume_control: number;
-        is_reset: boolean;
-        is_ota: boolean;
-        personality_id: string;
-        personality?: IPersonality;
-        // language?: ILanguage;
-        modules: Module[];
-        most_recent_chat_group_id: string | null;
         session_time: number;
         user_info: UserInfo;
-        language_code: LanguageCodeType;
+
+        // personality
+        personality_id: string;
+        personality?: IPersonality;
+
+        // language
+        language?: ILanguage;
+        language_code: string;
+
+        // device
+        device?: IDevice;
+        device_id: string | null;
     }
 
     type UserInfo =
@@ -77,7 +88,6 @@ declare global {
         emotion_model: string;
     }
 
-    type LanguageCodeType = "en-US" | "de-DE" | "es-ES" | "es-AR" | "zh-CN";
     type TTSModel = "FISH" | "AZURE";
 
     // characters <-> personalities table
@@ -105,7 +115,7 @@ declare global {
         personality?: IPersonality;
         voice_name: string;
         voice?: Partial<IToy>;
-        language_code: LanguageCodeType;
+        language_code: string;
         language?: ILanguage;
     }
 
@@ -116,7 +126,7 @@ declare global {
         image_src?: string;
         tts_code: string;
         tts_model: TTSModel;
-        tts_language_code: LanguageCodeType;
+        tts_language_code: string;
         tts_language?: ILanguage;
     }
 

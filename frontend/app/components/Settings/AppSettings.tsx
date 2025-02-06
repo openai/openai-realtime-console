@@ -1,4 +1,4 @@
-import { checkIfUserHasApiKey, registerDevice, setDeviceOta, setDeviceReset, signOutAction } from "@/app/actions";
+import { checkIfUserHasApiKey, registerDevice, signOutAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { updateUser } from "@/db/users";
 import _ from "lodash";
 import { createClient } from "@/utils/supabase/client";
 import React, { useCallback } from "react";
-import { doesUserHaveADevice } from "@/db/devices";
+import { doesUserHaveADevice, updateDevice } from "@/db/devices";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AppSettingsProps {
@@ -59,17 +59,19 @@ const AppSettings: React.FC<AppSettingsProps> = ({
     }, [checkIfUserHasDevice, userHasApiKey]);
 
     const [volume, setVolume] = React.useState([
-        selectedUser.volume_control ?? 50,
+        selectedUser.device?.volume ?? 50,
     ]);
-    const [isReset, setIsReset] = React.useState(selectedUser.is_reset);
-    const [isOta, setIsOta] = React.useState(selectedUser.is_ota);
+    const [isReset, setIsReset] = React.useState(selectedUser.device?.is_reset ?? false);
+    const [isOta, setIsOta] = React.useState(selectedUser.device?.is_ota ?? false);
 
     const debouncedUpdateVolume = _.debounce(async () => {
-        await updateUser(
-            supabase,
-            { volume_control: volume[0] },
-            selectedUser.user_id
-        );
+        if (selectedUser.device?.device_id) {
+            await updateDevice(
+                supabase,
+                { volume: volume[0] },
+                selectedUser.device.device_id
+            );
+        }
     }, 1000); // Adjust the debounce delay as needed
 
     const updateVolume = (value: number[]) => {

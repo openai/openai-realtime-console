@@ -5,7 +5,7 @@ interface UserPersonalitiesProps {
     allPersonalities: IPersonality[];
     personalityIdState: string;
     startCall: (personalityIdSelected: string) => void;
-    languageState: LanguageCodeType;
+    languageState: string;
     disableButtons: boolean;
     selectedFilters: PersonalityFilter[];
 }

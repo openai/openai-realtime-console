@@ -17,8 +17,6 @@ export const createUser = async (
             supervisee_age: 14,
             supervisee_persona: "",
             personality_id: userProps.personality_id, // selecting default personality
-            most_recent_chat_group_id: null,
-            modules: ["general_trivia"],
             session_time: 0,
             avatar_url:
                 user.user_metadata?.avatar_url ??
@@ -52,13 +50,7 @@ export const getUserById = async (supabase: SupabaseClient, id: string) => {
     const { data, error } = await supabase
         .from("users")
         .select(
-            `*, personality:personality_id(*, personalities_translations (
-          personalities_translation_id,
-          personality_key,
-          title,
-          subtitle,
-          trait_short_description
-        ))`
+            `*, personality:personality_id(*), device:devices!users_device_id_fkey(device_id, volume)`
         )
         .eq("user_id", id)
         .single();

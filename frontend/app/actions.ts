@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { encryptSecret, getMacAddressFromDeviceCode, isValidMacAddress } from "@/lib/utils";
 import { addUserToDevice, dbCheckUserCode } from "@/db/devices";
-import { getSimpleUserById } from "@/db/users";
+import { getSimpleUserById, updateUser } from "@/db/users";
 
 
 export const signInAction = async (formData: FormData) => {
@@ -224,11 +224,16 @@ export async function storeUserApiKey(userId: string, rawApiKey: string) {
     const supabase = createClient();
     const { data, error } = await supabase
       .from('devices')
-      .insert({ user_id: userId, user_code: deviceCode.toLowerCase(), mac_address: getMacAddressFromDeviceCode(deviceCode).toUpperCase() });
+      .insert({ user_id: userId, user_code: deviceCode.toLowerCase(), mac_address: getMacAddressFromDeviceCode(deviceCode).toUpperCase() }).select();
+
 
     if (error) {
         console.log(error)
         return { error: "Error registering device" };
+    }
+
+    if (data && data.length > 0) {
+        await updateUser(supabase, { device_id: data[0].device_id }, userId);
     }
 
     return { error: null };

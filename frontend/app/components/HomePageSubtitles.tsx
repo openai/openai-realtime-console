@@ -1,9 +1,8 @@
-import { tx } from "@/utils/i18n";
 import CreditsRemaining from "./CreditsRemaining";
 interface HomePageSubtitlesProps {
     user: IUser;
     page: "home" | "settings" | "track";
-    languageCode?: LanguageCodeType;
+    languageCode?: string;
 }
 
 const HomePageSubtitles: React.FC<HomePageSubtitlesProps> = ({
