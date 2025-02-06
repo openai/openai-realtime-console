@@ -52,7 +52,7 @@ bool isDeviceRegistered(AsyncWebServerRequest *request) {
     return false;
 }
 
-void factoryResetDevice() {
+void setResetComplete() {
     HTTPClient http;
     
     // Construct the JSON payload
@@ -81,10 +81,9 @@ void factoryResetDevice() {
     
     http.end();
 
-    // Clear NVS and restart
-    nvs_flash_erase();
-    nvs_flash_init();
-    ESP.restart();
+    // Clear NVS
+    factoryResetDevice();
+
 }
 
 void setOTAComplete() {
@@ -162,6 +161,20 @@ void setOTAStatusInNVS(bool status)
 {
     preferences.begin("ota", false);
     preferences.putBool("ota_status", status);
+    preferences.end();
+}
+
+void getFactoryResetStatusFromNVS()
+{
+    preferences.begin("factory_reset", false);
+    factory_reset_status = preferences.getBool("factory_reset_status", false);
+    preferences.end();
+}
+
+void setFactoryResetStatusInNVS(bool status)
+{
+    preferences.begin("factory_reset", false);
+    preferences.putBool("factory_reset_status", status);
     preferences.end();
 }
 

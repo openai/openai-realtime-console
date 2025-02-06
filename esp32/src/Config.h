@@ -8,6 +8,7 @@
 
 extern Preferences preferences;
 extern bool ota_status;
+extern bool factory_reset_status;
 
 enum DeviceState
 {
@@ -17,6 +18,7 @@ enum DeviceState
     SPEAKING,
     PROCESSING,
     OTA,
+    FACTORY_RESET
 };
 
 extern DeviceState deviceState;

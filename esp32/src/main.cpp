@@ -126,7 +126,8 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 
             if (is_reset) {
                 Serial.println("Factory reset received");
-                factoryResetDevice();
+                setFactoryResetStatusInNVS(true);
+                ESP.restart();
             }
         }
 
@@ -364,7 +365,7 @@ void connectToWifiAndWebSocket()
     if (!authTokenGlobal.isEmpty() && wifiConnect() == 1) // Successfully connected and has auth token
     {
         Serial.println("WiFi connected with existing network!");
-        ota_status ? performOTAUpdate() : websocket_setup(ws_server, ws_port, ws_path);
+        ota_status ? performOTAUpdate() : (factory_reset_status ? setResetComplete() : websocket_setup(ws_server, ws_port, ws_path));
         return; // Connection successful
     }
 
@@ -423,9 +424,14 @@ void setup()
     // AUTH & OTA
     getAuthTokenFromNVS();
     getOTAStatusFromNVS();
+    getFactoryResetStatusFromNVS();
+
     deviceState = IDLE;
     if (ota_status) {
         deviceState = OTA;
+    }
+    if (factory_reset_status) {
+        deviceState = FACTORY_RESET;
     }
 
     // WIFI

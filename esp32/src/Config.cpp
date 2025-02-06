@@ -4,6 +4,7 @@
 // ! define preferences
 Preferences preferences;
 bool ota_status = false;
+bool factory_reset_status = false;
 
 // websocket_setup("192.168.1.166", 8000, "/");
 // websocket_setup("talkedge.deno.dev",443, "/");
@@ -184,18 +185,6 @@ void goToSleep()
 void factoryResetDevice()
 {
     Serial.println("Factory reset device");
-    // clear auth NVS
-    preferences.begin("auth", false);
-    preferences.clear();
-    preferences.end();
-
-    // clear wifi NVS
-    preferences.begin("wifi_store", false);
-    preferences.clear();
-    preferences.end();
-
-    // clear ota NVS
-    preferences.begin("ota", false);
-    preferences.clear();
-    preferences.end();
+    nvs_flash_erase();
+    nvs_flash_init();
 }
