@@ -22,8 +22,13 @@ void setOTAComplete() {
     String jsonString;
     serializeJson(doc, jsonString);
 
-    // Initialize HTTPS connection with secure client
+    // Initialize HTTPS connection with client
+    #ifdef DEV_MODE
+    http.begin("http://" + String(backend_server) + ":" + String(backend_port) + "/api/ota_update_handler");
+    #else
     http.begin(client, "https://" + String(backend_server) + "/api/ota_update_handler");
+    #endif
+
     http.addHeader("Content-Type", "application/json");
     http.setTimeout(10000);  // Add timeout for reliability
     
@@ -43,38 +48,6 @@ void setOTAComplete() {
     
     http.end();
 }
-
-// void setOTAComplete() {
-//     esp_http_client_config_t config = {
-//         .url = ("https://" + String(backend_server) + "/api/ota_update_handler").c_str(),
-//         .method = HTTP_METHOD_POST,
-//     };
-    
-//     esp_http_client_handle_t client = esp_http_client_init(&config);
-    
-//     // Set headers
-//     esp_http_client_set_header(client, "Content-Type", "application/json");
-    
-//     // Prepare JSON
-//     JsonDocument doc;
-//     doc["authToken"] = authTokenGlobal;
-//     String jsonString;
-//     serializeJson(doc, jsonString);
-    
-//     esp_http_client_set_post_field(client, jsonString.c_str(), jsonString.length());
-    
-//     // Perform request
-//     esp_err_t err = esp_http_client_perform(client);
-    
-//     if (err == ESP_OK) {
-//         int status_code = esp_http_client_get_status_code(client);
-//         Serial.printf("HTTP POST Status = %d\n", status_code);
-//     } else {
-//         Serial.printf("HTTP POST failed: %s\n", esp_err_to_name(err));
-//     }
-    
-//     esp_http_client_cleanup(client);
-// }
 
 void getOTAStatusFromNVS()
 {

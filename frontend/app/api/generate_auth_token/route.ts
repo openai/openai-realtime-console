@@ -36,7 +36,7 @@ const createSupabaseToken = (
 
 const getUserByMacAddress = async (macAddress: string) => {
     const supabase = createClient();
-    const { data, error } = await supabase.from('devices').select('*, user:users(*)').eq('mac_address', macAddress).single();
+    const { data, error } = await supabase.from('devices').select('*, user:user_id(*)').eq('mac_address', macAddress).single();
     if (error) {
         throw new Error(error.message);
     }

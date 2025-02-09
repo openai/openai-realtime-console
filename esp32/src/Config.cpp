@@ -12,7 +12,7 @@ bool factory_reset_status = false;
 // websocket_setup("https://emkmtesvjrqhvx2mo2mxslvmmy0zsuhq.lambda-url.us-east-1.on.aws/", 8000, "/");
 // Runtime WebSocket server details
 
-// LOCAL
+#ifdef DEV_MODE
 const char *ws_server = "10.2.1.21";
 const uint16_t ws_port = 8000;
 const char *ws_path = "/";
@@ -20,13 +20,16 @@ const char *ws_path = "/";
 const char *backend_server = "10.2.1.21";
 const uint16_t backend_port = 3000;
 
+#else
 // PROD
-// const char *ws_server = "talkedge.deno.dev";
-// const uint16_t ws_port = 443;
-// const char *ws_path = "/";
-// // Backend server details 
-// const char *backend_server = "www.elatoai.com";
-// const uint16_t backend_port = 3000;
+const char *ws_server = "talkedge.deno.dev";
+const uint16_t ws_port = 443;
+const char *ws_path = "/";
+// Backend server details 
+const char *backend_server = "www.elatoai.com";
+const uint16_t backend_port = 3000;
+
+#endif
 
 String authTokenGlobal;
 

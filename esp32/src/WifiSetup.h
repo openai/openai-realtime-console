@@ -45,10 +45,14 @@ bool isDeviceRegistered(AsyncWebServerRequest *request) {
     WiFiClientSecure client;
     client.setCACert(Vercel_CA_cert);
 
-    String url = "https://" + String(backend_server) +
-                 "/api/generate_auth_token?macAddress=" + WiFi.macAddress();
+    #ifdef DEV_MODE
+    http.begin("http://" + String(backend_server) + ":" + String(backend_port) +
+                 "/api/generate_auth_token?macAddress=" + WiFi.macAddress());
+    #else
+    http.begin(client, "https://" + String(backend_server) +
+                 "/api/generate_auth_token?macAddress=" + WiFi.macAddress());
+    #endif
 
-    http.begin(client, url);
     http.setTimeout(10000);
 
     int httpCode = http.GET();
@@ -396,10 +400,10 @@ void handleWifiSave(AsyncWebServerRequest *request)
             preferences.putInt("numNetworks", numNetworks + 1);
             Serial.println("Success Save!");
         }
-
+        preferences.end();
+        
         // Check if the device is registered
         request->redirect("/complete");
-        preferences.end();
     }
     else
     {

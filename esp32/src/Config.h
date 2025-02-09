@@ -49,6 +49,10 @@ extern const uint16_t backend_port;
 extern const uint32_t SAMPLE_RATE;
 extern const int I2S_READ_LEN;
 
+// ---------- Testing ------------
+#define DEV_MODE
+
+
 // ----------------- Pin Definitions -----------------
 // Define which board you are using (uncomment one)
 // #define USE_XIAO_ESP32

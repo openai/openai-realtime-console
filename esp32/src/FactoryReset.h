@@ -14,8 +14,13 @@ void setResetComplete() {
     String jsonString;
     serializeJson(doc, jsonString);
 
-    // Initialize HTTPS connection with secure client
+    // Initialize HTTPS connection with client
+    #ifdef DEV_MODE
+    http.begin("http://" + String(backend_server) + ":" + String(backend_port) + "/api/factory_reset_handler");
+    #else
     http.begin(client, "https://" + String(backend_server) + "/api/factory_reset_handler");
+    #endif
+
     http.addHeader("Content-Type", "application/json");
     http.setTimeout(10000);  // Add timeout for reliability
     
@@ -40,16 +45,17 @@ void setResetComplete() {
 
 }
 
+// TODO(@akdeb): Update this to use `false` as default
 void getFactoryResetStatusFromNVS()
 {
-    preferences.begin("factory_reset", false);
-    factory_reset_status = preferences.getBool("factory_reset_status", false);
+    preferences.begin("is_reset", false);
+    factory_reset_status = preferences.getBool("is_reset", false);
     preferences.end();
 }
 
 void setFactoryResetStatusInNVS(bool status)
 {
-    preferences.begin("factory_reset", false);
-    preferences.putBool("factory_reset_status", status);
+    preferences.begin("is_reset", false);
+    preferences.putBool("is_reset", status);
     preferences.end();
 }
