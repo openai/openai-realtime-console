@@ -1,26 +1,26 @@
-// code to get mac address of the device
-#include <WiFi.h> // Include the WiFi library
+#include <WiFi.h>
+#include <esp_wifi.h>
 
-String macAddress;
+    uint8_t mac[6];
 
-void setup()
-{
-    // Start the Serial communication to send and receive data
+
+
+void setup() {
     Serial.begin(115200);
-
-    // Give the Serial monitor some time to open (optional)
     delay(1000);
 
-    // Get and print the MAC address
-    macAddress = WiFi.macAddress();
-    Serial.print("ESP32 MAC Address: ");
-    Serial.println(macAddress);
+    WiFi.mode(WIFI_STA);  // Ensure WiFi is initialized
+    WiFi.begin("SSID", "PASSWORD"); // If needed for connection
+    
+    // Fetch MAC Address directly from ESP32 API
+    uint8_t mac[6];
+    esp_wifi_get_mac(WIFI_IF_STA, mac);
 }
 
-void loop()
-{
-    // Nothing needed in loop for this example
-    Serial.println(macAddress);
-    delay(1000);
+void loop() {
+    // Nothing needed here
+    delay(1000);    
+      Serial.printf("Wi-Fi MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
 }

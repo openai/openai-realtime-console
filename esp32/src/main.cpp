@@ -16,7 +16,7 @@
 
 // Create a high‑throughput buffer for raw audio data.
 // Adjust the overall size and chunk size according to your needs.
-constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 16; // total bytes in the buffer
+constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 32; // total bytes in the buffer
 constexpr size_t AUDIO_CHUNK_SIZE  = 1024;         // ideal read/write chunk size
 
 BufferRTOS<uint8_t> audioBuffer(AUDIO_BUFFER_SIZE, AUDIO_CHUNK_SIZE);
@@ -209,7 +209,7 @@ void websocketSetup(String server_domain, int port, String path)
     webSocket.setExtraHeaders(headers.c_str());
     webSocket.onEvent(webSocketEvent);
     webSocket.setReconnectInterval(1000);
-    webSocket.enableHeartbeat(25000, 5000, 3);
+    webSocket.enableHeartbeat(25000, 15000, 3);
 
     #ifdef DEV_MODE
     webSocket.begin(server_domain.c_str(), port, path.c_str());
@@ -392,8 +392,8 @@ void connectWithPassword()
 
     // WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
     // WiFi.begin("akaPhone", "akashclarkkent1");
-    // WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
-    WiFi.begin("NOWBQPME", "JYHx4Svzwv5S");
+    WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
+    // WiFi.begin("NOWBQPME", "JYHx4Svzwv5S");
 
 
     while (WiFi.status() != WL_CONNECTED)
