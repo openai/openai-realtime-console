@@ -16,7 +16,7 @@
 
 // Create a high‑throughput buffer for raw audio data.
 // Adjust the overall size and chunk size according to your needs.
-constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 64; // total bytes in the buffer
+constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 16; // total bytes in the buffer
 constexpr size_t AUDIO_CHUNK_SIZE  = 1024;         // ideal read/write chunk size
 
 BufferRTOS<uint8_t> audioBuffer(AUDIO_BUFFER_SIZE, AUDIO_CHUNK_SIZE);
@@ -38,6 +38,13 @@ void enterSleep()
     
     // First, change device state to prevent any new data processing
     deviceState = IDLE;
+
+    // Stop audio tasks first
+    i2s_stop(I2S_PORT_IN);
+    i2s_stop(I2S_PORT_OUT);
+
+    // Clear any remaining audio in buffer
+    audioBuffer.reset();
     
     // Properly disconnect WebSocket and wait for it to complete
     if (webSocket.isConnected()) {
@@ -191,7 +198,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     }
 }
 
-void websocket_setup(String server_domain, int port, String path)
+void websocketSetup(String server_domain, int port, String path)
 {
     if (AP_status) {
         Serial.println("Closing access point");
@@ -369,7 +376,7 @@ void connectToWifiAndWebSocket()
     if (!authTokenGlobal.isEmpty() && wifiConnect() == 1) // Successfully connected and has auth token
     {
         Serial.println("WiFi connected with existing network!");
-        ota_status ? performOTAUpdate() : (factory_reset_status ? setResetComplete() : websocket_setup(ws_server, ws_port, ws_path));
+        ota_status ? performOTAUpdate() : (factory_reset_status ? setResetComplete() : websocketSetup(ws_server, ws_port, ws_path));
         return; // Connection successful
     }
 
@@ -383,8 +390,11 @@ void connectWithPassword()
     IPAddress dns2(1, 1, 1, 1);        // Cloudflare DNS
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
 
-    WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
+    // WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
     // WiFi.begin("akaPhone", "akashclarkkent1");
+    // WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
+    WiFi.begin("NOWBQPME", "JYHx4Svzwv5S");
+
 
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -395,9 +405,9 @@ void connectWithPassword()
     Serial.println("WiFi connected");
 
     WiFi.setSleep(false);
-    esp_wifi_set_ps(WIFI_PS_NONE);  // Disable power saving completely
-    playStartupSound();
-    websocket_setup(ws_server, ws_port, ws_path);
+    // esp_wifi_set_ps(WIFI_PS_NONE);  // Disable power saving completely
+    // playStartupSound();
+    websocketSetup(ws_server, ws_port, ws_path);
 }
 
 void setup()
@@ -438,13 +448,13 @@ void setup()
         deviceState = FACTORY_RESET;
     }
 
-    // WIFI
-    // connectWithPassword();
-    connectToWifiAndWebSocket();
-
     // RTOS -- MICROPHONE & SPEAKER
     xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, NULL);
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
+
+    // WIFI
+    connectWithPassword();
+    // connectToWifiAndWebSocket();
 }
 
 void loop()

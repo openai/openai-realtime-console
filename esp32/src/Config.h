@@ -19,6 +19,7 @@ enum DeviceState
     LISTENING,
     SPEAKING,
     PROCESSING,
+    WAITING,
     OTA,
     FACTORY_RESET
 };
@@ -49,7 +50,7 @@ extern const uint16_t backend_port;
 extern const uint32_t SAMPLE_RATE;
 extern const int I2S_READ_LEN;
 
-// ---------- Testing ------------
+// ---------- Development ------------
 #define DEV_MODE
 
 
