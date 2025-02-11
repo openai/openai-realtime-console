@@ -342,7 +342,7 @@ void touchTask(void* parameter) {
   while (true) {
     // Read the touch sensor
     uint32_t touchValue = touchRead(TOUCH_PAD_NUM2);
-    Serial.printf("Touch Pad Value: %u\n", touchValue);
+    // Serial.printf("Touch Pad Value: %u\n", touchValue);
 
     // On the ESP32-S3, a reading above TOUCH_THRESHOLD indicates a touch.
     bool isTouched = (touchValue > TOUCH_THRESHOLD);
@@ -496,7 +496,7 @@ void setup()
   } else {
     Serial.println("Normal startup.");
   }
-
+  
     // Print a welcome message to the Serial port.
     Serial.println("\n\nCaptive Test, V0.5.0 compiled " __DATE__ " " __TIME__ " by CD_FER"); //__DATE__ is provided by the platformio ide
     Serial.printf("%s-%d\n\r", ESP.getChipModel(), ESP.getChipRevision());
@@ -525,8 +525,8 @@ void setup()
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, &micTaskHandle);
 
     // WIFI
-    connectWithPassword();
-    // connectToWifiAndWebSocket();
+    // connectWithPassword();
+    connectToWifiAndWebSocket();
 }
 
 void loop()
