@@ -5,7 +5,7 @@
 #include "I2SHandler.h"
 #include <WebSocketsClient.h>
 #include <driver/rtc_io.h>
-#include "Button.h"
+#include <driver/touch_sensor.h>
 #include "AudioTools.h"
 #include "AudioTools/Concurrency/RTOS.h"
 #include "LEDHandler.h"
@@ -13,6 +13,9 @@
 #include "WifiSetup.h"
 
 // #define WEBSOCKETS_DEBUG_LEVEL WEBSOCKETS_LEVEL_ALL
+#define TOUCH_THRESHOLD 60000
+#define LONG_PRESS_MS 1000
+#define REQUIRED_RELEASE_CHECKS 100     // how many consecutive times we need "below threshold" to confirm release
 
 // Create a high‑throughput buffer for raw audio data.
 // Adjust the overall size and chunk size according to your needs.
@@ -32,36 +35,55 @@ unsigned long connectionStartTime = 0;
 
 DeviceState deviceState = IDLE;
 
+TaskHandle_t micTaskHandle;
+TaskHandle_t audioPlaybackTaskHandle;
+TaskHandle_t touchTaskHandle = NULL;
+
 void enterSleep()
 {
     Serial.println("Going to sleep...");
-    
-    // First, change device state to prevent any new data processing
+
+    // Prevent any new data processing
     deviceState = IDLE;
 
-    // Stop audio tasks first
-    i2s_stop(I2S_PORT_IN);
-    i2s_stop(I2S_PORT_OUT);
+    // Stop mic and speaker tasks
+    if (micTaskHandle) {
+        vTaskDelete(micTaskHandle);
+        micTaskHandle = NULL;
+    }
+    if (audioPlaybackTaskHandle) {
+        vTaskDelete(audioPlaybackTaskHandle);
+        audioPlaybackTaskHandle = NULL;
+    }
 
-    // Clear any remaining audio in buffer
+    // Clear any remaining audio data
     audioBuffer.reset();
-    
-    // Properly disconnect WebSocket and wait for it to complete
+
+    // Disconnect WebSocket if it's connected
     if (webSocket.isConnected()) {
         webSocket.disconnect();
-        // Give some time for the disconnect to process
-        delay(100);
+        delay(100);  // Give time for the disconnect to complete
     }
-    
-    // Stop all tasks that might be using I2S or other peripherals
-    i2s_driver_uninstall(I2S_PORT_IN);
-    i2s_driver_uninstall(I2S_PORT_OUT);
-    
-    // Flush any remaining serial output
+
+    // Flush serial output
     Serial.flush();
-    
-    // Now enter deep sleep
-    esp_deep_sleep_start();
+
+    touch_pad_intr_disable(TOUCH_PAD_INTR_MASK_ALL);
+
+  // Wait until the touch pad reading shows "release"
+  // (Assuming that a reading above TOUCH_THRESHOLD means a touch.)
+  while (touchRead(TOUCH_PAD_NUM2) > TOUCH_THRESHOLD) {
+    delay(50);
+  }
+  // Extra delay to allow any residual contact or noise to settle
+  delay(500);
+
+  // Enable touchpad wakeup using the Arduino API.
+  // This configures the ESP32 so that a new touch on channel 2 will wake it.
+  touchSleepWakeUpEnable(TOUCH_PAD_NUM2, TOUCH_THRESHOLD);
+
+  Serial.println("Entering deep sleep now.");
+  esp_deep_sleep_start();
 }
 
 void scaleAudioVolume(uint8_t *input, uint8_t *output, size_t length, int volume)
@@ -266,7 +288,7 @@ void micTask(void *parameter)
 
     free(i2s_read_buff);
     free(flash_write_buff);
-    vTaskDelete(NULL);
+    // vTaskDelete(NULL);
 }
 
 void audioPlaybackTask(void *param)
@@ -276,11 +298,12 @@ void audioPlaybackTask(void *param)
     i2s_start(I2S_PORT_OUT);
     // Allocate a local buffer to temporarily hold the audio data to be written to I2S.
     uint8_t* localBuffer = (uint8_t*)malloc(AUDIO_CHUNK_SIZE);
-    if (!localBuffer) {
-        Serial.println("Failed to allocate local I2S buffer");
-        vTaskDelete(NULL);
-        return;
-    }
+
+    // if (!localBuffer) {
+    //     Serial.println("Failed to allocate local I2S buffer");
+    //     vTaskDelete(NULL);
+    //     return;
+    // }
 
     while (1) {
         // Check how many bytes are available in the BufferRTOS.
@@ -306,7 +329,69 @@ void audioPlaybackTask(void *param)
 
     // Clean up (this point will never be reached in this endless loop).
     free(localBuffer);
-    vTaskDelete(NULL);
+    // vTaskDelete(NULL);
+}
+
+void touchTask(void* parameter) {
+  touch_pad_init();
+  touch_pad_config(TOUCH_PAD_NUM2);
+
+  bool touched = false;
+  unsigned long pressStartTime = 0;
+
+  while (true) {
+    // Read the touch sensor
+    uint32_t touchValue = touchRead(TOUCH_PAD_NUM2);
+    Serial.printf("Touch Pad Value: %u\n", touchValue);
+
+    // On the ESP32-S3, a reading above TOUCH_THRESHOLD indicates a touch.
+    bool isTouched = (touchValue > TOUCH_THRESHOLD);
+
+    // Detect transition from "not touched" to "touched"
+    if (isTouched && !touched) {
+      touched = true;
+      pressStartTime = millis();
+      Serial.println("Touch detected - press started.");
+    }
+
+    // Detect transition from "touched" to "released"
+    if (!isTouched && touched) {
+      touched = false;
+      unsigned long pressDuration = millis() - pressStartTime;
+      if (pressDuration >= LONG_PRESS_MS) {
+        Serial.print("Long press detected (");
+        Serial.print(pressDuration);
+        Serial.println(" ms) - going to sleep.");
+        // Call enterSleep() which will wait for a stable release, enable wake, and sleep.
+        enterSleep();
+        // (The device will reset on wake, so code execution won't continue here.)
+      } else {
+        Serial.print("Short press detected (");
+        Serial.print(pressDuration);
+        Serial.println(" ms) - ignoring.");
+      }
+    }
+
+    delay(50);  // Small delay to avoid spamming readings
+  }
+  // (This point is never reached.)
+  vTaskDelete(NULL);
+}
+
+
+void print_wakeup_reason() {
+  esp_sleep_wakeup_cause_t wakeup_reason;
+
+  wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  switch (wakeup_reason) {
+    case ESP_SLEEP_WAKEUP_EXT0:     Serial.println("Wakeup caused by external signal using RTC_IO"); break;
+    case ESP_SLEEP_WAKEUP_EXT1:     Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
+    case ESP_SLEEP_WAKEUP_TIMER:    Serial.println("Wakeup caused by timer"); break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD: Serial.println("Wakeup caused by touchpad"); break;
+    case ESP_SLEEP_WAKEUP_ULP:      Serial.println("Wakeup caused by ULP program"); break;
+    default:                        Serial.printf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason); break;
+  }
 }
 
 void printOutESP32Error(esp_err_t err)
@@ -326,20 +411,6 @@ void printOutESP32Error(esp_err_t err)
         Serial.printf("Unknown error code: %d\n", err);
         break;
     }
-}
-
-static void onButtonLongPressUpEventCb(void *button_handle, void *usr_data)
-{
-    Serial.println("Button long press end");
-    delay(10);
-    enterSleep();
-}
-
-static void onButtonDoubleClickCb(void *button_handle, void *usr_data)
-{
-    Serial.println("Button double click");
-    delay(10);
-    enterSleep();
 }
 
 void connectToNewWifiNetwork() {
@@ -418,21 +489,22 @@ void setup()
      while (!Serial)
         ;
 
+     // Check the wakeup cause and print a message
+  esp_sleep_wakeup_cause_t wakeupCause = esp_sleep_get_wakeup_cause();
+  if (wakeupCause == ESP_SLEEP_WAKEUP_TOUCHPAD) {
+    Serial.println("Woke up from touchpad deep sleep.");
+  } else {
+    Serial.println("Normal startup.");
+  }
+
     // Print a welcome message to the Serial port.
     Serial.println("\n\nCaptive Test, V0.5.0 compiled " __DATE__ " " __TIME__ " by CD_FER"); //__DATE__ is provided by the platformio ide
     Serial.printf("%s-%d\n\r", ESP.getChipModel(), ESP.getChipRevision());
 
-    getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
-    printOutESP32Error(getErr);
-
-    // BUTTON
-    Button *btn = new Button(BUTTON_PIN, false);
-    btn->attachLongPressUpEventCb(&onButtonLongPressUpEventCb, NULL);
-    btn->attachDoubleClickEventCb(&onButtonDoubleClickCb, NULL);
-    btn->detachSingleClickEvent();
+    // TOUCH
+  xTaskCreate(touchTask, "TouchTask", 2048, NULL, 1, &touchTaskHandle);
         
     // LED
-    setupRGBLED();
     xTaskCreate(ledTask, "LED Task", 4096, NULL, 5, NULL);
 
     // AUTH & OTA
@@ -449,8 +521,8 @@ void setup()
     }
 
     // RTOS -- MICROPHONE & SPEAKER
-    xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, NULL);
-    xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
+    xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, &audioPlaybackTaskHandle);
+    xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, &micTaskHandle);
 
     // WIFI
     connectWithPassword();

@@ -291,6 +291,7 @@ void staticYellow()
 
 void ledTask(void *parameter)
 {
+    setupRGBLED();
     unsigned long currentTime = 0;
     while (1)
     {

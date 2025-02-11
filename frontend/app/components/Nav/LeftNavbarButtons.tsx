@@ -18,7 +18,7 @@ export default function LeftNavbarButtons() {
     const isHome = usePathname().includes("/home");
 
     return (
-        <div className="flex flex-row gap-6 sm:gap-10 items-center">
+        <div className="flex flex-row gap-4 sm:gap-10 items-center">
             <a className="flex flex-row gap-3 items-center" href="/">
                 <Wand size={ICON_SIZE} />
                 <p
@@ -43,7 +43,7 @@ export default function LeftNavbarButtons() {
                             size="sm"
                             className="flex flex-row gap-2 items-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800"
                         >
-                            <span className="flex font-medium text-md">
+                            <span className="font-medium text-md hidden sm:flex">
                                 Use cases
                             </span>
                             <ChevronDown size={18} />

@@ -55,8 +55,6 @@ extern const int I2S_READ_LEN;
 
 
 // ----------------- Pin Definitions -----------------
-// Define which board you are using (uncomment one)
-// #define USE_XIAO_ESP32
 #define USE_NORMAL_ESP32
 
 extern const int BLUE_LED_PIN;

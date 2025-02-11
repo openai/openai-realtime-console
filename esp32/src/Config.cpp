@@ -56,22 +56,7 @@ const int I2S_BCK_OUT = 6;
 const int I2S_DATA_OUT = 7;
 const int I2S_SD_OUT = -1;
 
-const gpio_num_t BUTTON_PIN = GPIO_NUM_2; // Only RTC IO are allowed - ESP32 Pin example
-
-#elif defined(USE_XIAO_ESP32)
-// Normal ESP32 pins
-
-const int LED_PIN = D10;
-const int I2S_SD = D9;
-const int I2S_WS = D8;
-const int I2S_SCK = D7;
-
-const int I2S_WS_OUT = D0;
-const int I2S_BCK_OUT = D1;
-const int I2S_DATA_OUT = D2;
-const int I2S_SD_OUT = D3;
-
-const gpio_num_t BUTTON_PIN = GPIO_NUM_6;
+// const gpio_num_t BUTTON_PIN = GPIO_NUM_2; // Only RTC IO are allowed - ESP32 Pin example
 
 #endif
 
@@ -164,26 +149,6 @@ EwOy59Hdm0PT/Er/84dDV0CSjdR/2XuZM3kpysSKLgD1cKiDA+IRguODCxfO9cyY
 Ig46v9mFmBvyH04=
 -----END CERTIFICATE-----
 )EOF";
-
-void goToSleep()
-{
-    Serial.println("Preparing to enter deep sleep...");
-
-    // Small delay to avoid any button bounce
-    delay(100);
-
-    // Final check of button state
-    if (digitalRead(BUTTON_PIN) == HIGH) // Not pressed
-    {
-        Serial.println("Good night!");
-        vTaskDelay(50); // Allow serial to finish
-        esp_deep_sleep_start();
-    }
-    else
-    {
-        Serial.println("Cannot enter sleep - button still pressed");
-    }
-}
 
 void factoryResetDevice()
 {
