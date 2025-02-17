@@ -4,8 +4,6 @@
 #include <esp_wifi.h>          //Used for mpdu_rx_disable android workaround
 #include <driver/i2s.h>
 #include <SPIFFS.h> 
-#include "AudioTools/AudioLibs/AudioSourceSPIFFS.h"
-#include "AudioTools/AudioCodecs/CodecMP3Helix.h"
 #include "FactoryReset.h"
 #define uS_TO_S_FACTOR 1000000ULL
 
@@ -32,13 +30,6 @@ MP3DecoderHelix   decoder;      // MP3 decoder
 I2SStream         i2s;          // Send output to I2S
 AudioPlayer       player(source, i2s, decoder);
 
-void getAuthTokenFromNVS()
-{
-    preferences.begin("auth", false);
-    authTokenGlobal = preferences.getString("auth_token", "");
-    preferences.end();
-    Serial.println(authTokenGlobal);
-}
 
 bool isDeviceRegistered(AsyncWebServerRequest *request) {
     HTTPClient http;

@@ -38,8 +38,8 @@ const uint32_t SAMPLE_RATE = 24000;
 const int I2S_READ_LEN = 1024;
 
 // ----------------- Pin Definitions -----------------
-const i2s_port_t I2S_PORT_IN = I2S_NUM_0;
-const i2s_port_t I2S_PORT_OUT = I2S_NUM_1;
+const i2s_port_t I2S_PORT_IN = I2S_NUM_1;
+const i2s_port_t I2S_PORT_OUT = I2S_NUM_0;
 
 #ifdef USE_NORMAL_ESP32
 
@@ -54,9 +54,9 @@ const int I2S_SCK = 1;
 const int I2S_WS_OUT = 5;
 const int I2S_BCK_OUT = 6;
 const int I2S_DATA_OUT = 7;
-const int I2S_SD_OUT = -1;
+const int I2S_SD_OUT = 10;
 
-// const gpio_num_t BUTTON_PIN = GPIO_NUM_2; // Only RTC IO are allowed - ESP32 Pin example
+const gpio_num_t BUTTON_PIN = GPIO_NUM_2; // Only RTC IO are allowed - ESP32 Pin example
 
 #endif
 
