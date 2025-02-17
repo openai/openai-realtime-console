@@ -51,7 +51,7 @@ extern const uint32_t SAMPLE_RATE;
 extern const int I2S_READ_LEN;
 
 // ---------- Development ------------
-#define DEV_MODE
+// #define DEV_MODE
 
 
 // ----------------- Pin Definitions -----------------

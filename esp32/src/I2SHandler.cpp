@@ -40,8 +40,8 @@ void i2s_install_speaker()
         .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
         .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_I2S),
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
-        .dma_buf_count = 36,
-        .dma_buf_len = 1024,
+        .dma_buf_count = 8,
+        .dma_buf_len = 256,
         .use_apll = false,
         .tx_desc_auto_clear = true,
         .fixed_mclk = 0};

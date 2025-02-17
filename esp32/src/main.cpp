@@ -17,8 +17,8 @@
 
 // Create a high‑throughput buffer for raw audio data.
 // Adjust the overall size and chunk size according to your needs.
-constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 32; // total bytes in the buffer
-constexpr size_t AUDIO_CHUNK_SIZE  = 1024;         // ideal read/write chunk size
+constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 24; // total bytes in the buffer
+constexpr size_t AUDIO_CHUNK_SIZE  = 128;         // ideal read/write chunk size
 
 // Define your audio parameters – these must match what the encoder used.
 const int CHANNELS = 1;         // Mono
@@ -187,6 +187,11 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
         if (processed != chunkSize) {
           Serial.printf("Warning: Only processed %d/%d bytes\n", processed, chunkSize);
         }
+
+        // Print the updated buffer usage after decoding.
+    size_t available = audioBuffer.available();
+    Serial.printf("After decoding, Buffer Usage: %d / %d bytes\n", available, audioBuffer.size());
+    
         break;
       }
     case WStype_ERROR:
@@ -280,10 +285,17 @@ void audioPlaybackTask(void *param)
         vTaskDelete(NULL);
         return;
     }
+    unsigned long lastPrintTime = 0;
 
     while (1) {
         // Check how many bytes are available in the BufferRTOS.
         size_t available = audioBuffer.available();
+
+                // Print buffer usage once per second.
+        if (millis() - lastPrintTime > 1000) {
+            Serial.printf("Buffer Usage: %d / %d bytes available\n", available, audioBuffer.size());
+            lastPrintTime = millis();
+        }
 
         if (available >= AUDIO_CHUNK_SIZE && deviceState == SPEAKING) {
             // Read a chunk from the buffer.
@@ -349,8 +361,9 @@ void connectWithPassword()
 
     // WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
     // WiFi.begin("akaPhone", "akashclarkkent1");
-    WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
+    // WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
     // WiFi.begin("NOWBQPME", "JYHx4Svzwv5S");
+    WiFi.begin("EE-PPA1GZ", "9JkyRJHXTDTKb3");
 
 
     while (WiFi.status() != WL_CONNECTED)
@@ -417,7 +430,11 @@ void setup()
   cfg.sample_rate = SAMPLE_RATE;
   cfg.channels = CHANNELS;
   cfg.bits_per_sample = BITS_PER_SAMPLE;
+  cfg.max_buffer_size = 6144;
   opusDecoder.setOutput(bufferPrint);
+
+  pinMode(10, OUTPUT);
+  digitalWrite(10, HIGH);
 
   
   // Initialize the Opus decoder with the audio configuration.
