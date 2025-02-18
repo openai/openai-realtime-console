@@ -17,8 +17,8 @@
 
 // Create a high‑throughput buffer for raw audio data.
 // Adjust the overall size and chunk size according to your needs.
-constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 24; // total bytes in the buffer
-constexpr size_t AUDIO_CHUNK_SIZE  = 128;         // ideal read/write chunk size
+constexpr size_t AUDIO_BUFFER_SIZE = 1024 * 10; // total bytes in the buffer
+constexpr size_t AUDIO_CHUNK_SIZE  = 1024;         // ideal read/write chunk size
 
 // Define your audio parameters – these must match what the encoder used.
 const int CHANNELS = 1;         // Mono
@@ -233,9 +233,17 @@ void micTask(void *parameter)
     char *i2s_read_buff = (char *)calloc(i2s_read_len, 1);
     char *flash_write_buff = (char *)calloc(i2s_read_len, 1);
 
+    // Allocate the temporary sending buffer just once.
+    uint8_t* tempBuffer = (uint8_t*)malloc(i2s_read_len);
+    if (!tempBuffer) {
+        Serial.println("Failed to allocate temporary buffer");
+        vTaskDelete(NULL);
+        return;
+    }
+
     while (1) {
         // Check for VAD timeout
-        if (connectionStartTime && deviceState == LISTENING && 
+        if (connectionStartTime && deviceState == LISTENING &&
             millis() - connectionStartTime >= 10000) {
             webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
             connectionStartTime = 0;
@@ -247,27 +255,25 @@ void micTask(void *parameter)
         if (deviceState == LISTENING && webSocket.isConnected())
         {
             if (i2s_read(I2S_PORT_IN, (void *)i2s_read_buff, i2s_read_len,
-                     &bytes_read, portMAX_DELAY) == ESP_OK)
+                         &bytes_read, portMAX_DELAY) == ESP_OK)
             {
                 // Scale or convert if needed
                 i2s_adc_data_scale((uint8_t*)flash_write_buff,
                                    (uint8_t*)i2s_read_buff,
                                    bytes_read);
 
-                // Allocate a temporary buffer for sending
-                uint8_t* safeSend = (uint8_t*) malloc(bytes_read);
-                memcpy(safeSend, flash_write_buff, bytes_read);
+                // Reuse the preallocated tempBuffer by copying flash_write_buff into it.
+                memcpy(tempBuffer, flash_write_buff, bytes_read);
 
-                // Now send
-                webSocket.sendBIN(safeSend, bytes_read);
-
-                // Free the temp buffer
-                free(safeSend);
+                // Now send the data without doing per-iteration malloc/free.
+                webSocket.sendBIN(tempBuffer, bytes_read);
             }
         }
         vTaskDelay(10);
     }
 
+    // Cleanup if loop ever terminates.
+    free(tempBuffer);
     free(i2s_read_buff);
     free(flash_write_buff);
     vTaskDelete(NULL);
@@ -291,13 +297,7 @@ void audioPlaybackTask(void *param)
         // Check how many bytes are available in the BufferRTOS.
         size_t available = audioBuffer.available();
 
-                // Print buffer usage once per second.
-        if (millis() - lastPrintTime > 1000) {
-            Serial.printf("Buffer Usage: %d / %d bytes available\n", available, audioBuffer.size());
-            lastPrintTime = millis();
-        }
-
-        if (available >= AUDIO_CHUNK_SIZE && deviceState == SPEAKING) {
+        if ( deviceState == SPEAKING && available >= AUDIO_CHUNK_SIZE) {
             // Read a chunk from the buffer.
             size_t bytesRead = audioBuffer.readArray(localBuffer, AUDIO_CHUNK_SIZE);
             
@@ -309,6 +309,7 @@ void audioPlaybackTask(void *param)
             if (err != ESP_OK) {
                 Serial.printf("I2S write error: %d\n", err);
             }
+             vTaskDelay(1);  // tiny delay or alternatively yield here
         } else {
             // Not enough data available: yield a bit to allow more data to accumulate.
             vTaskDelay(pdMS_TO_TICKS(5));
@@ -411,6 +412,13 @@ private:
 // Create a global instance of the Print wrapper
 BufferPrint bufferPrint(audioBuffer);
 
+ void networkTask(void *pvParameters) {
+         while (1) {
+             webSocket.loop();   // Handle WebSocket events continuously
+             vTaskDelay(1);      // Small delay to yield CPU to higher priority tasks
+         }
+     }
+
 void setup()
 {
     Serial.begin(115200);
@@ -426,16 +434,16 @@ void setup()
     getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
     printOutESP32Error(getErr);
 
+      pinMode(10, OUTPUT);
+  digitalWrite(10, HIGH);
+
+
   OpusSettings cfg;
   cfg.sample_rate = SAMPLE_RATE;
   cfg.channels = CHANNELS;
   cfg.bits_per_sample = BITS_PER_SAMPLE;
   cfg.max_buffer_size = 6144;
   opusDecoder.setOutput(bufferPrint);
-
-  pinMode(10, OUTPUT);
-  digitalWrite(10, HIGH);
-
   
   // Initialize the Opus decoder with the audio configuration.
   // (Check your library’s documentation for the exact initialization call.)
@@ -465,7 +473,7 @@ void setup()
     // RTOS -- MICROPHONE & SPEAKER
     xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, NULL);
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
-
+    xTaskCreate(networkTask, "Network Task", 8192, NULL, configMAX_PRIORITIES-1, NULL);
     // WIFI
     connectWithPassword();
     // connectToWifiAndWebSocket();
@@ -473,6 +481,7 @@ void setup()
 
 void loop()
 {
-    webSocket.loop();
-    delay(10); 
+  // PRINT how much heap is left
+  Serial.printf("Heap: %d bytes\n", ESP.getFreeHeap());
+  delay(1000);
 }
