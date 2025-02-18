@@ -13,11 +13,11 @@ bool factory_reset_status = false;
 // Runtime WebSocket server details
 
 #ifdef DEV_MODE
-const char *ws_server = "192.168.1.225";
+const char *ws_server = "10.2.1.22";
 const uint16_t ws_port = 8000;
 const char *ws_path = "/";
 // Backend server details 
-const char *backend_server = "192.168.1.225";
+const char *backend_server = "10.2.1.22";
 const uint16_t backend_port = 3000;
 
 #else
@@ -35,7 +35,6 @@ String authTokenGlobal;
 
 // I2S and Audio parameters
 const uint32_t SAMPLE_RATE = 24000;
-const int I2S_READ_LEN = 1024;
 
 // ----------------- Pin Definitions -----------------
 const i2s_port_t I2S_PORT_IN = I2S_NUM_1;

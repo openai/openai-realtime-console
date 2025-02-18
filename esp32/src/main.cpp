@@ -12,7 +12,6 @@
 #include "Config.h"
 #include "SPIFFS.h"
 
-
 // #define WEBSOCKETS_DEBUG_LEVEL WEBSOCKETS_LEVEL_ALL
 
 // Create a high‑throughput buffer for raw audio data.
@@ -29,9 +28,21 @@ OpusAudioDecoder opusDecoder;
 
 BufferRTOS<uint8_t> audioBuffer(AUDIO_BUFFER_SIZE, AUDIO_CHUNK_SIZE);
 
+
+// Create a custom I2S stream instance (you can modify this class if you want full control over your I2S config)
+I2SStream i2s; 
+VolumeStream volume(i2s);
+QueueStream<uint8_t> queue(audioBuffer);
+StreamCopy copier(volume, queue);
+
+// Audio configuration structure using AudioTools’ AudioInfo
+AudioInfo info(SAMPLE_RATE, CHANNELS, BITS_PER_SAMPLE);
+
+Task audioStreamTask("I2S_Copy", 4000, 2, 0);
+
 WebSocketsClient webSocket;
 String authMessage;
-int currentVolume = 70;
+int currentVolume = 100;
 
 esp_err_t getErr = ESP_OK;
 
@@ -133,6 +144,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
             currentVolume = doc["volume_control"].as<int>();
             bool is_ota = doc["is_ota"].as<bool>();
             bool is_reset = doc["is_reset"].as<bool>();
+            volume.setVolume(currentVolume / 100.0f);  // Set initial volume (e.g., 70/100 = 0.7)
 
             if (is_ota) {
                 Serial.println("OTA update received");
@@ -154,17 +166,18 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
             // receive response.audio.done or response.done, then start listening again
             if (strcmp((char*)msg.c_str(), "response.done") == 0) {
                 Serial.println("Received response.done, starting listening again");
-                
-                // TODO(akdeb): differs with wifi speeds
-                delay(2000);
-
                 // Start listening again
+
+                // TODO(akdeb): differs with wifi speeds
+                delay(1000);
                 connectionStartTime = millis();  // Start timer
                 deviceState = LISTENING;
+                digitalWrite(10, LOW);
             } else if (strcmp((char*)msg.c_str(), "response.created") == 0) {
                 Serial.println("Received response.created, stopping listening");
                 connectionStartTime = 0;
                 deviceState = SPEAKING;
+                digitalWrite(10, HIGH);
             }
         }
     }
@@ -221,6 +234,7 @@ void websocketSetup(String server_domain, int port, String path)
     webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
     #endif
 }
+
 
 void micTask(void *parameter)
 {
@@ -279,47 +293,7 @@ void micTask(void *parameter)
     vTaskDelete(NULL);
 }
 
-void audioPlaybackTask(void *param)
-{
-    i2s_install_speaker();
-    i2s_setpin_speaker();
-    i2s_start(I2S_PORT_OUT);
-    // Allocate a local buffer to temporarily hold the audio data to be written to I2S.
-    uint8_t* localBuffer = (uint8_t*)malloc(AUDIO_CHUNK_SIZE);
-    if (!localBuffer) {
-        Serial.println("Failed to allocate local I2S buffer");
-        vTaskDelete(NULL);
-        return;
-    }
-    unsigned long lastPrintTime = 0;
 
-    while (1) {
-        // Check how many bytes are available in the BufferRTOS.
-        size_t available = audioBuffer.available();
-
-        if ( deviceState == SPEAKING && available >= AUDIO_CHUNK_SIZE) {
-            // Read a chunk from the buffer.
-            size_t bytesRead = audioBuffer.readArray(localBuffer, AUDIO_CHUNK_SIZE);
-            
-            // Now write that chunk to I2S.
-            size_t bytesWritten = 0;
-            // i2s_write writes the data to the I2S peripheral.
-            // Adjust I2S_PORT_OUT if your configuration differs.
-            esp_err_t err = i2s_write(I2S_PORT_OUT, (const char*)localBuffer, AUDIO_CHUNK_SIZE, &bytesWritten, portMAX_DELAY);
-            if (err != ESP_OK) {
-                Serial.printf("I2S write error: %d\n", err);
-            }
-             vTaskDelay(1);  // tiny delay or alternatively yield here
-        } else {
-            // Not enough data available: yield a bit to allow more data to accumulate.
-            vTaskDelay(pdMS_TO_TICKS(5));
-        }
-    }
-
-    // Clean up (this point will never be reached in this endless loop).
-    free(localBuffer);
-    vTaskDelete(NULL);
-}
 
 void printOutESP32Error(esp_err_t err)
 {
@@ -362,9 +336,9 @@ void connectWithPassword()
 
     // WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
     // WiFi.begin("akaPhone", "akashclarkkent1");
-    // WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
+    WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
     // WiFi.begin("NOWBQPME", "JYHx4Svzwv5S");
-    WiFi.begin("EE-PPA1GZ", "9JkyRJHXTDTKb3");
+    // WiFi.begin("EE-PPA1GZ", "9JkyRJHXTDTKb3");
 
 
     while (WiFi.status() != WL_CONNECTED)
@@ -419,6 +393,42 @@ BufferPrint bufferPrint(audioBuffer);
          }
      }
 
+  
+void setupAudioStream() {
+    Serial.println("Starting I2S stream pipeline...");
+    
+    // Start the queue stream (this will initialize its internal structures)
+    queue.begin();
+
+    // Set up your I2S configuration.
+    // The I2SStream class here uses a default configuration which you can override.
+    auto config = i2s.defaultConfig(TX_MODE);
+    config.bits_per_sample = BITS_PER_SAMPLE;
+    config.sample_rate = SAMPLE_RATE;
+    config.channels = CHANNELS;
+    config.pin_bck = I2S_BCK_OUT;
+    config.pin_ws = I2S_WS_OUT;
+    config.pin_data = I2S_DATA_OUT;
+    config.port_no = I2S_PORT_OUT;
+
+    config.copyFrom(info);  // Copy your audio settings into the I2S configuration.
+    i2s.begin(config);      // Begin I2S output with your configuration.
+
+    // Setup VolumeStream using the same configuration as I2S.
+    auto vcfg = volume.defaultConfig();
+    vcfg.copyFrom(config);
+    vcfg.allow_boost = true;
+    volume.begin(vcfg);     // Begin the volume stream with the provided configuration.
+
+    // Start the task which continuously copies data from BufferRTOS (via queue) to I2S stream.
+    audioStreamTask.begin([](){
+         while (1) {
+             copier.copy();  
+             // Depending on your data rate, you might add a small delay or yield here.
+         }
+    });
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -434,9 +444,7 @@ void setup()
     getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
     printOutESP32Error(getErr);
 
-      pinMode(10, OUTPUT);
-  digitalWrite(10, HIGH);
-
+    pinMode(10, OUTPUT);
 
   OpusSettings cfg;
   cfg.sample_rate = SAMPLE_RATE;
@@ -470,8 +478,8 @@ void setup()
         deviceState = FACTORY_RESET;
     }
 
-    // RTOS -- MICROPHONE & SPEAKER
-    xTaskCreate(audioPlaybackTask, "Audio Playback", 4096, NULL, 2, NULL);
+    setupAudioStream();
+
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
     xTaskCreate(networkTask, "Network Task", 8192, NULL, configMAX_PRIORITIES-1, NULL);
     // WIFI
@@ -480,8 +488,4 @@ void setup()
 }
 
 void loop()
-{
-  // PRINT how much heap is left
-  Serial.printf("Heap: %d bytes\n", ESP.getFreeHeap());
-  delay(1000);
-}
+{}
