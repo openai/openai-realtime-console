@@ -7,8 +7,21 @@
 #include <WebSocketsClient.h>
 #include "Audio.h"
 
+// WEBSOCKET
 SemaphoreHandle_t wsMutex;
+WebSocketsClient webSocket;
 
+// TIMING REGISTERS
+bool scheduleListeningRestart = false;
+unsigned long scheduledTime = 0;
+unsigned long connectionStartTime = 0;
+
+// AUDIO SETTINGS
+int currentVolume = 70;
+const int CHANNELS = 1;         // Mono
+const int BITS_PER_SAMPLE = 16; // 16-bit audio
+
+// AUDIO OUTPUT
 class BufferPrint : public Print {
 public:
   BufferPrint(BufferRTOS<uint8_t>& buf) : _buffer(buf) {}
@@ -33,41 +46,75 @@ private:
   BufferRTOS<uint8_t>& _buffer;
 };
 
-
-// Create a global instance of the Print wrapper
 BufferPrint bufferPrint(audioBuffer);
-
-   bool scheduleListeningRestart = false;
-   unsigned long scheduledTime = 0;
-   // Add these global variables
-unsigned long connectionStartTime = 0;
-
-WebSocketsClient webSocket;
-int currentVolume = 100;
-
-// Define your audio parameters – these must match what the encoder used.
-const int CHANNELS = 1;         // Mono
-const int BITS_PER_SAMPLE = 16; // 16-bit audio
-
-// Global instance of the Opus decoder
 OpusAudioDecoder opusDecoder;
-
 BufferRTOS<uint8_t> audioBuffer(AUDIO_BUFFER_SIZE, AUDIO_CHUNK_SIZE);
-
-
-// Create a custom I2S stream instance (you can modify this class if you want full control over your I2S config)
 I2SStream i2s; 
 VolumeStream volume(i2s);
 QueueStream<uint8_t> queue(audioBuffer);
 StreamCopy copier(volume, queue);
-
-// Audio configuration structure using AudioTools’ AudioInfo
 AudioInfo info(SAMPLE_RATE, CHANNELS, BITS_PER_SAMPLE);
 
-// Task audioStreamTask("I2S_Copy", 4000, 2, 0);
+void audioStreamTask(void *parameter) {
+        Serial.println("Starting I2S stream pipeline...");
+    
+    pinMode(10, OUTPUT);
 
+    OpusSettings cfg;
+    cfg.sample_rate = SAMPLE_RATE;
+    cfg.channels = CHANNELS;
+    cfg.bits_per_sample = BITS_PER_SAMPLE;
+    cfg.max_buffer_size = 6144;
+    opusDecoder.setOutput(bufferPrint);
+    
+    // Initialize the Opus decoder with the audio configuration.
+    // (Check your library’s documentation for the exact initialization call.)
+    opusDecoder.begin(cfg);
+    
+    // Start the queue stream (this will initialize its internal structures)
+    queue.begin();
 
-// Custom stream that wraps the WebSocket for binary data output.
+    // Set up your I2S configuration.
+    // The I2SStream class here uses a default configuration which you can override.
+    auto config = i2s.defaultConfig(TX_MODE);
+    config.bits_per_sample = BITS_PER_SAMPLE;
+    config.sample_rate = SAMPLE_RATE;
+    config.channels = CHANNELS;
+    config.pin_bck = I2S_BCK_OUT;
+    config.pin_ws = I2S_WS_OUT;
+    config.pin_data = I2S_DATA_OUT;
+    config.port_no = I2S_PORT_OUT;
+
+    config.copyFrom(info);  // Copy your audio settings into the I2S configuration.
+    i2s.begin(config);      // Begin I2S output with your configuration.
+
+    // Setup VolumeStream using the same configuration as I2S.
+    auto vcfg = volume.defaultConfig();
+    vcfg.copyFrom(config);
+    vcfg.allow_boost = true;
+    volume.begin(vcfg);     // Begin the volume stream with the provided configuration.
+
+while (1) {
+          if (scheduleListeningRestart && millis() >= scheduledTime) {
+           connectionStartTime = millis();
+
+           // flush all streams
+           i2s.flush();
+           volume.flush();
+           queue.flush();
+           bufferPrint.flush();
+
+           deviceState = LISTENING;
+           digitalWrite(10, LOW);
+           scheduleListeningRestart = false;
+           Serial.println("Resumed listening (non-blocking via millis)");
+       }
+             copier.copy();  
+             // Depending on your data rate, you might add a small delay or yield here.
+         }
+}
+
+// AUDIO INPUT SETTINGS
 class WebsocketStream : public Print {
 public:
     virtual size_t write(uint8_t b) override {
@@ -97,18 +144,53 @@ public:
     }
 };
 
-// Global instance of the WebsocketStream wrapper.
 WebsocketStream wsStream;
-
-
-// Suppose you have an I2SStream (or you can wrap your I2S mic reading routine similarly).
 I2SStream i2sInput;
-
-// And you can use the AudioTools stream copy mechanism.
 StreamCopy micToWsCopier(wsStream, i2sInput);
 
+void micTask(void *parameter) {
+    // Configure and start I2S input stream.
+    auto i2sConfig = i2sInput.defaultConfig(RX_MODE);
+    i2sConfig.bits_per_sample = BITS_PER_SAMPLE;
+    i2sConfig.sample_rate = SAMPLE_RATE;
+    i2sConfig.channels = CHANNELS;
+    // Configure your I2S input pins appropriately here:
+    i2sConfig.pin_bck = I2S_SCK;
+    i2sConfig.pin_ws  = I2S_WS;
+    i2sConfig.pin_data = I2S_SD;
+    i2sConfig.port_no = I2S_PORT_IN;
+    i2sInput.begin(i2sConfig);
 
+    // If you are using Opus, you could insert an Opus encoder in the chain.
+    // For raw PCM, simply use the stream copy.
 
+    while (1) {
+        if (connectionStartTime && deviceState == LISTENING &&
+            millis() - connectionStartTime >= 10000) {
+            deviceState = PROCESSING;
+            // vTaskDelay(20);
+
+            if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+                // flush all streams
+                i2sInput.flush();
+                wsStream.flush();
+                webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
+                xSemaphoreGive(wsMutex);
+            }
+
+            connectionStartTime = 0;
+            Serial.println("Sent VAD detection request");
+        }
+
+        if (deviceState == LISTENING && webSocket.isConnected()) {
+            // The copier takes care of reading from I2S stream and writing to the WebSocket.
+            micToWsCopier.copy();
+        }
+        vTaskDelay(10);
+    }
+}
+
+// WEBSOCKET EVENTS
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 {
     switch (type)
@@ -204,7 +286,6 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     }
 }
 
-
 void websocketSetup(String server_domain, int port, String path)
 {
     String headers = "Authorization: Bearer " + String(authTokenGlobal);
@@ -229,103 +310,4 @@ void websocketSetup(String server_domain, int port, String path)
          }
      }
 
-void audioStreamTask(void *parameter) {
-        Serial.println("Starting I2S stream pipeline...");
-    
-    pinMode(10, OUTPUT);
 
-    OpusSettings cfg;
-    cfg.sample_rate = SAMPLE_RATE;
-    cfg.channels = CHANNELS;
-    cfg.bits_per_sample = BITS_PER_SAMPLE;
-    cfg.max_buffer_size = 6144;
-    opusDecoder.setOutput(bufferPrint);
-    
-    // Initialize the Opus decoder with the audio configuration.
-    // (Check your library’s documentation for the exact initialization call.)
-    opusDecoder.begin(cfg);
-    
-    // Start the queue stream (this will initialize its internal structures)
-    queue.begin();
-
-    // Set up your I2S configuration.
-    // The I2SStream class here uses a default configuration which you can override.
-    auto config = i2s.defaultConfig(TX_MODE);
-    config.bits_per_sample = BITS_PER_SAMPLE;
-    config.sample_rate = SAMPLE_RATE;
-    config.channels = CHANNELS;
-    config.pin_bck = I2S_BCK_OUT;
-    config.pin_ws = I2S_WS_OUT;
-    config.pin_data = I2S_DATA_OUT;
-    config.port_no = I2S_PORT_OUT;
-
-    config.copyFrom(info);  // Copy your audio settings into the I2S configuration.
-    i2s.begin(config);      // Begin I2S output with your configuration.
-
-    // Setup VolumeStream using the same configuration as I2S.
-    auto vcfg = volume.defaultConfig();
-    vcfg.copyFrom(config);
-    vcfg.allow_boost = true;
-    volume.begin(vcfg);     // Begin the volume stream with the provided configuration.
-
-while (1) {
-          if (scheduleListeningRestart && millis() >= scheduledTime) {
-           connectionStartTime = millis();
-
-           // flush all streams
-           i2s.flush();
-           volume.flush();
-           queue.flush();
-           bufferPrint.flush();
-
-           deviceState = LISTENING;
-           digitalWrite(10, LOW);
-           scheduleListeningRestart = false;
-           Serial.println("Resumed listening (non-blocking via millis)");
-       }
-             copier.copy();  
-             // Depending on your data rate, you might add a small delay or yield here.
-         }
-}
-
-void micTask(void *parameter) {
-    // Configure and start I2S input stream.
-    auto i2sConfig = i2sInput.defaultConfig(RX_MODE);
-    i2sConfig.bits_per_sample = BITS_PER_SAMPLE;
-    i2sConfig.sample_rate = SAMPLE_RATE;
-    i2sConfig.channels = CHANNELS;
-    // Configure your I2S input pins appropriately here:
-    i2sConfig.pin_bck = I2S_SCK;
-    i2sConfig.pin_ws  = I2S_WS;
-    i2sConfig.pin_data = I2S_SD;
-    i2sConfig.port_no = I2S_PORT_IN;
-    i2sInput.begin(i2sConfig);
-
-    // If you are using Opus, you could insert an Opus encoder in the chain.
-    // For raw PCM, simply use the stream copy.
-
-    while (1) {
-        if (connectionStartTime && deviceState == LISTENING &&
-            millis() - connectionStartTime >= 10000) {
-            deviceState = PROCESSING;
-            // vTaskDelay(20);
-
-            if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
-                // flush all streams
-                i2sInput.flush();
-                wsStream.flush();
-                webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
-                xSemaphoreGive(wsMutex);
-            }
-
-            connectionStartTime = 0;
-            Serial.println("Sent VAD detection request");
-        }
-
-        if (deviceState == LISTENING && webSocket.isConnected()) {
-            // The copier takes care of reading from I2S stream and writing to the WebSocket.
-            micToWsCopier.copy();
-        }
-        vTaskDelay(10);
-    }
-}
