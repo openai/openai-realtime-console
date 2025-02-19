@@ -7,6 +7,7 @@
 #include <Preferences.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
+#include <WebSocketsClient.h>
 
 extern Preferences preferences;
 extern bool ota_status;
@@ -50,8 +51,7 @@ extern const uint16_t backend_port;
 extern const uint32_t SAMPLE_RATE;
 
 // ---------- Development ------------
-#define DEV_MODE
-
+// #define DEV_MODE
 
 // ----------------- Pin Definitions -----------------
 #define USE_NORMAL_ESP32
@@ -78,8 +78,6 @@ extern const int I2S_SD_OUT;
 // SSL certificate
 extern const char *CA_cert;
 extern const char *Vercel_CA_cert;
-void clearNVS();
-void goToSleep();
 void factoryResetDevice();
 
 #endif
