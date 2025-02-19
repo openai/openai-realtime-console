@@ -149,9 +149,20 @@ Ig46v9mFmBvyH04=
 -----END CERTIFICATE-----
 )EOF";
 
-void factoryResetDevice()
-{
-    Serial.println("Factory reset device");
-    nvs_flash_erase();
-    nvs_flash_init();
-}
+void factoryResetDevice() {
+       Serial.println("Factory reset device");
+       
+       // Erase the NVS partition
+       esp_err_t err = nvs_flash_erase();
+       if (err != ESP_OK) {
+           Serial.printf("Error erasing NVS: %d\n", err);
+           return;
+       }
+       
+       // Reinitialize NVS
+       err = nvs_flash_init();
+       if (err != ESP_OK) {
+           Serial.printf("Error initializing NVS: %d\n", err);
+           return;
+       }
+   }

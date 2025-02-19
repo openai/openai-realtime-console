@@ -52,7 +52,7 @@ class WIFIMANAGER {
     bool createFallbackAP = true;       // Create an AP for configuration if no other connection is available
 
     uint64_t lastWifiCheckMillis = 0;   // Time of last Wifi health check
-    uint32_t intervalWifiCheckMillis = 15000; // Interval of the Wifi health checks
+    uint32_t intervalWifiCheckMillis = 10000; // Interval of the Wifi health checks
     uint64_t startApTimeMillis = 0;     // Time when the AP was started
     uint32_t timeoutApMillis = 120000;  // Timeout of an AP when no client is connected, if timeout reached rescan, tryconnect or createAP
 

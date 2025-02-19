@@ -134,7 +134,7 @@ void setupWiFi()
   
     // Run the Webserver and add your webpages to it
     webServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(200, "text/plain", "Hello World");
+        request->redirect("/wifi");
     });
     webServer.onNotFound([&](AsyncWebServerRequest *request) {
       request->send(404, "text/plain", "Not found");
@@ -152,9 +152,6 @@ void touchTask(void* parameter) {
   while (1) {
     // Read the touch sensor
     uint32_t touchValue = touchRead(TOUCH_PAD_NUM2);
-    // Serial.printf("Touch Pad Value: %u\n", touchValue);
-
-    // On the ESP32-S3, a reading above TOUCH_THRESHOLD indicates a touch.
     bool isTouched = (touchValue > TOUCH_THRESHOLD);
 
     // Detect transition from "not touched" to "touched"
@@ -201,6 +198,8 @@ void setup()
     // Print a welcome message to the Serial port.
     Serial.println("\n\nCaptive Test, V0.5.0 compiled " __DATE__ " " __TIME__ " by CD_FER"); //__DATE__ is provided by the platformio ide
     Serial.printf("%s-%d\n\r", ESP.getChipModel(), ESP.getChipRevision(), WiFi.macAddress());
+
+    // factoryResetDevice();
 
     // AUTH & OTA
     getAuthTokenFromNVS();

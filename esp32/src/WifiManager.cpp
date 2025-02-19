@@ -487,7 +487,6 @@ bool WIFIMANAGER::tryConnect() {
             websocketSetup(ws_server, ws_port, ws_path);
         }
         
-
         stopSoftAP();
         return true;
         break;
@@ -670,7 +669,7 @@ void WIFIMANAGER::attachWebServer(WebServer * srv) {
     }
     if (!addWifi(jsonBuffer["apName"].as<String>(), jsonBuffer["apPass"].as<String>())) {
       resp->send(500, "application/json", "{\"message\":\"Unable to process data\"}");
-    } else resp->send(200, "application/json", "{\"message\":\"New AP added\"}");
+    } else {resp->send(200, "application/json", "{\"message\":\"New network added\"");}
   });
 
 #if ASYNC_WEBSERVER == true
@@ -688,7 +687,8 @@ void WIFIMANAGER::attachWebServer(WebServer * srv) {
     deserializeJson(jsonBuffer, webServer->arg(0));
     auto resp = webServer;
 #endif
-    if (!jsonBuffer["id"].is<uint8_t>() || jsonBuffer["id"].as<uint8_t>() >= WIFIMANAGER_MAX_APS) {
+    int idValue = jsonBuffer["id"].as<String>().toInt();
+    if (idValue < 0 || idValue >= WIFIMANAGER_MAX_APS) {
       resp->send(422, "application/json", "{\"message\":\"Invalid data\"}");
       return;
     }
@@ -851,7 +851,7 @@ void WIFIMANAGER::attachUI() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 WiFi Manager</title>
+    <title>YOUR ELATO 😊</title>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -1033,20 +1033,20 @@ void WIFIMANAGER::attachUI() {
 <body>
     <div class="container">
         <div class="card">
-            <h1>ESP32 WiFi Manager</h1>
+            <h1>YOUR ELATO DEVICE 😊</h1>
             <div id="status"></div>
             <button onclick="scanNetworks()">Scan for Networks</button>
             <button onclick="showConnectModal()">Manual Connect</button>
         </div>
 
         <div class="card">
-            <h2>Available Networks</h2>
-            <div id="networkList" class="network-list"></div>
+            <h2>✅ Saved Networks</h2>
+            <div id="savedNetworks" class="network-list"></div>
         </div>
 
         <div class="card">
-            <h2>Saved Networks</h2>
-            <div id="savedNetworks" class="network-list"></div>
+            <h2>🛜 Available Networks</h2>
+            <div id="networkList" class="network-list"></div>
         </div>
     </div>
 
@@ -1103,7 +1103,7 @@ void WIFIMANAGER::attachUI() {
                 <div class="network-item">
                     <div class="network-info">
                         <div class="ssid">${network.apName}</div>
-                        <button onclick="deleteNetwork('${network.id}')">delete</button>
+                        <button onclick="deleteNetwork('${network.id}')">🗑️ Remove</button>
                     </div>
                 </div>
             `).join('');
@@ -1131,8 +1131,8 @@ void WIFIMANAGER::attachUI() {
 
         function displayNetworks(networks) {
             const networkList = document.getElementById('networkList');
-            const networkArray = Object.values(networks)
-              .filter(network => network.ssid.length > 0);
+            const networkArray = Object.values(networks || {})
+              .filter(network => network && network.ssid && network.ssid.length > 0);
             
             if (networkArray.length === 0) {
                 networkList.innerHTML = '<div class="network-item">No networks found</div>';
@@ -1185,7 +1185,7 @@ void WIFIMANAGER::attachUI() {
                     body: JSON.stringify({ id: deleteId }),
                 });
                 
-                if (!response.ok) throw new Error('Failed to delete network');
+                if (!response.ok) throw new Error(JSON.stringify(response));
                 
                 showStatus('Network deleted successfully', 'success');
                 await loadSavedNetworks(); // Refresh the list
