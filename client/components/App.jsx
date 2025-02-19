@@ -39,8 +39,9 @@ export default function App() {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
-    const baseUrl = "https://api.openai.com/v1/realtime";
-    const model = "gpt-4o-realtime-preview-2024-12-17";
+    // const baseUrl = "https://api.openai.com/v1/realtime";
+    const baseUrl = "http://localhost:8000/v1/realtime";
+    const model = "MiniCPM-o-2_6";
     const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
       method: "POST",
       body: offer.sdp,
@@ -85,6 +86,8 @@ export default function App() {
     if (dataChannel) {
       message.event_id = message.event_id || crypto.randomUUID();
       dataChannel.send(JSON.stringify(message));
+
+      message.timestamp = message.timestamp || new Date().toLocaleTimeString();
       setEvents((prev) => [message, ...prev]);
     } else {
       console.error(
@@ -119,7 +122,9 @@ export default function App() {
     if (dataChannel) {
       // Append new server events to the list
       dataChannel.addEventListener("message", (e) => {
-        setEvents((prev) => [JSON.parse(e.data), ...prev]);
+        const event = JSON.parse(e.data);
+        event.timestamp = event.timestamp || new Date().toLocaleTimeString();
+        setEvents((prev) => [event, ...prev]);
       });
 
       // Set session active when the data channel is opened
