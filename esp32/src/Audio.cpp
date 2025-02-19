@@ -15,12 +15,18 @@ public:
 
   // Write a single byte to the buffer.
   virtual size_t write(uint8_t data) override {
-    return _buffer.writeArray(&data, 1);
+    if (webSocket.isConnected() && deviceState == SPEAKING) {
+        return _buffer.writeArray(&data, 1);
+    }
+    return 0;
   }
 
   // Write an array of bytes to the buffer.
   virtual size_t write(const uint8_t *buffer, size_t size) override {
-    return _buffer.writeArray(buffer, size);
+    if (webSocket.isConnected() && deviceState == SPEAKING) {
+        return _buffer.writeArray(buffer, size);
+    }
+    return 0;
   }
 
 private:
@@ -205,7 +211,9 @@ void websocketSetup(String server_domain, int port, String path)
     webSocket.setExtraHeaders(headers.c_str());
     webSocket.onEvent(webSocketEvent);
     webSocket.setReconnectInterval(1000);
-    webSocket.enableHeartbeat(25000, 15000, 3);
+    webSocket.enableHeartbeat(25000, 15000, 11);
+    // webSocket.enableHeartbeat(0,0,0);
+    webSocket.disableHeartbeat();
 
     #ifdef DEV_MODE
     webSocket.begin(server_domain.c_str(), port, path.c_str());
@@ -302,11 +310,6 @@ void micTask(void *parameter) {
             deviceState = PROCESSING;
             // vTaskDelay(20);
 
-            // flush all streams
-                i2sInput.flush();
-                wsStream.flush();
-                webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
-
             if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
                 // flush all streams
                 i2sInput.flush();
@@ -314,7 +317,6 @@ void micTask(void *parameter) {
                 webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
                 xSemaphoreGive(wsMutex);
             }
-
 
             connectionStartTime = 0;
             Serial.println("Sent VAD detection request");
