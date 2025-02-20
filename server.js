@@ -17,18 +17,14 @@ app.use(vite.middlewares);
 // API route for token generation
 app.get("/token", async (req, res) => {
   try {
-    const response = await fetch(
-      "https://api.openai.com/v1/realtime/sessions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-realtime-preview-2024-12-17",
-          voice: "verse",
-        }),
+    // const url = "https://api.openai.com/v1/realtime/sessions";
+    const url =
+      "https://xalpha8--outspeed-infra-fastapi-app-dev.modal.run/v1/realtime/sessions";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
     );
 

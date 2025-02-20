@@ -17,8 +17,28 @@ export default function App() {
     const data = await tokenResponse.json();
     const EPHEMERAL_KEY = data.client_secret.value;
 
+    var ICE_STUN_SERVERS = [{ urls: "stun:stun.l.google.com:19302" }];
     // Create a peer connection
-    const pc = new RTCPeerConnection();
+    const pc = new RTCPeerConnection({
+      iceServers: ICE_STUN_SERVERS,
+    });
+
+    // Create a promise that resolves when ICE gathering is complete
+    const gatherComplete = new Promise((resolve) => {
+      pc.onicegatheringstatechange = () => {
+        if (pc.iceGatheringState === "complete") {
+          resolve();
+        }
+      };
+    });
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log("New ICE candidate:", event.candidate.candidate);
+        // console.log(pc.localDescription.sdp);
+        console.log("-------------------------------------------");
+      }
+    };
 
     // Set up to play remote audio from the model
     audioElement.current = document.createElement("audio");
@@ -35,26 +55,91 @@ export default function App() {
     const dc = pc.createDataChannel("oai-events");
     setDataChannel(dc);
 
+    // await gatherComplete;
+
+    const hostname =
+      "xalpha8--outspeed-infra-fastapi-app-dev.modal.run/v1/realtime";
+    const ws = new WebSocket(`wss://${hostname}/ws/${EPHEMERAL_KEY}`);
+
+    ws.onopen = () => {
+      console.log("WebSocket connected");
+      ws.send(JSON.stringify({ type: "ping" }));
+    };
+
+    ws.onerror = (error) => {
+      // just reload the page if there's an error -- poor man's error handling
+      console.error("WebSocket error:", error, "Reloading...");
+      window.location.reload();
+    };
+
+    ws.onmessage = async (message) => {
+      const data = JSON.parse(message.data);
+      if (data.type === "pong") {
+        console.log("pong");
+        // Server is ready, enable upload and preset images
+      } else if (data.type === "answer") {
+        console.log("answer", data);
+        await pc.setRemoteDescription(new RTCSessionDescription(data));
+      } else if (data.type === "candidate") {
+        console.log("candidate", data);
+        await pc.addIceCandidate(
+          new RTCIceCandidate({
+            candidate: data.candidate,
+            sdpMid: data.sdpMid,
+            sdpMLineIndex: data.sdpMLineIndex,
+          }),
+        );
+      }
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        ws.send(
+          JSON.stringify({
+            type: "candidate",
+            candidate: event.candidate.candidate,
+            sdpMid: event.candidate.sdpMid,
+            sdpMLineIndex: event.candidate.sdpMLineIndex,
+          }),
+        );
+      }
+    };
+
     // Start the session using the Session Description Protocol (SDP)
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
-    const baseUrl = "https://api.openai.com/v1/realtime";
-    const model = "gpt-4o-realtime-preview-2024-12-17";
-    const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
-      method: "POST",
-      body: offer.sdp,
-      headers: {
-        Authorization: `Bearer ${EPHEMERAL_KEY}`,
-        "Content-Type": "application/sdp",
-      },
+    console.log("offer", pc.localDescription.sdp);
+
+    // Wait for websocket to connect
+    await new Promise((resolve) => {
+      ws.onopen = resolve;
     });
 
-    const answer = {
-      type: "answer",
-      sdp: await sdpResponse.text(),
-    };
-    await pc.setRemoteDescription(answer);
+    ws.send(
+      JSON.stringify({
+        type: "offer",
+        sdp: pc.localDescription.sdp,
+      }),
+    );
+    // const baseUrl = "https://api.openai.com/v1/realtime";
+    // // const baseUrl =
+    // //   "https://xalpha8--outspeed-infra-fastapi-app-dev.modal.run/v1/realtime";
+    // // const sdpResponse = await fetch(`${baseUrl}?model=${MODEL}`, {
+    // //   method: "POST",
+    // //   body: pc.localDescription.sdp,
+    // //   headers: {
+    // //     Authorization: `Bearer ${EPHEMERAL_KEY}`,
+    // //     "Content-Type": "application/sdp",
+    // //   },
+    // // });
+
+    // // const answer = {
+    // //   type: "answer",
+    // //   sdp: await sdpResponse.text(),
+    // // };
+    // await pc.setRemoteDescription(answer);
+    // console.log("answer", answer);
 
     peerConnection.current = pc;
   }
