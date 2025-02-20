@@ -59,7 +59,9 @@ export default function App() {
 
     const hostname =
       "xalpha8--outspeed-infra-fastapi-app-dev.modal.run/v1/realtime";
-    const ws = new WebSocket(`wss://${hostname}/ws/${EPHEMERAL_KEY}`);
+    const ws = new WebSocket(
+      `wss://${hostname}/ws?session_id=${EPHEMERAL_KEY}`,
+    );
 
     ws.onopen = () => {
       console.log("WebSocket connected");
