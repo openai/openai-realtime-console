@@ -108,27 +108,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                             {"Playground"}
                         </h1>
                         <div className="flex flex-col gap-8 items-center justify-center">
-                            {outOfCredits ? (
-                                <AddCreditsModal>
-                                    <Button
-                                        className={
-                                            "z-50 flex items-center gap-1.5 rounded-full"
-                                        }
-                                        size="sm"
-                                        variant={"upsell_primary"}
-                                    >
-                                        <Sparkles
-                                            size={16}
-                                            strokeWidth={3}
-                                            stroke={"currentColor"}
-                                        />
-                                        <span className="text-md font-semibold">
-                                            {"Upgrade"}
-                                        </span>
-                                    </Button>
-                                </AddCreditsModal>
-                            ) : (
-                                <Popover>
+                        <Popover>
                                 <PopoverTrigger asChild>
                                 <Button
                                     disabled={
@@ -159,7 +139,6 @@ const Playground: React.FC<PlaygroundProps> = ({
                                   </div>
                                 </PopoverContent>
                               </Popover>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -185,7 +164,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                             currentUser={currentUser}
                             startCall={startCall}
                             languageState={'en-US'}
-                            disableButtons={outOfCredits}
+                            disableButtons={false}
                         />
                     </div>
                 ) : null}
