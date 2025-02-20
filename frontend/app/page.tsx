@@ -7,7 +7,7 @@ import EndingSection from "./components/LandingPage/EndingSection";
 import FrontPage from "./components/LandingPage/FrontPage";
 import Personalities from "./components/LandingPage/Personalities";
 import { Button } from "@/components/ui/button";
-import { Gamepad2 } from "lucide-react";
+import { Gamepad2, SmilePlus, Command, MessageCircle, MessagesSquare } from "lucide-react";
 import PreorderButton from "./components/PreorderButton";
 import Link from "next/link";
 import DeviceImage from "./components/LandingPage/DeviceImage";
@@ -61,23 +61,23 @@ export default async function Index() {
                 id="how-it-works"
                 className="w-full max-w-screen-lg mx-auto py-12"
             >
-                <div className="space-y-4  max-w-[400px] mx-auto">
-                            <h3 className="text-3xl font-semibold">
-                                1. Choose Your Character
+                <div className="space-y-4 sm:max-w-sm max-w-[300px] mx-auto">
+                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between">
+                                <span>1. Choose Your Character </span><SmilePlus size={40} />
                             </h3>
                             <p className="text-gray-500 dark:text-gray-400 font-normal text-lg">
                                 Select from a wide range of AI characters, each
                                 with unique personalities and knowledge bases.
                             </p>
-                            <h3 className="text-3xl font-semibold">
-                                2. Connect Your Device
+                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between">
+                                <span>2. Connect Your Device </span><Command size={40} />
                             </h3>
                             <p className="text-gray-500 dark:text-gray-400">
                                 Easily set up your Elato device with your
                                 home Wi-Fi network or Personal hotspot.
                             </p>
-                            <h3 className="text-3xl font-semibold">
-                                3. Start talking
+                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between">
+                                <span>3. Start talking </span><MessagesSquare size={40} />
                             </h3>
                             <p className="text-gray-500 dark:text-gray-400">
                                 Your characters are now always ready to chat.

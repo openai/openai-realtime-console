@@ -7,6 +7,7 @@
 #include "WifiManager.h"
 #include <driver/touch_sensor.h>
 #include "Button.h"
+#include "FactoryReset.h"
 
 // #define WEBSOCKETS_DEBUG_LEVEL WEBSOCKETS_LEVEL_ALL
 
@@ -163,6 +164,8 @@ void touchTask(void* parameter) {
 }
 
 void setupDeviceMetadata() {
+    // factoryResetDevice();
+    deviceState = IDLE;
     getAuthTokenFromNVS();
     getOTAStatusFromNVS();
     if (ota_status) {
@@ -178,19 +181,8 @@ void setup()
     Serial.begin(115200);
     delay(500);
 
-     while (!Serial)
-        ;
-
-    // Print a welcome message to the Serial port.
-    Serial.println("\n\nCaptive Test, V0.5.0 compiled " __DATE__ " " __TIME__ " by CD_FER"); //__DATE__ is provided by the platformio ide
-    Serial.printf("%s-%d\n\r", ESP.getChipModel(), ESP.getChipRevision(), WiFi.macAddress());
-
-    // factoryResetDevice();
-    deviceState = IDLE;
-
-    // AUTH & OTA
+    // SETUP
     setupDeviceMetadata();
-
     wsMutex = xSemaphoreCreateMutex();    
 
     // INTERRUPT
@@ -212,8 +204,6 @@ void setup()
 
     // WIFI
     setupWiFi();
-    // connectWithPassword();
-    // connectToWifiAndWebSocket();
 }
 
 void loop(){
