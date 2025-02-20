@@ -26,6 +26,10 @@ app.get("/token", async (req, res) => {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        model: "MiniCPM-o-2_6",
+        voice: "verse",
+      }),
     });
 
     const data = await response.json();
