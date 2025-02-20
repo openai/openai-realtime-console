@@ -26,7 +26,7 @@ app.get("/token", async (req, res) => {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-    );
+    });
 
     const data = await response.json();
     res.json(data);
