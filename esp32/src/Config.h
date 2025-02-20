@@ -52,6 +52,7 @@ extern const uint32_t SAMPLE_RATE;
 
 // ---------- Development ------------
 // #define DEV_MODE
+// #define TOUCH_MODE
 
 // ----------------- Pin Definitions -----------------
 #define USE_NORMAL_ESP32

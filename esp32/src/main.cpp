@@ -1,13 +1,12 @@
-
-
+#include "OTA.h"
 #include <Arduino.h>
 #include <driver/rtc_io.h>
-#include "Button.h"
 #include "LEDHandler.h"
 #include "Config.h"
 #include "SPIFFS.h"
 #include "WifiManager.h"
 #include <driver/touch_sensor.h>
+#include "Button.h"
 
 // #define WEBSOCKETS_DEBUG_LEVEL WEBSOCKETS_LEVEL_ALL
 
@@ -48,12 +47,15 @@ void enterSleep()
     // Flush any remaining serial output
     Serial.flush();
 
-    touch_pad_intr_disable(TOUCH_PAD_INTR_MASK_ALL);
-    while (touchRead(TOUCH_PAD_NUM2) > TOUCH_THRESHOLD) {
-      delay(50);
-    }
-    delay(500);
-    touchSleepWakeUpEnable(TOUCH_PAD_NUM2, TOUCH_THRESHOLD);
+    #ifdef TOUCH_MODE
+        touch_pad_intr_disable(TOUCH_PAD_INTR_MASK_ALL);
+        while (touchRead(TOUCH_PAD_NUM2) > TOUCH_THRESHOLD) {
+        delay(50);
+        }
+        delay(500);
+        touchSleepWakeUpEnable(TOUCH_PAD_NUM2, TOUCH_THRESHOLD);
+    #endif
+
     esp_deep_sleep_start();
 }
 
@@ -88,33 +90,6 @@ static void onButtonDoubleClickCb(void *button_handle, void *usr_data)
     Serial.println("Button double click");
     delay(10);
     enterSleep();
-}
-
-void connectWithPassword()
-{
-    IPAddress dns1(8, 8, 8, 8);        // Google DNS
-    IPAddress dns2(1, 1, 1, 1);        // Cloudflare DNS
-    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
-
-    // WiFi.begin("EE-P8CX8N", "xd6UrFLd4kf9x4");
-    // WiFi.begin("akaPhone", "akashclarkkent1");
-    // WiFi.begin("S_HOUSE_RESIDENTS_NW", "Somerset_Residents!");
-    // WiFi.begin("NOWBQPME", "JYHx4Svzwv5S");
-    WiFi.begin("EE-PPA1GZ", "9JkyRJHXTDTKb3");
-
-
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print("|");
-    }
-    Serial.println("");
-    Serial.println("WiFi connected");
-
-    WiFi.setSleep(false);
-    // esp_wifi_set_ps(WIFI_PS_NONE);  // Disable power saving completely
-    // playStartupSound();
-    websocketSetup(ws_server, ws_port, ws_path);
 }
 
 void getAuthTokenFromNVS()
@@ -187,6 +162,17 @@ void touchTask(void* parameter) {
   vTaskDelete(NULL);
 }
 
+void setupDeviceMetadata() {
+    getAuthTokenFromNVS();
+    getOTAStatusFromNVS();
+    if (ota_status) {
+        deviceState = OTA;
+    }
+    if (factory_reset_status) {
+        deviceState = FACTORY_RESET;
+    }
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -200,29 +186,25 @@ void setup()
     Serial.printf("%s-%d\n\r", ESP.getChipModel(), ESP.getChipRevision(), WiFi.macAddress());
 
     // factoryResetDevice();
+    deviceState = IDLE;
 
     // AUTH & OTA
-    getAuthTokenFromNVS();
-    deviceState = IDLE;
-    if (ota_status) {
-        deviceState = OTA;
-    }
-    if (factory_reset_status) {
-        deviceState = FACTORY_RESET;
-    }
+    setupDeviceMetadata();
 
-    wsMutex = xSemaphoreCreateMutex();
+    wsMutex = xSemaphoreCreateMutex();    
 
-    // BUTTON
-    // getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
-    // printOutESP32Error(getErr);
-    // Button *btn = new Button(BUTTON_PIN, false);
-    // btn->attachLongPressUpEventCb(&onButtonLongPressUpEventCb, NULL);
-    // btn->attachDoubleClickEventCb(&onButtonDoubleClickCb, NULL);
-    // btn->detachSingleClickEvent();
+    // INTERRUPT
+    #ifdef TOUCH_MODE
+        xTaskCreate(touchTask, "Touch Task", 4096, NULL, configMAX_PRIORITIES-1, NULL);
+    #else
+        getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
+        printOutESP32Error(getErr);
+        Button *btn = new Button(BUTTON_PIN, false);
+        btn->attachLongPressUpEventCb(&onButtonLongPressUpEventCb, NULL);
+        btn->attachDoubleClickEventCb(&onButtonDoubleClickCb, NULL);
+        btn->detachSingleClickEvent();
+    #endif
 
-    // TOUCH
-    xTaskCreate(touchTask, "Touch Task", 4096, NULL, configMAX_PRIORITIES-1, NULL);
     xTaskCreate(ledTask, "LED Task", 4096, NULL, 5, NULL);
     xTaskCreate(audioStreamTask, "Speaker Task", 4096, NULL, 3, NULL);
     xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
@@ -234,4 +216,9 @@ void setup()
     // connectToWifiAndWebSocket();
 }
 
-void loop(){}
+void loop(){
+    if (ota_status)
+    {
+        loopOTA();
+    }
+}

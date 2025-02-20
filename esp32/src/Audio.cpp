@@ -1,4 +1,4 @@
-
+#include "OTA.h"
 #include "Print.h"
 #include "Config.h"
 #include "AudioTools.h"
@@ -229,7 +229,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 
             if (is_ota) {
                 Serial.println("OTA update received");
-                // setOTAStatusInNVS(true);
+                setOTAStatusInNVS(true);
                 ESP.restart();
             }
 
@@ -292,15 +292,23 @@ void websocketSetup(String server_domain, int port, String path)
     webSocket.setExtraHeaders(headers.c_str());
     webSocket.onEvent(webSocketEvent);
     webSocket.setReconnectInterval(1000);
-    webSocket.enableHeartbeat(25000, 15000, 11);
+    webSocket.enableHeartbeat(25000, 15000, 3);
     // webSocket.enableHeartbeat(0,0,0);
-    webSocket.disableHeartbeat();
+    // webSocket.disableHeartbeat();
 
     #ifdef DEV_MODE
     webSocket.begin(server_domain.c_str(), port, path.c_str());
     #else
     webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
     #endif
+}
+
+void connect() {
+    if (ota_status) {
+        performOTAUpdate();
+    } else {
+        websocketSetup(ws_server, ws_port, ws_path);
+    }
 }
 
  void networkTask(void *parameter) {

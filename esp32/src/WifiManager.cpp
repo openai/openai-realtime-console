@@ -484,7 +484,7 @@ bool WIFIMANAGER::tryConnect() {
 
         // start websocket here
         if (isDeviceRegistered()) {
-            websocketSetup(ws_server, ws_port, ws_path);
+            connect();
         }
         
         stopSoftAP();
