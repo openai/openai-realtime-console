@@ -58,4 +58,23 @@ void setFactoryResetStatusInNVS(bool status)
     preferences.begin("is_reset", false);
     preferences.putBool("is_reset", status);
     preferences.end();
+    factory_reset_status = status;
 }
+
+void factoryResetDevice() {
+       Serial.println("Factory reset device");
+       
+       // Erase the NVS partition
+       esp_err_t err = nvs_flash_erase();
+       if (err != ESP_OK) {
+           Serial.printf("Error erasing NVS: %d\n", err);
+           return;
+       }
+       
+       // Reinitialize NVS
+       err = nvs_flash_init();
+       if (err != ESP_OK) {
+           Serial.printf("Error initializing NVS: %d\n", err);
+           return;
+       }
+   }

@@ -87,6 +87,7 @@ void setOTAStatusInNVS(bool status)
     preferences.begin("ota", false);
     preferences.putBool("ota_status", status);
     preferences.end();
+    ota_status = status;
 }
 
 void loopOTA()
@@ -94,8 +95,6 @@ void loopOTA()
     otastatus = HttpsOTA.status();
     if (otastatus == HTTPS_OTA_SUCCESS)
     {
-        Serial.println("Firmware written successfully. To reboot device, call API ESP.restart() or PUSH restart button on device");
-        // mark update as complete in db
         markOTAUpdateComplete();
         ESP.restart();
     }

@@ -104,6 +104,8 @@ while (1) {
            queue.flush();
            bufferPrint.flush();
 
+           // disable heartbeat during listening
+           webSocket.disableHeartbeat();
            deviceState = LISTENING;
            digitalWrite(10, LOW);
            scheduleListeningRestart = false;
@@ -248,14 +250,15 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
             if (strcmp((char*)msg.c_str(), "response.done") == 0) {
                 Serial.println("Received response.done, starting listening again");
                 // Start listening again
-
                 scheduleListeningRestart = true;
-       scheduledTime = millis() + 1000; 
+                scheduledTime = millis() + 1000;     
             } else if (strcmp((char*)msg.c_str(), "response.created") == 0) {
                 Serial.println("Received response.created, stopping listening");
+                webSocket.enableHeartbeat(25000, 15000, 3);
                 connectionStartTime = 0;
                 deviceState = SPEAKING;
                 digitalWrite(10, HIGH);
+                
             }
         }
     }
@@ -292,9 +295,6 @@ void websocketSetup(String server_domain, int port, String path)
     webSocket.setExtraHeaders(headers.c_str());
     webSocket.onEvent(webSocketEvent);
     webSocket.setReconnectInterval(1000);
-    webSocket.enableHeartbeat(25000, 15000, 3);
-    // webSocket.enableHeartbeat(0,0,0);
-    // webSocket.disableHeartbeat();
 
     #ifdef DEV_MODE
     webSocket.begin(server_domain.c_str(), port, path.c_str());
