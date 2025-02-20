@@ -41,6 +41,7 @@ function SessionActive({ stopSession, sendTextMessage }) {
             handleSendClientEvent();
           }
         }}
+        autoFocus
         type="text"
         placeholder="send a text message..."
         className="border border-gray-200 rounded-full p-4 flex-1"

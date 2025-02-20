@@ -4,6 +4,8 @@ import EventLog from "./EventLog";
 import SessionControls from "./SessionControls";
 import ToolPanel from "./ToolPanel";
 
+const MODEL = "MiniCPM-o-2_6";
+
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState([]);
@@ -172,6 +174,8 @@ export default function App() {
     if (dataChannel) {
       message.event_id = message.event_id || crypto.randomUUID();
       dataChannel.send(JSON.stringify(message));
+
+      message.timestamp = message.timestamp || new Date().toLocaleTimeString();
       setEvents((prev) => [message, ...prev]);
     } else {
       console.error(
@@ -206,7 +210,9 @@ export default function App() {
     if (dataChannel) {
       // Append new server events to the list
       dataChannel.addEventListener("message", (e) => {
-        setEvents((prev) => [JSON.parse(e.data), ...prev]);
+        const event = JSON.parse(e.data);
+        event.timestamp = event.timestamp || new Date().toLocaleTimeString();
+        setEvents((prev) => [event, ...prev]);
       });
 
       // Set session active when the data channel is opened
@@ -222,7 +228,7 @@ export default function App() {
       <nav className="absolute top-0 left-0 right-0 h-16 flex items-center">
         <div className="flex items-center gap-4 w-full m-4 pb-2 border-0 border-b border-solid border-gray-200">
           <img style={{ width: "24px" }} src={logo} />
-          <h1>realtime console</h1>
+          <h1>realtime console ft. {MODEL} with Outspeed</h1>
         </div>
       </nav>
       <main className="absolute top-16 left-0 right-0 bottom-0">
