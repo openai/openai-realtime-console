@@ -62,21 +62,21 @@ export default async function Index() {
                 className="w-full max-w-screen-lg mx-auto py-12"
             >
                 <div className="space-y-4 sm:max-w-sm max-w-[300px] mx-auto">
-                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between">
+                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between text-amber-400">
                                 <span>1. Choose Your Character </span><SmilePlus size={40} />
                             </h3>
                             <p className="text-gray-500 dark:text-gray-400 font-normal text-lg">
                                 Select from a wide range of AI characters, each
                                 with unique personalities and knowledge bases.
                             </p>
-                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between">
+                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between text-amber-500">
                                 <span>2. Connect Your Device </span><Command size={40} />
                             </h3>
                             <p className="text-gray-500 dark:text-gray-400">
                                 Easily set up your Elato device with your
                                 home Wi-Fi network or Personal hotspot.
                             </p>
-                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between">
+                            <h3 className="text-3xl font-semibold flex flex-row items-center gap-2 justify-between text-amber-600">
                                 <span>3. Start talking </span><MessagesSquare size={40} />
                             </h3>
                             <p className="text-gray-500 dark:text-gray-400">
