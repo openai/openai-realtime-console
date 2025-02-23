@@ -18,7 +18,6 @@
 AsyncWebServer webServer(80);
 WIFIMANAGER WifiManager;
 esp_err_t getErr = ESP_OK;
-DeviceState deviceState = IDLE;
 
 void enterSleep()
 {

@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
-int redPin = 12;   // Red LED pin
-int greenPin = 13; // Green LED pin
-int bluePin = 14;  // Blue LED pin
+int redPin = 9;   // Red LED pin
+int greenPin = 8; // Green LED pin
+int bluePin = 13;  // Blue LED pin
 
 void setup()
 {
