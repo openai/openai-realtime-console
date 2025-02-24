@@ -12,7 +12,7 @@ export default async function Layout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex flex-1 flex-col mx-auto w-full max-w-[1440px] min-h-screen items-center justify-center px-4">
+        <div className="flex flex-1 flex-col mx-auto w-full max-w-[1440px] min-h-screen items-center mt-16">
         <div className="w-full flex justify-center">{children}</div>
     </div>
     );
