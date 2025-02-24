@@ -165,9 +165,11 @@ void touchTask(void* parameter) {
 void setupDeviceMetadata() {
     // factoryResetDevice();
     deviceState = IDLE;
+
     getAuthTokenFromNVS();
     getOTAStatusFromNVS();
-    if (ota_status) {
+
+    if (otaState == OTA_IN_PROGRESS || otaState == OTA_COMPLETE) {
         deviceState = OTA;
     }
     if (factory_reset_status) {
@@ -202,11 +204,18 @@ void setup()
     xTaskCreate(networkTask, "Websocket Task", 8192, NULL, configMAX_PRIORITIES-2, NULL);
 
     // WIFI
+    // WiFi.onEvent([&](WiFiEvent_t event, WiFiEventInfo_t info) {
+    //     Serial.println("WiFi event triggered");
+    //     if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
+    //         Serial.println("Connected to WiFi, got IP address");
+    //         connectCb();
+    //     }
+    // });
     setupWiFi();
 }
 
 void loop(){
-    if (ota_status)
+    if (otaState == OTA_IN_PROGRESS)
     {
         loopOTA();
     }

@@ -231,7 +231,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 
             if (is_ota) {
                 Serial.println("OTA update received");
-                setOTAStatusInNVS(true);
+                setOTAStatusInNVS(OTA_IN_PROGRESS);
                 ESP.restart();
             }
 
@@ -301,14 +301,6 @@ void websocketSetup(String server_domain, int port, String path)
     #else
     webSocket.beginSslWithCA(server_domain.c_str(), port, path.c_str(), CA_cert);
     #endif
-}
-
-void connect() {
-    if (ota_status) {
-        performOTAUpdate();
-    } else {
-        websocketSetup(ws_server, ws_port, ws_path);
-    }
 }
 
  void networkTask(void *parameter) {

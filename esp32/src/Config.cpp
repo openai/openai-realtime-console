@@ -3,7 +3,7 @@
 
 // ! define preferences
 Preferences preferences;
-bool ota_status = false;
+OtaStatus otaState = OTA_IDLE;
 bool factory_reset_status = false;
 
 // websocket_setup("192.168.1.166", 8000, "/");

@@ -23,8 +23,8 @@ export async function POST(req: Request) {
             );
         }
 
-        // set is_reset to false
-        const { data, error } = await supabase.from('users').update({
+        // set is_ota to false
+        const { data, error } = await supabase.from('devices').update({
             is_ota: false,
         }).eq('user_id', user.user.id).select();
 

@@ -10,8 +10,15 @@
 #include <WebSocketsClient.h>
 
 extern Preferences preferences;
-extern bool ota_status;
 extern bool factory_reset_status;
+
+enum OtaStatus {
+    OTA_IDLE,
+    OTA_IN_PROGRESS,
+    OTA_COMPLETE
+};
+
+extern OtaStatus otaState;
 
 enum DeviceState
 {
@@ -52,7 +59,7 @@ extern const uint32_t SAMPLE_RATE;
 
 // ---------- Development ------------
 // #define DEV_MODE
-// #define TOUCH_MODE
+#define TOUCH_MODE
 
 // ----------------- Pin Definitions -----------------
 #define USE_NORMAL_ESP32

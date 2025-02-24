@@ -27,6 +27,10 @@
 
 void wifiTask(void* param);
 
+// Callback for when the device connects to Wifi
+void connectCb();
+
+
 class WIFIMANAGER {
   protected:
 #if ASYNC_WEBSERVER == true
@@ -90,7 +94,6 @@ class WIFIMANAGER {
 #else
     void attachWebServer(WebServer * srv);
 #endif
-
     // Attach an UI
     void attachUI();
 

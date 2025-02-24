@@ -65,7 +65,8 @@ void markOTAUpdateComplete() {
     if (httpCode > 0) {
         if (httpCode == HTTP_CODE_OK) {
             Serial.println("OTA status updated successfully");
-             setOTAStatusInNVS(false);
+             setOTAStatusInNVS(OTA_IDLE);
+             ESP.restart();
         } else {
             Serial.printf("OTA status update failed with code: %d\n", httpCode);
         }
@@ -79,30 +80,33 @@ void markOTAUpdateComplete() {
 void getOTAStatusFromNVS()
 {
     preferences.begin("ota", false);
-    ota_status = preferences.getBool("ota_status", false);
+    otaState = (OtaStatus)preferences.getUInt("status", OTA_IDLE);
     preferences.end();
 }
 
-void setOTAStatusInNVS(bool status)
+void setOTAStatusInNVS(OtaStatus status)
 {
     preferences.begin("ota", false);
-    preferences.putBool("ota_status", status);
+    preferences.putUInt("status", status);
     preferences.end();
-    ota_status = status;
+    otaState = status;
 }
 
 void loopOTA()
 {
     otastatus = HttpsOTA.status();
-    if (otastatus == HTTPS_OTA_SUCCESS)
+    if (otastatus == HTTPS_OTA_SUCCESS && otaState == OTA_IN_PROGRESS)
     {
+        Serial.println("Firmware written successfully. To reboot device, call API ESP.restart() or PUSH restart button on device");
+        setOTAStatusInNVS(OTA_COMPLETE);
         markOTAUpdateComplete();
         ESP.restart();
     }
     else if (otastatus == HTTPS_OTA_FAIL)
     {
         Serial.println("Firmware Upgrade Fail");
-        setOTAStatusInNVS(true);
+        setOTAStatusInNVS(OTA_IN_PROGRESS);
+        ESP.restart();
     }
 }
 

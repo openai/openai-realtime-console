@@ -6,6 +6,7 @@
  * (Attribution-NonCommercial-ShareAlike 4.0 International)
 **/
 #include "WifiManager.h"
+#include "OTA.h"
 #include "AsyncJson.h"
 #include "ArduinoJson.h"
 #if ASYNC_WEBSERVER == true
@@ -66,6 +67,19 @@ bool isDeviceRegistered() {
     // If we get here, either the request failed or no token was found
     http.end();
     return false;
+}
+
+void connectCb() {
+  Serial.println("On connecting to Wifi");
+  if (isDeviceRegistered())  {
+    if (otaState == OTA_IN_PROGRESS) {
+        performOTAUpdate();
+    } else if (otaState == OTA_COMPLETE) {
+        markOTAUpdateComplete();
+    } else {
+        websocketSetup(ws_server, ws_port, ws_path);
+    }
+  } 
 }
 
 /**
@@ -481,12 +495,7 @@ bool WIFIMANAGER::tryConnect() {
         logMessage("[WIFI] Connection successful\n");
         logMessage("[WIFI] SSID   : " + WiFi.SSID() + "\n");
         logMessage("[WIFI] IP     : " + WiFi.localIP().toString() + "\n");
-
-        // start websocket here
-        if (isDeviceRegistered()) {
-            connect();
-        }
-        
+        connectCb();
         stopSoftAP();
         return true;
         break;
