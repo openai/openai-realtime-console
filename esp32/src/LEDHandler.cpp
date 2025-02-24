@@ -19,7 +19,7 @@ enum class StaticColor
     BLUE,
     YELLOW,
     MAGENTA,
-    CYAN
+    CYAN,
 };
 
 void setStaticColor(StaticColor color)
@@ -317,6 +317,9 @@ void ledTask(void *parameter)
             break;
         case LISTENING:
             setStaticColor(StaticColor::YELLOW);
+            break;
+        case OTA:
+            setStaticColor(StaticColor::CYAN);
             break;
         default:
             setStaticColor(StaticColor::GREEN); // LED on

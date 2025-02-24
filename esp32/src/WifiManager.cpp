@@ -76,6 +76,7 @@ void connectCb() {
         performOTAUpdate();
     } else if (otaState == OTA_COMPLETE) {
         markOTAUpdateComplete();
+        ESP.restart();
     } else {
         websocketSetup(ws_server, ws_port, ws_path);
     }

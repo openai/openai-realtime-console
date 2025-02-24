@@ -7,7 +7,13 @@
 static const char *ssid = "EE-PPA1GZ";          // your network SSID (name of wifi network)
 static const char *password = "9JkyRJHXTDTKb3";  // your network password
 
-static const char *url = "https://elato.s3.us-east-1.amazonaws.com/firmware.bin";  //state url of your firmware image
+#define TOUCH_MODE
+
+#ifdef TOUCH_MODE
+static const char *url = "https://elato.s3.us-east-1.amazonaws.com/firmware-touch.bin";  //state url of your firmware image
+#else
+static const char *url = "https://elato.s3.us-east-1.amazonaws.com/firmware-button.bin";  //state url of your firmware image
+#endif
 
 static const char *server_certificate = R"EOF(  
 -----BEGIN CERTIFICATE-----

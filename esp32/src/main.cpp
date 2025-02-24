@@ -204,13 +204,6 @@ void setup()
     xTaskCreate(networkTask, "Websocket Task", 8192, NULL, configMAX_PRIORITIES-2, NULL);
 
     // WIFI
-    // WiFi.onEvent([&](WiFiEvent_t event, WiFiEventInfo_t info) {
-    //     Serial.println("WiFi event triggered");
-    //     if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
-    //         Serial.println("Connected to WiFi, got IP address");
-    //         connectCb();
-    //     }
-    // });
     setupWiFi();
 }
 

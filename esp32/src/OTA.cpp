@@ -5,7 +5,12 @@
 HttpsOTAStatus_t otastatus;
 
 // OTA firmware url
-const char *ota_firmware_url = "https://elato.s3.us-east-1.amazonaws.com/firmware.bin";
+#ifdef TOUCH_MODE
+const char *ota_firmware_url = "https://elato.s3.us-east-1.amazonaws.com/firmware-touch.bin";
+#else
+const char *ota_firmware_url = "https://elato.s3.us-east-1.amazonaws.com/firmware-button.bin";
+#endif
+
 const char *server_certificate = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIIEkjCCA3qgAwIBAgITBn+USionzfP6wq4rAfkI7rnExjANBgkqhkiG9w0BAQsF
@@ -66,7 +71,6 @@ void markOTAUpdateComplete() {
         if (httpCode == HTTP_CODE_OK) {
             Serial.println("OTA status updated successfully");
              setOTAStatusInNVS(OTA_IDLE);
-             ESP.restart();
         } else {
             Serial.printf("OTA status update failed with code: %d\n", httpCode);
         }
@@ -95,11 +99,10 @@ void setOTAStatusInNVS(OtaStatus status)
 void loopOTA()
 {
     otastatus = HttpsOTA.status();
-    if (otastatus == HTTPS_OTA_SUCCESS && otaState == OTA_IN_PROGRESS)
+    if (otastatus == HTTPS_OTA_SUCCESS)
     {
         Serial.println("Firmware written successfully. To reboot device, call API ESP.restart() or PUSH restart button on device");
         setOTAStatusInNVS(OTA_COMPLETE);
-        markOTAUpdateComplete();
         ESP.restart();
     }
     else if (otastatus == HTTPS_OTA_FAIL)
