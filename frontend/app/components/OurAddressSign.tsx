@@ -6,7 +6,7 @@ const OurAddressSign = () => {
                 href="mailto:akash@elatoai.com"
                 className="text-blue-400 underline"
             >
-                akash@elatoai.com
+                akadeb97@gmail.com
             </a>
             ] <br />
             Founder, Elato AI
@@ -21,7 +21,7 @@ const OurAddressSign = () => {
             <br />
             <span className="underline">UK</span>
             <br />
-            Floor 4, <br />
+            LG Floor, <br />
             Makerversity, Ltd, <br />
             Somerset House, <br />
             London, <br />

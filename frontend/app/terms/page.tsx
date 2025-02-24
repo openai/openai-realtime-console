@@ -13,7 +13,7 @@ export default async function Index() {
             <p className="font-semibold text-2xl">
                 Terms and Conditions for Elato AI
             </p>
-            <p className="font-light text-md">Last Updated: 9/29/24</p>
+            <p className="font-light text-md">Last Updated: 2/24/25</p>
             <div className="flex flex-col gap-4 my-4">
                 <p>
                     {`Welcome to Elato AI ("we," "us," "our"). We offer engaging AI-characters on Elato devices that you can also converse with anytime through our website `}

@@ -5,7 +5,7 @@ export const defaultPersonalityId: string =
 export const starmoonProductsLink = "https://elatoai.com/products";
 export const discordInviteLink = "https://discord.gg/KJWxDPBRUj";
 export const githubPublicLink = "https://github.com/StarmoonAI/Starmoon";
-export const businessDemoLink = "https://calendly.com/akadeb/Elato-ai-demo";
+export const businessDemoLink = "https://calendly.com/akadeb/elato-ai-demo";
 export const feedbackFormLink = "https://forms.gle/2QmukEG2FXNwBdee7";
 export const voiceSampleUrl =
     "https://xygbupeczfhwamhqnucy.supabase.co/storage/v1/object/public/voices/";
