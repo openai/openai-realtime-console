@@ -37,16 +37,14 @@ export function Navbar({
 
     return (
         <div
-            className={`backdrop-blur-[3px] flex-none flex items-center sticky top-0 z-50 transition-transform duration-300 ${
+            className={`backdrop-blur-[3px] flex-none flex items-center sticky top-0 z-50 transition-transform duration-300 h-[80px] ${
                 isVisible ? "translate-y-0" : "-translate-y-full"
-            } ${isProduct ? "h-[120px]" : "h-[60px]"}`}
+            }`}
         >
-            {isProduct && (
-                <div className="fixed h-8 top-0 flex items-center justify-center w-full bg-yellow-100 dark:bg-yellow-900/30 px-4 py-2 text-center font-medium text-yellow-800 dark:text-yellow-200 z-40 gap-2 text-sm">
-                    🔥 Our Kickstarter pre-launch! <s>$99.99</s> $57.99 only!
-                </div>
-            )}
-            <nav className="mx-auto w-full max-w-[1440px] px-4 flex items-center justify-between">
+            <div className="fixed h-8 top-0 flex items-center justify-center w-full bg-yellow-100 dark:bg-yellow-900/30 px-4 py-2 text-center font-medium text-yellow-800 dark:text-yellow-200 z-40 gap-2 text-sm">
+                🔥 Advanced AI speech on your device!
+            </div>
+            <nav className="mx-auto pt-8 w-full max-w-[1440px] px-4 flex items-center justify-between">
                 <LeftNavbarButtons />
                 <NavbarButtons user={user} stars={stars} isHome={isHome} />
             </nav>
