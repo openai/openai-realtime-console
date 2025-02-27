@@ -60,7 +60,7 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                         ? "Sent"
                         : "Send to device"}
                 </Button>
-                {/* <SheetClose asChild>
+                <SheetClose asChild>
                     <Button
                         size="lg"
                         variant={disableButtons ? "upsell_outline" : "outline"}
@@ -78,7 +78,7 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                         <Phone className="flex-shrink-0 h-5 w-5 md:h-6 md:w-6" />
                         {"Chat"}
                     </Button>
-                </SheetClose> */}
+                </SheetClose>
             </div>
         );
     };
