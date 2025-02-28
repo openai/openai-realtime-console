@@ -6,7 +6,6 @@ interface PickPersonalityProps {
     allPersonalities: IPersonality[];
     personalityIdState: string;
     currentUser: IUser;
-    startCall: (personalityIdSelected: string) => void;
     languageState: string;
     disableButtons: boolean;
     selectedFilters: PersonalityFilter[];
@@ -17,7 +16,6 @@ const PickPersonality: React.FC<PickPersonalityProps> = ({
     allPersonalities,
     personalityIdState,
     currentUser,
-    startCall,
     languageState,
     disableButtons,
     selectedFilters,
@@ -28,7 +26,6 @@ const PickPersonality: React.FC<PickPersonalityProps> = ({
                 onPersonalityPicked={onPersonalityPicked}
                 allPersonalities={allPersonalities}
                 personalityIdState={personalityIdState}
-                startCall={startCall}
                 languageState={languageState}
                 disableButtons={disableButtons}
                 selectedFilters={selectedFilters}
@@ -41,7 +38,6 @@ const PickPersonality: React.FC<PickPersonalityProps> = ({
             onPersonalityPicked={onPersonalityPicked}
             allPersonalities={allPersonalities}
             personalityIdState={personalityIdState}
-            startCall={startCall}
             languageState={languageState}
             disableButtons={disableButtons}
             selectedFilters={selectedFilters}

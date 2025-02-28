@@ -7,7 +7,6 @@ interface CharacterSectionProps {
     personalityIdState: string;
     onPersonalityPicked: (personalityIdPicked: string) => void;
     title: EnglishCopy;
-    startCall: (personalityIdSelected: string) => void;
     disableButtons: boolean;
     selectedFilters: PersonalityFilter[];
 }
@@ -17,7 +16,6 @@ const CharacterSection = ({
     languageState,
     personalityIdState,
     onPersonalityPicked,
-    startCall,
     title,
     disableButtons,
     selectedFilters,
@@ -50,7 +48,6 @@ const CharacterSection = ({
                             personality={personality}
                             personalityIdState={personalityIdState}
                             onPersonalityPicked={onPersonalityPicked}
-                            startCall={startCall}
                             disableButtons={disableButtons}
                         />
                     ))}

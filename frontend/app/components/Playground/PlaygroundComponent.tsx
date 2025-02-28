@@ -1,23 +1,18 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
-import { useWebSocketHandler } from "@/hooks/useWebSocketHandler";
+import React, { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Button } from "@/components/ui/button";
 import { getCreditsRemaining } from "@/lib/utils";
 import ControlPanel from "./ControlPanel";
-import { Messages } from "./Messages";
-import { Play, Sparkles } from "lucide-react";
 import PickPersonality from "./PickPersonality";
 import { updateUser } from "@/db/users";
 import _ from "lodash";
-import AddCreditsModal from "../Upsell/AddCreditsModal";
 import HomePageSubtitles from "../HomePageSubtitles";
-import MessageHeader from "./MessageHeader";
 import PersonalityFilters from "./PersonalityFilters";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { TranscriptProvider } from "../Realtime/contexts/TranscriptContext";
+import { EventProvider } from "../Realtime/contexts/EventContext";
+import App from "../Realtime/App";
+import { checkIfUserHasApiKey } from "@/app/actions";
 
 const sortPersonalities = (
     personalities: IPersonality[],
@@ -44,21 +39,17 @@ const Playground: React.FC<PlaygroundProps> = ({
     currentUser,
     allPersonalities,
 }) => {
-    const supabase = createClient();
+    const [hasApiKey, setHasApiKey] = useState<boolean>(false);
 
-    const {
-        messageHistory,
-        emotionDictionary,
-        connectionStatus,
-        microphoneStream,
-        audioBuffer,
-        handleClickOpenConnection,
-        handleClickInterrupt,
-        handleClickCloseConnection,
-        muteMicrophone,
-        unmuteMicrophone,
-        isMuted,
-    } = useWebSocketHandler(currentUser);
+    useEffect(() => {
+        const checkApiKey = async () => {
+            const hasApiKey = await checkIfUserHasApiKey(currentUser.user_id);
+            setHasApiKey(hasApiKey);
+        };
+        checkApiKey();
+    }, [currentUser.user_id]);
+
+    const supabase = createClient();
 
     // Remove userState entirely and just use personalityState
     const [personalityIdState, setPersonalityIdState] = useState<string>(
@@ -72,8 +63,6 @@ const Playground: React.FC<PlaygroundProps> = ({
     const creditsRemaining = getCreditsRemaining(currentUser);
     const outOfCredits = creditsRemaining <= 0 && !currentUser.is_premium;
     // const ref: any = useRef<ComponentRef<typeof Messages> | null>(null);
-
-    const isSelectDisabled = connectionStatus === "Open";
 
     const sortedPersonalities = React.useMemo(
         () => sortPersonalities(allPersonalities, personalityIdState),
@@ -92,13 +81,6 @@ const Playground: React.FC<PlaygroundProps> = ({
         );
     };
 
-    const startCall = useCallback(
-        (personalityId: string) => {
-            handleClickOpenConnection(personalityId);
-        },
-        [handleClickOpenConnection]
-    );
-
     return (
         <div className="flex flex-col">
             <div className="flex flex-col w-full gap-2">
@@ -108,37 +90,11 @@ const Playground: React.FC<PlaygroundProps> = ({
                             {"Playground"}
                         </h1>
                         <div className="flex flex-col gap-8 items-center justify-center">
-                        <Popover>
-                                <PopoverTrigger asChild>
-                                <Button
-                                    disabled={
-                                        !currentUser ||
-                                        isSelectDisabled 
-                                    }
-                                    className={
-                                        "z-50 flex items-center gap-1.5 rounded-full"
-                                    }
-                                    onClick={() =>
-                                        startCall(personalityIdState)
-                                    }
-                                    size="sm"
-                                >
-                                    <Play
-                                        size={16}
-                                        strokeWidth={3}
-                                        stroke={"currentColor"}
-                                    />
-                                    <span className="text-md font-semibold">
-                                        {"Play"}
-                                    </span>
-                                </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-80" align="center" side="bottom">
-                                  <div className="grid gap-2 p-2 text-sm">
-                                    <span>The online playground will be back soon. Tap your Elato device and hear your character come to life!</span>
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
+                        <TranscriptProvider>
+      <EventProvider>
+        <App hasApiKey={hasApiKey} personalityIdState={personalityIdState} />
+      </EventProvider>
+    </TranscriptProvider>
                         </div>
                     </div>
                 </div>
@@ -148,8 +104,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                     page="home"
                     languageCode={'en-US'}
                 />
-                {connectionStatus != "Open" ? (
-                    <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
                         <PersonalityFilters
                             setSelectedFilters={setSelectedFilters}
                             selectedFilters={selectedFilters}
@@ -162,12 +117,10 @@ const Playground: React.FC<PlaygroundProps> = ({
                             allPersonalities={sortedPersonalities}
                             personalityIdState={personalityIdState}
                             currentUser={currentUser}
-                            startCall={startCall}
                             languageState={'en-US'}
                             disableButtons={false}
                         />
                     </div>
-                ) : null}
             </div>
 
             {/* {connectionStatus === "Open" && personalityTranslation && (
@@ -183,7 +136,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                     />
                 </div>
             )} */}
-            <ControlPanel
+            {/* <ControlPanel
                 connectionStatus={connectionStatus}
                 isMuted={isMuted}
                 muteMicrophone={muteMicrophone}
@@ -192,7 +145,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                 handleClickCloseConnection={handleClickCloseConnection}
                 microphoneStream={microphoneStream}
                 audioBuffer={audioBuffer}
-            />
+            /> */}
         </div>
     );
 };

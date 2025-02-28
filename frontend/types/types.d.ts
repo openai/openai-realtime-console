@@ -96,12 +96,13 @@ declare global {
         is_doctor: boolean;
         is_child_voice: boolean;
         key: string;
+        oai_voice: 'ash' | 'alloy' | 'echo' | 'shimmer' | 'ballad' | 'coral' | 'sage' | 'verse';
+        voice_description: string;
         title: string;
         subtitle: string;
         short_description: string;
-        voice_name: string;
-        voice_prompt: string;
         character_prompt: string;
+        voice_prompt: string;
     }
 
     type PersonalityFilter = "is_child_voice" | "is_doctor";

@@ -18,7 +18,12 @@ import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 // Utilities
 import { createRealtimeConnection } from "./lib/realtimeConnection";
 
-function App() {
+interface AppProps {
+  hasApiKey: boolean;
+  personalityIdState: string;
+}
+
+function App({ hasApiKey, personalityIdState }: AppProps) {
   const searchParams = useSearchParams();
 
   const { transcriptItems, addTranscriptMessage, addTranscriptBreadcrumb } =
@@ -75,30 +80,10 @@ function App() {
   }, [selectedAgentName]);
 
   useEffect(() => {
-    if (
-      sessionStatus === "CONNECTED" &&
-      selectedAgentConfigSet &&
-      selectedAgentName
-    ) {
-      const currentAgent = selectedAgentConfigSet.find(
-        (a) => a.name === selectedAgentName
-      );
-      addTranscriptBreadcrumb(
-        `Agent: ${selectedAgentName}`,
-        currentAgent
-      );
+    if (sessionStatus === "CONNECTED") {
       updateSession(true);
     }
-  }, [selectedAgentConfigSet, selectedAgentName, sessionStatus]);
-
-  useEffect(() => {
-    if (sessionStatus === "CONNECTED") {
-      console.log(
-        `updatingSession, isPTTACtive=${isPTTActive} sessionStatus=${sessionStatus}`
-      );
-      updateSession();
-    }
-  }, [isPTTActive]);
+  }, [sessionStatus]);
 
   const fetchEphemeralKey = async (): Promise<string | null> => {
     logClientEvent({ url: "/session" }, "fetch_session_token_request");
@@ -218,15 +203,12 @@ function App() {
           create_response: true,
         };
 
-    const instructions = currentAgent?.instructions || "";
     const tools = currentAgent?.tools || [];
 
     const sessionUpdateEvent = {
       type: "session.update",
       session: {
         modalities: ["text", "audio"],
-        instructions,
-        voice: "coral",
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
         input_audio_transcription: { model: "whisper-1" },
@@ -238,7 +220,7 @@ function App() {
     sendClientEvent(sessionUpdateEvent);
 
     if (shouldTriggerResponse) {
-      sendSimulatedUserMessage("hi");
+      sendSimulatedUserMessage("The user is initiating a new chat here. Say something!");
     }
   };
 
@@ -298,6 +280,7 @@ function App() {
   return  <BottomToolbar
   sessionStatus={sessionStatus}
   onToggleConnection={onToggleConnection}
+  hasApiKey={hasApiKey}
 />
 }
 

@@ -8,7 +8,6 @@ import { encryptSecret, getMacAddressFromDeviceCode, isValidMacAddress } from "@
 import { addUserToDevice, dbCheckUserCode } from "@/db/devices";
 import { getSimpleUserById, updateUser } from "@/db/users";
 
-
 export const signInAction = async (formData: FormData) => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;

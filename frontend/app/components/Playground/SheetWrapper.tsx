@@ -8,13 +8,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { CircleCheck } from "lucide-react";
+import { Check, CheckCircle, CircleCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface SheetWrapperProps {
     personality: IPersonality;
     personalityIdState: string;
     onPersonalityPicked: (personalityId: string) => void;
-    startCall: (personalityId: string) => void;
     languageState: string;
     disableButtons: boolean;
 }
@@ -23,20 +23,17 @@ const SheetWrapper: React.FC<SheetWrapperProps> = ({
     personality,
     personalityIdState,
     onPersonalityPicked,
-    startCall,
     languageState,
     disableButtons,
 }) => {
+    const isCurrentPersonality = personalityIdState === personality.personality_id;
     return (
         <ModifyCharacterSheet
             key={personality.personality_id}
             openPersonality={personality}
             languageState={languageState}
-            isCurrentPersonality={
-                personalityIdState === personality.personality_id
-            }
+            isCurrentPersonality={isCurrentPersonality}
             onPersonalityPicked={onPersonalityPicked}
-            startCall={startCall}
             disableButtons={disableButtons}
         >
             <Card
@@ -48,7 +45,7 @@ const SheetWrapper: React.FC<SheetWrapperProps> = ({
                 )}
                 // onClick={() => onPersonalityPicked(personality)}
             >
-                <CardContent className="flex-shrink-0 p-0 h-[160px] sm:h-[180px]">
+                <CardContent className="flex-shrink-0 p-0 h-[160px] sm:h-[180px] relative">
                     <Image
                         src={getPersonalityImageSrc(personality.key)}
                         alt={personality.key}
@@ -56,17 +53,23 @@ const SheetWrapper: React.FC<SheetWrapperProps> = ({
                         height={180}
                         className="rounded-3xl rounded-br-none rounded-bl-none w-full h-full object-cover"
                     />
+                    <Button
+                        size="sm"
+                        variant={isCurrentPersonality ? "default" : "outline"}
+                        className={`absolute shadow-lg top-2 right-2 rounded-full h-9 w-9 p-0 ${isCurrentPersonality ? "bg-primary text-primary-foreground" : ""}`}
+                        onClick={() => onPersonalityPicked(personality.personality_id)}
+                        aria-label={isCurrentPersonality ? "Deselect feature" : "Select feature"}
+                    >
+                        {true ? (
+                            <Check className="h-4 w-4" strokeWidth={3} />
+                        ) : (
+                            <CheckCircle className="h-4 w-4" strokeWidth={3} />
+                        )}
+                    </Button>
                 </CardContent>
                 <CardHeader className="flex-shrink-0 gap-0 px-4 py-2">
                     <CardTitle className="font-semibold text-md flex flex-row items-center gap-2">
-                        {personality.title}{" "}
-                        {personalityIdState === personality.personality_id && (
-                            <CircleCheck
-                                size={20}
-                                className="text-white flex-shrink-0"
-                                fill="black"
-                            />
-                        )}
+                        {personality.title}  
                     </CardTitle>
                     <CardDescription className="text-sm font-normal">
                         {personality.subtitle}

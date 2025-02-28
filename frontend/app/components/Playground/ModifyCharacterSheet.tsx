@@ -8,7 +8,7 @@ import {
 import Image from "next/image";
 import PickVoice from "./PickVoice";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { Airplay, MonitorSmartphone, Phone } from "lucide-react";
+import { Airplay, Check, MonitorSmartphone, Phone } from "lucide-react";
 import { useState } from "react";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
@@ -17,7 +17,6 @@ interface ModifyCharacterSheetProps {
     isCurrentPersonality: boolean;
     children: React.ReactNode;
     onPersonalityPicked: (personalityIdPicked: string) => void;
-    startCall: (personalityIdSelected: string) => void;
     languageState: string;
     disableButtons: boolean;
 }
@@ -27,7 +26,6 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
     isCurrentPersonality,
     children,
     onPersonalityPicked,
-    startCall,
     languageState,
     disableButtons,
 }) => {
@@ -55,30 +53,11 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                         setTimeout(() => setIsSent(false), 10000);
                     }}
                 >
-                    <MonitorSmartphone className="flex-shrink-0 h-5 w-5 md:h-6 md:w-6" />
+                    <Check className="flex-shrink-0 h-5 w-5 md:h-6 md:w-6" />
                     {isSent || isCurrentPersonality
-                        ? "Sent"
-                        : "Send to device"}
+                        ? "Live character"
+                        : "Chat on device"}
                 </Button>
-                <SheetClose asChild>
-                    <Button
-                        size="lg"
-                        variant={disableButtons ? "upsell_outline" : "outline"}
-                        disabled={disableButtons}
-                        className={`w-full rounded-full border-2 text-sm md:text-lg flex flex-row items-center gap-1 md:gap-2 ${
-                            disableButtons
-                                ? "border-yellow-600"
-                                : "border-black"
-                        }`}
-                        onClick={() => {
-                            onPersonalityPicked(openPersonality.personality_id);
-                            startCall(openPersonality.personality_id);
-                        }}
-                    >
-                        <Phone className="flex-shrink-0 h-5 w-5 md:h-6 md:w-6" />
-                        {"Chat"}
-                    </Button>
-                </SheetClose>
             </div>
         );
     };

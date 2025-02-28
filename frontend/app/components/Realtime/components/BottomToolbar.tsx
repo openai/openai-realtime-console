@@ -1,27 +1,43 @@
 import React from "react";
 import { SessionStatus } from "@/app/components/Realtime/types";
+import { Play } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 interface BottomToolbarProps {
   sessionStatus: SessionStatus;
   onToggleConnection: () => void;
+  hasApiKey: boolean;
 }
 
 function BottomToolbar({
   sessionStatus,
   onToggleConnection,
+  hasApiKey,
 }: BottomToolbarProps) {
   const isConnected = sessionStatus === "CONNECTED";
   const isConnecting = sessionStatus === "CONNECTING";
 
+  function getConnectionButtonIcon() {
+    if (isConnected) return <X className="flex-shrink-0 h-4 w-4 md:h-4 md:w-4" size={12}  />;
+    if (isConnecting) return <Loader2 className="flex-shrink-0 h-4 w-4 md:h-4 md:w-4" size={12} />;
+    return <Play className="flex-shrink-0 h-4 w-4 md:h-4 md:w-4" size={12} />;
+  }
+
   function getConnectionButtonLabel() {
     if (isConnected) return "Disconnect";
     if (isConnecting) return "Connecting...";
-    return "Connect";
+    return "Chat";
   }
 
+  const isDisabled = isConnecting || !hasApiKey;
+
   function getConnectionButtonClasses() {
-    const baseClasses = "text-white text-base p-2 w-36 rounded-full h-full";
-    const cursorClass = isConnecting ? "cursor-not-allowed" : "cursor-pointer";
+    const baseClasses = "text-white text-base p-2 w-fit rounded-full shadow-lg flex flex-row items-center justify-center gap-2 px-4";
+    const cursorClass = isDisabled ? "cursor-not-allowed" : "cursor-pointer";
+
+    if (isDisabled) {
+      return `bg-gray-600 hover:bg-gray-700 ${cursorClass} ${baseClasses}`;
+    }
 
     if (isConnected) {
       // Connected -> label "Disconnect" -> red
@@ -33,10 +49,15 @@ function BottomToolbar({
 
   return (
     <button
-    onClick={onToggleConnection}
+    onClick={() => {
+      if (hasApiKey) {
+        onToggleConnection();
+      }
+    }}
     className={getConnectionButtonClasses()}
-    disabled={isConnecting}
+    disabled={isDisabled}
   >
+    {getConnectionButtonIcon()}
     {getConnectionButtonLabel()}
   </button>
   );
