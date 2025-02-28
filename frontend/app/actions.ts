@@ -8,6 +8,12 @@ import { encryptSecret, getMacAddressFromDeviceCode, isValidMacAddress } from "@
 import { addUserToDevice, dbCheckUserCode } from "@/db/devices";
 import { getSimpleUserById, updateUser } from "@/db/users";
 
+export async function deleteUserApiKey(userId: string) {
+    const supabase = createClient();
+    const { error } = await supabase.from('api_keys').delete().eq('user_id', userId);
+    return error;
+}
+
 export const signInAction = async (formData: FormData) => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;

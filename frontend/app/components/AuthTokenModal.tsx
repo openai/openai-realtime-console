@@ -8,8 +8,8 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Check, Key } from "lucide-react";
-import { checkIfUserHasApiKey, storeUserApiKey } from "../actions";
+import { Check, Key, Trash } from "lucide-react";
+import { checkIfUserHasApiKey, storeUserApiKey, deleteUserApiKey } from "../actions";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -52,7 +52,7 @@ const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user, userHasApiKey, ha
                         id="api_key"
                         value={apiKey}
                         disabled={hasApiKey}
-                        placeholder={hasApiKey ? "sk-... (OpenAI API Key set)" : "sk-..."}
+                        placeholder={hasApiKey ? "sk-... (OpenAI API Key already set)" : "sk-..."}
                         onChange={(e) => {
                             setApiKey(e.target.value);
                         }}
@@ -60,7 +60,7 @@ const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user, userHasApiKey, ha
                     <Button
                         size="icon"
                         variant="ghost"
-                        disabled={!apiKey || hasApiKey}
+                        // disabled={!apiKey || hasApiKey}
                         onClick={async () => {
                             if (!hasApiKey) {
                                 await storeUserApiKey(user.user_id, apiKey);
@@ -70,10 +70,18 @@ const AuthTokenModal: React.FC<AuthTokenModalProps> = ({ user, userHasApiKey, ha
                                     description: "OpenAI API Key added",
                                 });
                                 setApiKey("********************");
+                            } else {
+                                await deleteUserApiKey(user.user_id);
+                                setHasApiKey(false);
+                                userHasApiKey();
+                                toast({
+                                    description: "OpenAI API Key removed",
+                                });
                             }
                         }}
+                        className="flex-shrink-0"
                     >
-                        <Check className="flex-shrink-0" size={18} />
+                        {!hasApiKey ?<Check className="flex-shrink-0" size={18} /> : <Trash className="flex-shrink-0" size={18} />}
                     </Button>
                 </div>
             </DialogContent>

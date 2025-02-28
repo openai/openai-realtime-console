@@ -17,6 +17,7 @@ import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 
 // Utilities
 import { createRealtimeConnection } from "./lib/realtimeConnection";
+import { toast } from "@/components/ui/use-toast";
 
 interface AppProps {
   hasApiKey: boolean;
@@ -93,8 +94,10 @@ function App({ hasApiKey, personalityIdState }: AppProps) {
 
     if (!data.client_secret?.value) {
       logClientEvent(data, "error.no_ephemeral_key");
-      console.error("No ephemeral key provided by the server");
       setSessionStatus("DISCONNECTED");
+      toast({
+        description: "Your API key is likely invalid. Please update it in Settings.",
+      });
       return null;
     }
 
