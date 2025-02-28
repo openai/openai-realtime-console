@@ -2,6 +2,7 @@ import React from "react";
 import { SessionStatus } from "@/app/components/Realtime/types";
 import { Play } from "lucide-react";
 import { Loader2, X } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface BottomToolbarProps {
   sessionStatus: SessionStatus;
@@ -33,33 +34,47 @@ function BottomToolbar({
 
   function getConnectionButtonClasses() {
     const baseClasses = "text-white text-base p-2 w-fit rounded-full shadow-lg flex flex-row items-center justify-center gap-2 px-4";
-    const cursorClass = isDisabled ? "cursor-not-allowed" : "cursor-pointer";
+    // const cursorClass = isDisabled ? "cursor-not-allowed" : "cursor-pointer";
 
     if (isDisabled) {
-      return `bg-gray-600 hover:bg-gray-700 ${cursorClass} ${baseClasses}`;
+      return `bg-gray-600 hover:bg-gray-700 ${baseClasses}`;
     }
 
     if (isConnected) {
       // Connected -> label "Disconnect" -> red
-      return `bg-red-600 hover:bg-red-700 ${cursorClass} ${baseClasses}`;
+      return `bg-red-600 hover:bg-red-700 ${baseClasses}`;
     }
     // Disconnected or connecting -> label is either "Connect" or "Connecting" -> black
-    return `bg-black hover:bg-gray-900 ${cursorClass} ${baseClasses}`;
+    return `bg-black hover:bg-gray-900 ${baseClasses}`;
   }
 
   return (
-    <button
-    onClick={() => {
-      if (hasApiKey) {
-        onToggleConnection();
-      }
-    }}
-    className={getConnectionButtonClasses()}
-    disabled={isDisabled}
-  >
-    {getConnectionButtonIcon()}
-    {getConnectionButtonLabel()}
-  </button>
+    <>
+    <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+          <button
+        onClick={() => {
+          if (hasApiKey) {
+            onToggleConnection();
+          }
+        }}
+        className={getConnectionButtonClasses()}
+        disabled={isDisabled}
+      >
+        {getConnectionButtonIcon()}
+        {getConnectionButtonLabel()}
+      </button>
+          </TooltipTrigger>
+          {isDisabled && (
+            <TooltipContent>
+              <p>Add an API key in Settings to chat with your AI character.</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
+     
+    </>
   );
 }
 
