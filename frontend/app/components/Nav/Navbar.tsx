@@ -43,7 +43,7 @@ export function Navbar({
         >
             {!isHome && (
                 <div className="fixed h-8 top-0 flex items-center justify-center w-full bg-yellow-100 dark:bg-yellow-900/30 px-4 py-2 text-center font-medium text-yellow-800 dark:text-yellow-200 z-40 gap-2 text-sm">
-                    🚀 Starmoon with advanced AI speech!
+                    🚀 Starmoon has a new home!
                 </div>
             )}
             <nav
