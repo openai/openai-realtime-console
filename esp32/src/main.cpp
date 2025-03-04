@@ -11,7 +11,7 @@
 
 // #define WEBSOCKETS_DEBUG_LEVEL WEBSOCKETS_LEVEL_ALL
 
-#define TOUCH_THRESHOLD 60000
+#define TOUCH_THRESHOLD 28000
 #define LONG_PRESS_MS 1000
 #define REQUIRED_RELEASE_CHECKS 100     // how many consecutive times we need "below threshold" to confirm release
 
