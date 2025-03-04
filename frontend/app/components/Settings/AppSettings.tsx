@@ -134,6 +134,24 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                 <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                     <div className="flex flex-row items-center gap-2">
+                        <Label className="text-sm font-medium text-gray-700">
+                            Set your OpenAI API Key
+                        </Label>
+                        <div 
+                            className={`rounded-full flex-shrink-0 h-2 w-2 ${
+                                hasApiKey ? 'bg-green-500' : 'bg-amber-500'
+                            }`} 
+                        />                    
+                    </div>
+                    <div className="flex flex-row items-center gap-2 mt-2">
+                            <AuthTokenModal user={selectedUser} userHasApiKey={userHasApiKey} hasApiKey={hasApiKey} setHasApiKey={setHasApiKey} />
+                        </div>
+                        <p className="text-xs text-gray-400">
+                            Your keys are E2E encrypted and never stored on our servers as plain text.
+                        </p>
+                    </div>
+                <div className="flex flex-col gap-2">
+                    <div className="flex flex-row items-center gap-2">
                     <Label className="text-sm font-medium text-gray-700">
                             Register your device
                         </Label>
@@ -170,23 +188,6 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                                 error ? <span className="text-red-500">{error}.</span> :
                                 "Add your device code to your account to register it."
                         }
-                        </p>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                    <div className="flex flex-row items-center gap-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                            Set your OpenAI API Key
-                        </Label>
-                        <div 
-                            className={`rounded-full flex-shrink-0 h-2 w-2 ${
-                                hasApiKey ? 'bg-green-500' : 'bg-amber-500'
-                            }`} 
-                        />                    </div>
-                        <div className="flex flex-row items-center gap-2 mt-2">
-                            <AuthTokenModal user={selectedUser} userHasApiKey={userHasApiKey} hasApiKey={hasApiKey} setHasApiKey={setHasApiKey} />
-                        </div>
-                        <p className="text-xs text-gray-400">
-                            Your keys are E2E encrypted and never stored on our servers as plain text.
                         </p>
                     </div>
                     {/* <div className="flex flex-col gap-4 flex-nowrap">
@@ -260,7 +261,7 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                             </div>
                         </div> */}
 
-                    <div className="flex flex-col gap-2 mt-4">
+                    <div className="flex flex-col gap-2 mt-2">
                         <Label className="text-sm font-medium text-gray-700">
                             Logged in as
                         </Label>
@@ -275,7 +276,7 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                             }}
                         />
                     </div>
-                    <div className="flex flex-col gap-4 mt-6">
+                    {isConnected && <div className="flex flex-col gap-4 mt-6">
                         <Label className="text-sm font-medium text-gray-700">
                             Device volume
                         </Label>
@@ -291,7 +292,7 @@ const AppSettings: React.FC<AppSettingsProps> = ({
                             />
                             <p className="text-gray-500 text-sm">{volume}%</p>
                         </div>
-                    </div>                                   
+                    </div>}
             <form
                             action={signOutAction}
                         className="flex flex-row justify-between mt-4"
