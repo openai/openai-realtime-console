@@ -2,27 +2,31 @@
 
 This is an example application showing how to use the [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) with [WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc).
 
-## Installation and usage
+## 日本語での説明
 
-Before you begin, you'll need an OpenAI API key - [create one in the dashboard here](https://platform.openai.com/settings/api-keys). Create a `.env` file from the example file and set your API key in there:
+このアプリケーションは、[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime)を[WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc)と組み合わせて使用する方法を示すサンプルアプリケーションです。WebRTCを使用してリアルタイムの双方向通信を実現し、OpenAIのAPIと連携することができます。
+
+### インストールと使用方法
+
+始める前に、OpenAI APIキーが必要です。[こちらのダッシュボード](https://platform.openai.com/settings/api-keys)でAPIキーを作成してください。`.env.example`ファイルから`.env`ファイルを作成し、そこにAPIキーを設定します：
 
 ```bash
 cp .env.example .env
 ```
 
-Running this application locally requires [Node.js](https://nodejs.org/) to be installed. Install dependencies for the application with:
+このアプリケーションをローカルで実行するには、[Node.js](https://nodejs.org/)がインストールされている必要があります。以下のコマンドでアプリケーションの依存関係をインストールします：
 
 ```bash
 npm install
 ```
 
-Start the application server with:
+以下のコマンドでアプリケーションサーバーを起動します：
 
 ```bash
 npm run dev
 ```
 
-This should start the console application on [http://localhost:3000](http://localhost:3000).
+これにより、[http://localhost:3000](http://localhost:3000)でコンソールアプリケーションが起動します。
 
 This application is a minimal template that uses [express](https://expressjs.com/) to serve the React frontend contained in the [`/client`](./client) folder. The server is configured to use [vite](https://vitejs.dev/) to build the React frontend.
 
