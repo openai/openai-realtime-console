@@ -14,6 +14,7 @@
 #define TOUCH_THRESHOLD 28000
 #define LONG_PRESS_MS 1000
 #define REQUIRED_RELEASE_CHECKS 100     // how many consecutive times we need "below threshold" to confirm release
+#define DEBOUNCE_DELAY 1000 // milliseconds
 
 AsyncWebServer webServer(80);
 WIFIMANAGER WifiManager;
@@ -122,59 +123,54 @@ void touchTask(void* parameter) {
 
   bool touched = false;
   unsigned long pressStartTime = 0;
+  unsigned long lastTouchTime = 0;
 
   while (1) {
     // Read the touch sensor
     uint32_t touchValue = touchRead(TOUCH_PAD_NUM2);
     bool isTouched = (touchValue > TOUCH_THRESHOLD);
+    unsigned long currentTime = millis();
 
-    // Detect transition from "not touched" to "touched"
-    if (isTouched && !touched) {
+    // Debounced touch detection
+    if (isTouched && !touched && (currentTime - lastTouchTime > DEBOUNCE_DELAY)) {
       touched = true;
+      lastTouchTime = currentTime;
 
-    if (!webSocket.isConnected()) {
+      if (!webSocket.isConnected()) {
         enterSleep();
+      } else if (deviceState == SPEAKING) {
+      // First, set the flag to prevent further audio processing
+        scheduleListeningRestart = true;
+        scheduledTime = millis() + 100; // Shorter delay
+        
+        // Clear audio buffer immediately to stop any queued audio
+        audioBuffer.reset();
+        
+        unsigned long audio_end_ms = getSpeakingDuration();
+
+        // Use ArduinoJson to create the message
+        JsonDocument doc;
+        doc["type"] = "instruction";
+        doc["msg"] = "interrupt";
+        doc["audio_end_ms"] = audio_end_ms;
+        
+        String jsonString;
+        serializeJson(doc, jsonString);
+        
+        // Take mutex to ensure clean WebSocket access
+        if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+          webSocket.sendTXT(jsonString);
+          xSemaphoreGive(wsMutex);
+        }
+        }
     }
 
-      pressStartTime = millis();
-      Serial.println("Touch detected - press started.");
-
-      unsigned long audio_end_ms = getSpeakingDuration();
-
-            // Use ArduinoJson to create the message
-      JsonDocument doc;
-      doc["type"] = "instruction";
-      doc["msg"] = "interrupt";
-      doc["audio_end_ms"] = audio_end_ms;
-      
-      String jsonString;
-      serializeJson(doc, jsonString);
-      
-      webSocket.sendTXT(jsonString);
-      
-      // goToSleep = true;
-    //   enterSleep();
+    // Release detection
+    if (!isTouched && touched) {
+      touched = false;
     }
 
-    // Detect transition from "touched" to "released"
-    // if (!isTouched && touched) {
-    //   touched = false;
-    //   unsigned long pressDuration = millis() - pressStartTime;
-    //   if (pressDuration >= LONG_PRESS_MS) {
-    //     Serial.print("Long press detected (");
-    //     Serial.print(pressDuration);
-    //     Serial.println(" ms) - going to sleep.");
-    //     // Call enterSleep() which will wait for a stable release, enable wake, and sleep.
-    //     goToSleep = true;
-    //     // (The device will reset on wake, so code execution won't continue here.)
-    //   } else {
-    //     Serial.print("Short press detected (");
-    //     Serial.print(pressDuration);
-    //     Serial.println(" ms) - ignoring.");
-    //   }
-    // }
-
-    delay(50);  // Small delay to avoid spamming readings
+    vTaskDelay(20);  // Reduced from 50ms to 20ms for better responsiveness
   }
   // (This point is never reached.)
   vTaskDelete(NULL);

@@ -62,6 +62,22 @@ unsigned long getSpeakingDuration() {
     return 0;
 }
 
+// Add this function for centralized state management
+void transitionToListening() {
+    // flush all streams
+    i2s.flush();
+    volume.flush();
+    queue.flush();
+    i2sInput.flush(); // Also flush the input stream
+
+    // disable heartbeat during listening
+    webSocket.disableHeartbeat();
+    deviceState = LISTENING;
+    digitalWrite(10, LOW);
+    scheduleListeningRestart = false;
+    Serial.println("Transitioned to listening mode");
+}
+
 void audioStreamTask(void *parameter) {
     Serial.println("Starting I2S stream pipeline...");
     
@@ -102,22 +118,8 @@ void audioStreamTask(void *parameter) {
     volume.begin(vcfg);     // Begin the volume stream with the provided configuration.
 
 while (1) {
-          if (scheduleListeningRestart && millis() >= scheduledTime) {
-
-           // flush all streams
-           i2s.flush();
-           volume.flush();
-           queue.flush();
-        //    bufferPrint.flush();
-
-           // disable heartbeat during listening
-           webSocket.disableHeartbeat();
-           deviceState = LISTENING;
-           digitalWrite(10, LOW);
-           scheduleListeningRestart = false;
-           Serial.println("Resumed listening (non-blocking via millis)");
-       }
              copier.copy();  
+            vTaskDelay(1); // Small delay to yield CPU
              // Depending on your data rate, you might add a small delay or yield here.
          }
 }
@@ -173,6 +175,12 @@ void micTask(void *parameter) {
     // For raw PCM, simply use the stream copy.
 
     while (1) {
+        // Check if we need to transition to listening mode
+        if (scheduleListeningRestart && millis() >= scheduledTime) {
+            Serial.println("Transitioning to listening mode");
+            transitionToListening();
+        }
+
         if (deviceState == LISTENING && webSocket.isConnected()) {
             // The copier takes care of reading from I2S stream and writing to the WebSocket.
             micToWsCopier.copy();
@@ -240,7 +248,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
                 // Start listening again
                 // disable heartbeat during listening
                 scheduleListeningRestart = true;
-                scheduledTime = millis() + 1000; // 2 second delay
+                scheduledTime = millis() + 1000; // 1 second delay
             } else if (strcmp((char*)msg.c_str(), "response.created") == 0) {
                 Serial.println("Received response.created, stopping listening");
                 webSocket.enableHeartbeat(25000, 15000, 3);
@@ -253,13 +261,16 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
         break;
     case WStype_BIN:
     {
-        size_t chunkSize = length;
-
-        // Pass the received opus packet to the decoder.
-        // The decoder's write() method will decode and output PCM via BufferPrint.
-        size_t processed = opusDecoder.write(payload, chunkSize);
-        if (processed != chunkSize) {
-          Serial.printf("Warning: Only processed %d/%d bytes\n", processed, chunkSize);
+            // If we're transitioning to listening mode, completely skip processing
+    if (scheduleListeningRestart || deviceState == LISTENING) {
+        Serial.println("Skipping binary data - device is transitioning to listening mode");
+        break;  // Exit immediately without processing any data
+    }
+        if (deviceState == SPEAKING) {
+            size_t processed = opusDecoder.write(payload, length);
+            if (processed != length) {
+                Serial.printf("Warning: Only processed %d/%d bytes\n", processed, length);
+            }
         }
 
         break;
