@@ -1,7 +1,7 @@
 import CreditsRemaining from "./CreditsRemaining";
 interface HomePageSubtitlesProps {
     user: IUser;
-    page: "home" | "settings" | "track";
+    page: "home" | "settings" | "create";
     languageCode?: string;
 }
 
@@ -24,10 +24,16 @@ const HomePageSubtitles: React.FC<HomePageSubtitlesProps> = ({
                 </p>
             );
         }
-    } else {
+    } else if (page === "settings") {
         return (
             <p className="text-sm text-gray-600">
                 {"You can update your settings below"}
+            </p>
+        );
+    } else if (page === "create") {
+        return (
+            <p className="text-sm text-gray-600">
+                {"Customize your character's voice, language, accent and much more"}
             </p>
         );
     }

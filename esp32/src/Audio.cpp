@@ -14,7 +14,7 @@ WebSocketsClient webSocket;
 // TIMING REGISTERS
 bool scheduleListeningRestart = false;
 unsigned long scheduledTime = 0;
-unsigned long connectionStartTime = 0;
+unsigned long speakingStartTime = 0;
 
 // AUDIO SETTINGS
 int currentVolume = 70;
@@ -55,8 +55,15 @@ QueueStream<uint8_t> queue(audioBuffer);
 StreamCopy copier(volume, queue);
 AudioInfo info(SAMPLE_RATE, CHANNELS, BITS_PER_SAMPLE);
 
+unsigned long getSpeakingDuration() {
+    if (deviceState == SPEAKING && speakingStartTime > 0) {
+        return millis() - speakingStartTime;
+    }
+    return 0;
+}
+
 void audioStreamTask(void *parameter) {
-        Serial.println("Starting I2S stream pipeline...");
+    Serial.println("Starting I2S stream pipeline...");
     
     pinMode(10, OUTPUT);
 
@@ -96,13 +103,12 @@ void audioStreamTask(void *parameter) {
 
 while (1) {
           if (scheduleListeningRestart && millis() >= scheduledTime) {
-           connectionStartTime = millis();
 
            // flush all streams
            i2s.flush();
            volume.flush();
            queue.flush();
-           bufferPrint.flush();
+        //    bufferPrint.flush();
 
            // disable heartbeat during listening
            webSocket.disableHeartbeat();
@@ -167,23 +173,6 @@ void micTask(void *parameter) {
     // For raw PCM, simply use the stream copy.
 
     while (1) {
-        if (connectionStartTime && deviceState == LISTENING &&
-            millis() - connectionStartTime >= 10000) {
-            deviceState = PROCESSING;
-            // vTaskDelay(20);
-
-            if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
-                // flush all streams
-                i2sInput.flush();
-                wsStream.flush();
-                webSocket.sendTXT("{\"type\": \"instruction\", \"msg\": \"end_of_speech\"}");
-                xSemaphoreGive(wsMutex);
-            }
-
-            connectionStartTime = 0;
-            Serial.println("Sent VAD detection request");
-        }
-
         if (deviceState == LISTENING && webSocket.isConnected()) {
             // The copier takes care of reading from I2S stream and writing to the WebSocket.
             micToWsCopier.copy();
@@ -199,7 +188,6 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     {
     case WStype_DISCONNECTED:
         Serial.printf("[WSc] Disconnected!\n");
-        connectionStartTime = 0;  // Reset timer
         deviceState = IDLE;
         break;
     case WStype_CONNECTED:
@@ -250,15 +238,15 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
             if (strcmp((char*)msg.c_str(), "response.done") == 0) {
                 Serial.println("Received response.done, starting listening again");
                 // Start listening again
+                // disable heartbeat during listening
                 scheduleListeningRestart = true;
-                scheduledTime = millis() + 1000;     
+                scheduledTime = millis() + 1000; // 2 second delay
             } else if (strcmp((char*)msg.c_str(), "response.created") == 0) {
                 Serial.println("Received response.created, stopping listening");
                 webSocket.enableHeartbeat(25000, 15000, 3);
-                connectionStartTime = 0;
                 deviceState = SPEAKING;
                 digitalWrite(10, HIGH);
-                
+                speakingStartTime = millis();  // Record when speaking starts
             }
         }
     }

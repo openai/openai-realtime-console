@@ -8,25 +8,39 @@ import { buttonVariants } from "@/components/ui/button";
 import { Dot } from "lucide-react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
-    items: {
-        href: string;
-        title: string;
-        icon: React.ReactNode;
-    }[];
+    items: SidebarNavItem[];
 }
 
 export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
     const pathname = usePathname();
 
+    const primaryItem = (item: SidebarNavItem) => {
+        return <Link
+        key={item.href}
+        href={item.href}
+        className={cn(
+            buttonVariants({ variant: "primary" }),
+            pathname === item.href ? "bg-muted shadow-xl" : "",
+            "w-fit justify-start rounded-full text-sm sm:text-xl text-normal text-white bg-yellow-500 hover:bg-yellow-400"
+        )}
+    >
+        <span className="mr-2">{item.icon}</span>
+        {item.title}
+    </Link>
+    }
+
     return (
         <nav
             className={cn(
-                "hidden md:flex space-x-2 justify-between px-4 sm:justify-evenly md:justify-start md:flex-col md:space-x-0 md:space-y-6 rounded-xl",
+                "max-w-[220px] mx-auto hidden md:flex space-x-2 justify-between px-4 sm:justify-evenly md:justify-start md:flex-col md:space-x-0 md:space-y-6 rounded-xl",
                 className
             )}
             {...props}
         >
             {items.map((item) => {
+                if (item.isPrimary) {
+                    return primaryItem(item);
+                }
                 return (
                     <Link
                         key={item.href}

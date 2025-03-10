@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { SidebarNav } from "../components/Nav/SidebarNavItems";
-import { Flame, Gamepad2, Settings } from "lucide-react";
+import { Gamepad2, Plus, PlusCircle, Settings } from "lucide-react";
 import { Metadata } from "next";
 import { getOpenGraphMetadata } from "@/lib/utils";
 import { MobileNav } from "../components/Nav/MobileNav";
@@ -18,10 +18,9 @@ export const metadata: Metadata = {
     ...getOpenGraphMetadata("Home"),
 };
 
-const sidebarNavItems = (languageCode: string) => {
-    return [
-        {
-            title: "Playground",
+const sidebarNavItems: SidebarNavItem[] = [
+    {
+        title: "Playground",
             href: "/home",
             icon: <Gamepad2 size={ICON_SIZE} />,
         },
@@ -30,8 +29,13 @@ const sidebarNavItems = (languageCode: string) => {
             href: "/home/settings",
             icon: <Settings size={ICON_SIZE} />,
         },
+        {
+            title: "Create",
+            href: "/home/create",
+            icon: <Plus size={ICON_SIZE+4} strokeWidth={2.5} />,
+            isPrimary: true,
+        },
     ];
-};
 
 export default async function RootLayout({
     children,
@@ -54,15 +58,21 @@ export default async function RootLayout({
         redirect("/login");
     }
 
+    const mobileNavItems = [
+        sidebarNavItems[0], // Playground
+        sidebarNavItems[2], // Create
+        sidebarNavItems[1], // Settings
+    ];
+
     return (
-        <div className="flex flex-1 flex-col mx-auto w-full max-w-[1400px] gap-2 py-2 md:flex-row">
-            <aside className="w-full md:w-[270px] sm:py-6 pt-2 md:overflow-y-auto md:fixed md:h-screen">
-                <SidebarNav items={sidebarNavItems(`en-US`)} />
+        <div className="flex flex-1 flex-col mx-auto w-full max-w-[1400px] gap-2 pb-2 md:flex-row">
+            <aside className="w-full md:w-[270px] sm:py-4 pt-2 md:overflow-y-auto md:fixed md:h-screen">
+                <SidebarNav items={sidebarNavItems} />
             </aside>
-            <main className="flex-1 sm:py-6 px-4 flex justify-center md:ml-[270px]">
+            <main className="flex-1 sm:py-4 px-4 flex justify-center md:ml-[270px]">
                 <div className="max-w-5xl w-full">{children}</div>
             </main>
-            <MobileNav items={sidebarNavItems(`en-US`)} />
+            <MobileNav items={mobileNavItems} />
         </div>
     );
 }

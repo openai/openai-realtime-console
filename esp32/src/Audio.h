@@ -11,7 +11,7 @@ extern WebSocketsClient webSocket;
 
 extern bool scheduleListeningRestart;
 extern unsigned long scheduledTime;
-extern unsigned long connectionStartTime;
+extern unsigned long speakingStartTime;  // Add this to track when speaking starts
 
 extern int currentVolume;
 extern const int CHANNELS;         // Mono
@@ -38,6 +38,7 @@ void websocketSetup(String server_domain, int port, String path);
 void networkTask(void *parameter);
 
 // AUDIO OUTPUT
+unsigned long getSpeakingDuration();
 void audioStreamTask(void *parameter);
 
 // AUDIO INPUT

@@ -97,7 +97,6 @@ void getAuthTokenFromNVS()
     preferences.begin("auth", false);
     authTokenGlobal = preferences.getString("auth_token", "");
     preferences.end();
-    Serial.println(authTokenGlobal);
 }
 
 void setupWiFi()
@@ -132,10 +131,29 @@ void touchTask(void* parameter) {
     // Detect transition from "not touched" to "touched"
     if (isTouched && !touched) {
       touched = true;
+
+    if (!webSocket.isConnected()) {
+        enterSleep();
+    }
+
       pressStartTime = millis();
       Serial.println("Touch detected - press started.");
+
+      unsigned long audio_end_ms = getSpeakingDuration();
+
+            // Use ArduinoJson to create the message
+      JsonDocument doc;
+      doc["type"] = "instruction";
+      doc["msg"] = "interrupt";
+      doc["audio_end_ms"] = audio_end_ms;
+      
+      String jsonString;
+      serializeJson(doc, jsonString);
+      
+      webSocket.sendTXT(jsonString);
+      
       // goToSleep = true;
-      enterSleep();
+    //   enterSleep();
     }
 
     // Detect transition from "touched" to "released"

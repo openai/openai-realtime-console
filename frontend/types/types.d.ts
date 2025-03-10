@@ -8,6 +8,13 @@ declare global {
         type: "demo" | "preorder";
     }
 
+    interface SidebarNavItem {
+        title: string;
+        href: string;
+        icon: React.ReactNode;
+        isPrimary?: boolean;
+    }
+
     interface ILanguage {
         language_id: string;
         code: string;
