@@ -62,19 +62,59 @@ unsigned long getSpeakingDuration() {
     return 0;
 }
 
+// Add this function for transitioning to speaking mode
+void transitionToSpeaking() {
+    // First stop all audio transmission
+    if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+        // Temporarily disable any WebSocket data sending
+        deviceState = PROCESSING; // Intermediate state to stop sending audio
+        xSemaphoreGive(wsMutex);
+    }
+    
+    // Give time for any in-flight WebSocket operations to complete
+    vTaskDelay(50);
+    
+    // Flush all input streams to clear any pending audio data
+    i2sInput.flush();
+    
+    // Now safely transition to speaking mode
+    if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+        deviceState = SPEAKING;
+        digitalWrite(10, HIGH);
+        speakingStartTime = millis();
+        
+        // Enable heartbeat after state change is complete
+        webSocket.enableHeartbeat(25000, 15000, 3);
+        
+        xSemaphoreGive(wsMutex);
+    }
+    
+    Serial.println("Transitioned to speaking mode");
+}
+
 // Add this function for centralized state management
 void transitionToListening() {
-    // flush all streams
+    Serial.println("Transitioning to listening mode");
+
+ // These stream operations don't directly interact with the WebSocket
+    audioBuffer.reset();
     i2s.flush();
     volume.flush();
     queue.flush();
     i2sInput.flush(); // Also flush the input stream
 
-    // disable heartbeat during listening
-    webSocket.disableHeartbeat();
+    // Only the WebSocket operations need mutex protection
+    if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+        // This directly accesses the WebSocket and needs protection
+        webSocket.disableHeartbeat();
+        xSemaphoreGive(wsMutex);
+    }
+    
+    // State changes don't directly access the WebSocket
     deviceState = LISTENING;
     digitalWrite(10, LOW);
     scheduleListeningRestart = false;
+    
     Serial.println("Transitioned to listening mode");
 }
 
@@ -239,33 +279,32 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
         }
 
         // oai messages
-        if (strcmp((char*)type.c_str(), "oai") == 0) {
+        if (strcmp((char*)type.c_str(), "server") == 0) {
             String msg = doc["msg"];
+            Serial.println(msg);
 
             // receive response.audio.done or response.done, then start listening again
-            if (strcmp((char*)msg.c_str(), "response.done") == 0) {
+            if (strcmp((char*)msg.c_str(), "RESPONSE.COMPLETE") == 0) {
                 Serial.println("Received response.done, starting listening again");
                 // Start listening again
                 // disable heartbeat during listening
                 scheduleListeningRestart = true;
                 scheduledTime = millis() + 1000; // 1 second delay
-            } else if (strcmp((char*)msg.c_str(), "response.created") == 0) {
-                Serial.println("Received response.created, stopping listening");
-                webSocket.enableHeartbeat(25000, 15000, 3);
-                deviceState = SPEAKING;
-                digitalWrite(10, HIGH);
-                speakingStartTime = millis();  // Record when speaking starts
-            }
+            } else if (strcmp((char*)msg.c_str(), "RESPONSE.CREATED") == 0) {
+                Serial.println("Received response.created, transitioning to speaking");
+                transitionToSpeaking();
+            } 
         }
     }
         break;
     case WStype_BIN:
     {
-            // If we're transitioning to listening mode, completely skip processing
-    if (scheduleListeningRestart || deviceState == LISTENING) {
-        Serial.println("Skipping binary data - device is transitioning to listening mode");
-        break;  // Exit immediately without processing any data
-    }
+        // If we're transitioning to listening mode, completely skip processing
+        if (scheduleListeningRestart || deviceState == LISTENING) {
+            Serial.println("Skipping binary data - device is transitioning to listening mode");
+            break;  // Exit immediately without processing any data
+        }
+
         if (deviceState == SPEAKING) {
             size_t processed = opusDecoder.write(payload, length);
             if (processed != length) {

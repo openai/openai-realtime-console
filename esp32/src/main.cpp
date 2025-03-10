@@ -151,7 +151,7 @@ void touchTask(void* parameter) {
         // Use ArduinoJson to create the message
         JsonDocument doc;
         doc["type"] = "instruction";
-        doc["msg"] = "interrupt";
+        doc["msg"] = "INTERRUPT";
         doc["audio_end_ms"] = audio_end_ms;
         
         String jsonString;
