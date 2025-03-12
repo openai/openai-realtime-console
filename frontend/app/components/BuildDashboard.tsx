@@ -14,6 +14,7 @@ import { createPersonality } from "../actions";
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
 
 interface SettingsDashboardProps {
     selectedUser: IUser;
@@ -32,6 +33,18 @@ const EmojiComponent = ({ emoji }: { emoji: string | undefined }) => {
     );
 };
 
+const formSchema = z.object({
+  title: z.string().min(10, "Minimum 10 characters").max(50, "Maximum 50 characters"),
+  description: z.string().min(50, "Minimum 20 characters").max(200, "Maximum 200 characters"),
+  prompt: z.string().min(100, "Minimum 100 characters").max(1000, "Maximum 1000 characters"),
+  voice: z.string().min(1, "Voice selection is required"),
+  voiceCharacteristics: z.object({
+    features: z.string().min(10, "Minimum 10 characters").max(150, "Maximum 150 characters"),
+    emotion: z.string()
+  })
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
     selectedUser,
@@ -56,28 +69,77 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
           emotion: 'neutral'
         }
       });
+
+      const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData | 'features', string>>>({});
+
       
       const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
     
-      const handleInputChange = (field: string, value: string) => {
-        setFormData({
-          ...formData,
-          [field]: value
-        });
-      };
-    
-      const handleVoiceCharacteristicChange = (characteristic: string, value: string) => {
-        setFormData({
-          ...formData,
-          voiceCharacteristics: {
-            ...formData.voiceCharacteristics,
-            [characteristic]: value
+      const handleInputChange = (field: keyof FormData, value: string) => {
+        const newFormData = { ...formData, [field]: value };
+        
+        // Validate just this field
+        try {
+          formSchema.shape[field].parse(value);
+          // Clear error if validation passes
+          setFormErrors(prev => ({ ...prev, [field]: undefined }));
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            // Set error message
+            setFormErrors(prev => ({ ...prev, [field]: error.errors[0].message }));
           }
-        });
-      };
+        }
+        
+        setFormData(newFormData);
+    };
     
+    const handleVoiceCharacteristicChange = (characteristic: 'features' | 'emotion', value: string) => {
+      const newVoiceCharacteristics = {
+        ...formData.voiceCharacteristics,
+        [characteristic]: value
+      };
+      
+      // Validate just this nested field
+      try {
+        formSchema.shape.voiceCharacteristics.shape[characteristic].parse(value);
+        // Clear error if validation passes
+        setFormErrors(prev => ({ ...prev, [characteristic]: undefined }));
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          // Set error message
+          setFormErrors(prev => ({ ...prev, [characteristic]: error.errors[0].message }));
+        }
+      }
+      
+      setFormData({
+        ...formData,
+        voiceCharacteristics: newVoiceCharacteristics
+      });
+  };
+  
+
       const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+               e.preventDefault();
+        
+        // Validate the entire form
+        const result = formSchema.safeParse(formData);
+        console.log(result);
+        
+        if (!result.success) {
+          // Extract and set all validation errors
+          const errors: Partial<Record<keyof FormData | 'features', string>> = {};
+          result.error.errors.forEach(err => {
+            const path = err.path.join('.');
+            if (path === 'voiceCharacteristics.features') {
+              errors['features'] = err.message;
+            } else {
+              errors[err.path[0] as keyof FormData] = err.message;
+            }
+          });
+          setFormErrors(errors);
+          return;
+        }
+
         const personality = await createPersonality(selectedUser.user_id, {
           title: formData.title,
           subtitle: "",
@@ -196,9 +258,12 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
               />
-              <p className="text-sm text-gray-500">
-                Give your AI character a name or title.
-              </p>
+              <p className="text-sm flex justify-between">
+    <span className={formErrors.title ? "text-gray-500" : "text-gray-500"}>
+      {formErrors.title || "Give your AI character a name or title."}
+    </span>
+    <span className="text-gray-500">{formData.title.length}/50</span>
+  </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
@@ -209,9 +274,12 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
               />
-              <p className="text-sm text-gray-500">
-                Briefly describe your character's purpose and personality.
-              </p>
+              <p className="text-sm flex justify-between">
+    <span className={formErrors.description ? "text-gray-500" : "text-gray-500"}>
+      {formErrors.description || "Briefly describe your character's purpose and personality."}
+    </span>
+    <span className="text-gray-500">{formData.description.length}/200</span>
+  </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="prompt">Prompt</Label>
@@ -222,9 +290,12 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
                 value={formData.prompt}
                 onChange={(e) => handleInputChange('prompt', e.target.value)}
               />
-              <p className="text-sm text-gray-500">
-                Detailed instructions that define how your AI responds to users.
-              </p>
+              <p className="text-sm flex justify-between">
+    <span className={formErrors.prompt ? "text-gray-500" : "text-gray-500"}>
+      {formErrors.prompt || "Detailed instructions that define how your AI responds to users."}
+    </span>
+    <span className="text-gray-500">{formData.prompt.length}/1000</span>
+  </p>
             </div>
             </div> :
             <div className="space-y-4">
@@ -288,6 +359,12 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
     }
   }))}
 />
+<p className="text-sm flex justify-between">
+    <span className={formErrors.features ? "text-gray-500" : "text-gray-500"}>
+      {formErrors.features || "Describe the voice characteristics."}
+    </span>
+    <span className="text-gray-500">{formData.voiceCharacteristics.features.length}/150</span>
+  </p>
             </div>
                 <div className="space-y-3">
                   <Label className="block mb-2">Emotional Tone</Label>
