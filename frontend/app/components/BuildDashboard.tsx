@@ -83,10 +83,11 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
           formSchema.shape[field].parse(value);
           // Clear error if validation passes
           setFormErrors(prev => ({ ...prev, [field]: undefined }));
-        } catch (error) {
+        } catch (error: unknown) {
           if (error instanceof z.ZodError) {
-            // Set error message
-            setFormErrors(prev => ({ ...prev, [field]: error.errors[0].message }));
+            // Type assertion is needed here
+            const zodError = error as z.ZodError;
+            setFormErrors(prev => ({ ...prev, [field]: zodError.errors[0].message }));
           }
         }
         
@@ -104,10 +105,11 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
         formSchema.shape.voiceCharacteristics.shape[characteristic].parse(value);
         // Clear error if validation passes
         setFormErrors(prev => ({ ...prev, [characteristic]: undefined }));
-      } catch (error) {
+      } catch (error: unknown) {
         if (error instanceof z.ZodError) {
-          // Set error message
-          setFormErrors(prev => ({ ...prev, [characteristic]: error.errors[0].message }));
+          // Type assertion is needed here
+          const zodError = error as z.ZodError;
+          setFormErrors(prev => ({ ...prev, [characteristic]: zodError.errors[0].message }));
         }
       }
       
