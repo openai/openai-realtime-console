@@ -54,7 +54,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
                         <span className="mr-2">{item.icon}</span>
                         {item.title}
                         {pathname === item.href && (
-                            <Dot className="hidden sm:block" size={48} />
+                            <Dot className="hidden sm:block flex-shrink-0" size={48} />
                         )}
                     </Link>
                 );
