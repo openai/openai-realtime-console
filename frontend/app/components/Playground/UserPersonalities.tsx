@@ -19,8 +19,6 @@ const UserPersonalities: React.FC<UserPersonalitiesProps> = ({
     selectedFilters,
     myPersonalities,
 }) => {
-    // console.log('myPersonalities', myPersonalities);
-    // console.log('allPersonalities', allPersonalities);
     return (
         <div className="flex flex-col gap-8 w-full">
             {myPersonalities.length > 0 && (

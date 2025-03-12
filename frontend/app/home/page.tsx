@@ -39,9 +39,6 @@ export default async function Home() {
     const allPersonalities = await getAllPersonalities(supabase);
     const myPersonalities = await getMyPersonalities(supabase, user?.id ?? "");
 
-    console.log('myPersonalities', myPersonalities.length);
-    console.log('allPersonalities', allPersonalities.length);
-
     return (
         <div>
             {dbUser && (
