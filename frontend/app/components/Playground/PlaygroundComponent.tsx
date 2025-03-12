@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getCreditsRemaining } from "@/lib/utils";
-import ControlPanel from "./ControlPanel";
 import PickPersonality from "./PickPersonality";
 import { updateUser } from "@/db/users";
 import _ from "lodash";
@@ -23,6 +22,12 @@ const sortPersonalities = (
     const defaultPersonality = personalities.find(
         (personality) => personality.personality_id === currentPersonalityId
     );
+    
+    // Handle case where defaultPersonality might be undefined
+    if (!defaultPersonality) {
+        return personalities;
+    }
+    
     return [
         defaultPersonality,
         ...personalities.filter(
@@ -117,11 +122,11 @@ const Playground: React.FC<PlaygroundProps> = ({
                         <PickPersonality
                             selectedFilters={selectedFilters}
                             onPersonalityPicked={onPersonalityPicked}
-                            allPersonalities={sortedPersonalities}
                             personalityIdState={personalityIdState}
                             currentUser={currentUser}
                             languageState={'en-US'}
                             disableButtons={false}
+                            allPersonalities={sortedPersonalities}
                             myPersonalities={myPersonalities}
                         />
                     </div>

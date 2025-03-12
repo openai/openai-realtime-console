@@ -4,8 +4,9 @@ export const getAllPersonalities = async (supabase: SupabaseClient) => {
     const { data, error } = await supabase
         .from("personalities")
         .select(`*`)
-        .order("created_at", { ascending: false })
-        .is("creator_id", null);
+        .is("creator_id", null)
+        .order("created_at", { ascending: false });
+       
     if (error) {
         console.log("error getAllPersonalities", error);
         return [];
