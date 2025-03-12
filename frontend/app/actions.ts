@@ -244,19 +244,19 @@ export async function storeUserApiKey(userId: string, rawApiKey: string) {
     return { error: null };
   }
 
-  export const createPersonality = async (userId: string, personality: IPersonality) => {
+  export const createPersonality = async (userId: string, personality: IPersonality): Promise<IPersonality | null> => {
     const supabase = createClient();
     const { data, error } = await supabase
       .from('personalities')
       .insert({
         ...personality,
         creator_id: userId
-      });
+      }).select();
 
     if (error) {
         console.error('Error creating personality:', error);
         throw error;
     }
 
-    return data;
+    return data ? data[0] : null;
   }

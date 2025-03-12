@@ -24,7 +24,7 @@ const hashString = (str: string): number => {
   return Math.abs(hash);
 };
 
-export const EmojiComponent = ({ personality, size = 72 }: { personality: IPersonality, size?: number }) => {
+export const EmojiComponent = ({ personality, size = 100 }: { personality: IPersonality, size?: number }) => {
   // Use useMemo to avoid recalculating on every render
   const emoji = useMemo(() => {
     // Use personality.id or another unique property as seed

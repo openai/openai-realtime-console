@@ -13,6 +13,8 @@ import Twemoji from "react-twemoji";
 import { createPersonality } from "../actions";
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+
 interface SettingsDashboardProps {
     selectedUser: IUser;
     allLanguages: ILanguage[];
@@ -36,6 +38,7 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
     allLanguages,
 }) => {
     const supabase = createClient();
+    const router = useRouter();
     const [currentStep, setCurrentStep] = useState<'personality' | 'voice'>('personality');
 
 
@@ -94,9 +97,8 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
             description: "Your character has been created!",
             duration: 3000,
           });
+          router.push(`/home`);
         }
-
-        // Here you would handle the form submission, e.g., sending to an API
       };
 
       const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
@@ -332,8 +334,8 @@ const SettingsDashboard: React.FC<SettingsDashboardProps> = ({
             <Button 
               variant="default"
               className="flex flex-row gap-2 items-center"
+              type="submit"
               disabled={formData.title === '' || formData.description === '' || formData.prompt === '' || formData.voice === '' || formData.voiceCharacteristics.features === ''}
-              onClick={() => console.log('Create')}
             >
               Create <Check className="w-4 h-4" />
             </Button>

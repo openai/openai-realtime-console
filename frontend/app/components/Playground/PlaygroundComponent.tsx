@@ -13,6 +13,7 @@ import { TranscriptProvider } from "../Realtime/contexts/TranscriptContext";
 import { EventProvider } from "../Realtime/contexts/EventContext";
 import App from "../Realtime/App";
 import { checkIfUserHasApiKey } from "@/app/actions";
+import { defaultPersonalityId } from "@/lib/data";
 
 const sortPersonalities = (
     personalities: IPersonality[],
@@ -55,7 +56,7 @@ const Playground: React.FC<PlaygroundProps> = ({
 
     // Remove userState entirely and just use personalityState
     const [personalityIdState, setPersonalityIdState] = useState<string>(
-        currentUser.personality!.personality_id! // Initial value from props
+        currentUser.personality!.personality_id ?? defaultPersonalityId // Initial value from props
     );
 
     const [selectedFilters, setSelectedFilters] = useState<PersonalityFilter[]>(
