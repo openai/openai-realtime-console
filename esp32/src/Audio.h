@@ -9,6 +9,10 @@
 extern SemaphoreHandle_t wsMutex;
 extern WebSocketsClient webSocket;
 
+extern TaskHandle_t speakerTaskHandle;
+extern TaskHandle_t micTaskHandle;
+extern TaskHandle_t networkTaskHandle;
+
 extern bool scheduleListeningRestart;
 extern unsigned long scheduledTime;
 extern unsigned long speakingStartTime;  // Add this to track when speaking starts

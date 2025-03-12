@@ -11,6 +11,11 @@
 SemaphoreHandle_t wsMutex;
 WebSocketsClient webSocket;
 
+// TASK HANDLES
+TaskHandle_t speakerTaskHandle = NULL;
+TaskHandle_t micTaskHandle = NULL;
+TaskHandle_t networkTaskHandle = NULL;
+
 // TIMING REGISTERS
 bool scheduleListeningRestart = false;
 unsigned long scheduledTime = 0;
@@ -63,14 +68,7 @@ unsigned long getSpeakingDuration() {
 }
 
 // Add this function for transitioning to speaking mode
-void transitionToSpeaking() {
-    // First stop all audio transmission
-    if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-        // Temporarily disable any WebSocket data sending
-        deviceState = PROCESSING; // Intermediate state to stop sending audio
-        xSemaphoreGive(wsMutex);
-    }
-    
+void transitionToSpeaking() {    
     // Give time for any in-flight WebSocket operations to complete
     vTaskDelay(50);
     
@@ -82,6 +80,12 @@ void transitionToSpeaking() {
         deviceState = SPEAKING;
         digitalWrite(10, HIGH);
         speakingStartTime = millis();
+
+         // Resume the speaker task if it was suspended
+        if (speakerTaskHandle != NULL) {
+            Serial.println("Resuming speaker task");
+            vTaskResume(speakerTaskHandle);
+        }
         
         // Enable heartbeat after state change is complete
         webSocket.enableHeartbeat(25000, 15000, 3);
@@ -94,14 +98,25 @@ void transitionToSpeaking() {
 
 // Add this function for centralized state management
 void transitionToListening() {
+    scheduleListeningRestart = false;
     Serial.println("Transitioning to listening mode");
 
  // These stream operations don't directly interact with the WebSocket
-    audioBuffer.reset();
     i2s.flush();
     volume.flush();
     queue.flush();
     i2sInput.flush(); // Also flush the input stream
+    audioBuffer.reset();    
+
+    // Suspend the speaker task to save CPU resources
+    if (speakerTaskHandle != NULL) {
+        Serial.println("Suspending speaker task before transition to listening");
+        vTaskSuspend(speakerTaskHandle);
+    }
+
+    Serial.println("Transitioned to listening mode");
+    deviceState = LISTENING;
+    digitalWrite(10, LOW);
 
     // Only the WebSocket operations need mutex protection
     if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
@@ -109,13 +124,6 @@ void transitionToListening() {
         webSocket.disableHeartbeat();
         xSemaphoreGive(wsMutex);
     }
-    
-    // State changes don't directly access the WebSocket
-    deviceState = LISTENING;
-    digitalWrite(10, LOW);
-    scheduleListeningRestart = false;
-    
-    Serial.println("Transitioned to listening mode");
 }
 
 void audioStreamTask(void *parameter) {
@@ -157,24 +165,39 @@ void audioStreamTask(void *parameter) {
     vcfg.allow_boost = true;
     volume.begin(vcfg);     // Begin the volume stream with the provided configuration.
 
+        // Initially suspend if not in speaking mode
+    if (deviceState != SPEAKING) {
+        Serial.println("Suspending speaker task");
+        vTaskSuspend(NULL); // Suspend itself - will be resumed when needed
+    }
+
 while (1) {
-             copier.copy();  
+    if (webSocket.isConnected() && deviceState == SPEAKING) {
+        copier.copy();  
+    }
             vTaskDelay(1); // Small delay to yield CPU
              // Depending on your data rate, you might add a small delay or yield here.
          }
 }
 
 // AUDIO INPUT SETTINGS
+// Modify the WebsocketStream class to safely handle disconnections
 class WebsocketStream : public Print {
 public:
     virtual size_t write(uint8_t b) override {
-        if (webSocket.isConnected() && deviceState == LISTENING) {
-            // Send one byte at a time
-            if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+        // First check if we're transitioning states or if the connection is invalid
+        if (scheduleListeningRestart || !webSocket.isConnected() || deviceState != LISTENING) {
+            return 0; // Skip sending data during transitions or if not connected
+        }
+        
+        // Only try to send if we can get the mutex
+        if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+            bool isStillConnected = webSocket.isConnected();
+            if (isStillConnected) {
                 webSocket.sendBIN(&b, 1);
-                xSemaphoreGive(wsMutex);
             }
-            return 1;
+            xSemaphoreGive(wsMutex);
+            return isStillConnected ? 1 : 0;
         }
         return 0;
     }
@@ -183,12 +206,20 @@ public:
         if (size == 0) {
             return 0;
         }
-        if (webSocket.isConnected() && deviceState == LISTENING){
-            if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+        
+        // First check if we're transitioning states or if the connection is invalid
+        if (scheduleListeningRestart || !webSocket.isConnected() || deviceState != LISTENING) {
+            return 0; // Skip sending data during transitions or if not connected
+        }
+        
+        // Only try to send if we can get the mutex
+        if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+            bool isStillConnected = webSocket.isConnected();
+            if (isStillConnected) {
                 webSocket.sendBIN(buffer, size);
-                xSemaphoreGive(wsMutex);
             }
-            return size;
+            xSemaphoreGive(wsMutex);
+            return isStillConnected ? size : 0;
         }
         return 0;
     }
@@ -204,6 +235,8 @@ void micTask(void *parameter) {
     i2sConfig.bits_per_sample = BITS_PER_SAMPLE;
     i2sConfig.sample_rate = SAMPLE_RATE;
     i2sConfig.channels = CHANNELS;
+    i2sConfig.i2s_format = I2S_LEFT_JUSTIFIED_FORMAT;
+    i2sConfig.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;
     // Configure your I2S input pins appropriately here:
     i2sConfig.pin_bck = I2S_SCK;
     i2sConfig.pin_ws  = I2S_WS;
@@ -215,9 +248,7 @@ void micTask(void *parameter) {
     // For raw PCM, simply use the stream copy.
 
     while (1) {
-        // Check if we need to transition to listening mode
         if (scheduleListeningRestart && millis() >= scheduledTime) {
-            Serial.println("Transitioning to listening mode");
             transitionToListening();
         }
 
@@ -284,14 +315,14 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
             Serial.println(msg);
 
             // receive response.audio.done or response.done, then start listening again
-            if (strcmp((char*)msg.c_str(), "RESPONSE.COMPLETE") == 0) {
-                Serial.println("Received response.done, starting listening again");
-                // Start listening again
-                // disable heartbeat during listening
+            if (strcmp((char*)msg.c_str(), "RESPONSE.COMPLETE") == 0 || strcmp((char*)msg.c_str(), "RESPONSE.ERROR") == 0) {
+                Serial.println("Received RESPONSE.COMPLETE or RESPONSE.ERROR, starting listening again");
                 scheduleListeningRestart = true;
                 scheduledTime = millis() + 1000; // 1 second delay
+            } else if (strcmp((char*)msg.c_str(), "AUDIO.COMMITTED") == 0) {
+                deviceState = PROCESSING; // Intermediate state
             } else if (strcmp((char*)msg.c_str(), "RESPONSE.CREATED") == 0) {
-                Serial.println("Received response.created, transitioning to speaking");
+                Serial.println("Received RESPONSE.CREATED, transitioning to speaking");
                 transitionToSpeaking();
             } 
         }
@@ -299,19 +330,18 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
         break;
     case WStype_BIN:
     {
-        // If we're transitioning to listening mode, completely skip processing
-        if (scheduleListeningRestart || deviceState == LISTENING) {
-            Serial.println("Skipping binary data - device is transitioning to listening mode");
-            break;  // Exit immediately without processing any data
+        // If we're no longer in SPEAKING mode or if a transition has been requested,
+        // just ignore any incoming audio data.
+        if (scheduleListeningRestart || deviceState != SPEAKING) {
+            Serial.println("Skipping audio data due to touch interrupt.");
+            break;
         }
 
-        if (deviceState == SPEAKING) {
-            size_t processed = opusDecoder.write(payload, length);
-            if (processed != length) {
-                Serial.printf("Warning: Only processed %d/%d bytes\n", processed, length);
-            }
+        // Otherwise process the audio data normally
+        size_t processed = opusDecoder.write(payload, length);
+        if (processed != length) {
+            Serial.printf("Warning: Only processed %d/%d bytes\n", processed, length);
         }
-
         break;
       }
     case WStype_ERROR:
