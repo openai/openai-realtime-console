@@ -35,6 +35,8 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
 
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
+    const isPersonalCharacter = openPersonality.creator_id !== null;
+
     const ButtonsComponent = () => {
         return (
             <div className="flex flex-row gap-4 p-4 ">
@@ -64,12 +66,39 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
         );
     };
 
+    const PersonalCharacterComponent = () => {
+        return (
+            <>
+            <p className="text-gray-400">
+                        {"Character prompt"}
+                    </p>
+                    {isPersonalCharacter && (
+                        <p className="text-gray-600">
+                            {openPersonality.character_prompt}
+                        </p>
+                    )}
+                     <p className="text-gray-400">
+                        {"Voice prompt"}
+                    </p>
+                    {isPersonalCharacter && (
+                        <p className="text-gray-600">
+                            {openPersonality.voice_prompt}
+                        </p>
+                    )}
+            </>
+        );
+    };
+
     const ContentComponent = () => {
         return (
             <div className="container mx-auto p-4 max-w-4xl">
                 <div className="flex flex-col items-center gap-6">
-                    <div className="relative w-full h-[300px] sm:h-[400px]">
-                        {openPersonality.creator_id === null ? (
+                    {isPersonalCharacter ? (
+                        <div className="relative w-full h-[100px] sm:h-[200px] flex items-center justify-center">
+                        <EmojiComponent personality={openPersonality} size={100} />
+                        </div>
+                    ) : (
+                        <div className="relative w-full h-[300px] sm:h-[400px]">
                             <Image
                                 src={getPersonalityImageSrc(openPersonality.key)}
                                 alt={openPersonality.title}
@@ -80,10 +109,8 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                             //     objectPosition: "top sm:center",
                             // }}
                             />
-                        ) : (
-                            <EmojiComponent personality={openPersonality} size={100} />
-                        )}
-                    </div>
+                        </div>
+                    )}
                     <div className="space-y-2 text-left w-full">
                     <div className="flex flex-row items-center gap-2">
                         <h3 className="text-xl font-semibold">
@@ -97,6 +124,9 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                     <p className="text-gray-600">
                         {openPersonality.short_description}
                     </p>
+                    {isPersonalCharacter && (
+                        <PersonalCharacterComponent />
+                    )}
                 </div>
                 </div>
             </div>
