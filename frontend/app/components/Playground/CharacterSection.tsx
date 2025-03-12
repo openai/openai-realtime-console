@@ -6,7 +6,7 @@ interface CharacterSectionProps {
     languageState: string;
     personalityIdState: string;
     onPersonalityPicked: (personalityIdPicked: string) => void;
-    title: EnglishCopy;
+    title: string;
     disableButtons: boolean;
     selectedFilters: PersonalityFilter[];
 }
@@ -44,7 +44,7 @@ const CharacterSection = ({
                     {filteredPersonalities.map((personality, index) => (
                         <SheetWrapper
                             languageState={languageState}
-                            key={index + personality.personality_id}
+                            key={index + personality.personality_id!}
                             personality={personality}
                             personalityIdState={personalityIdState}
                             onPersonalityPicked={onPersonalityPicked}

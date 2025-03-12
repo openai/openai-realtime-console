@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Check, CheckCircle, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmojiComponent } from "./EmojiImage";
 
 interface SheetWrapperProps {
     personality: IPersonality;
@@ -46,18 +47,24 @@ const SheetWrapper: React.FC<SheetWrapperProps> = ({
                 // onClick={() => onPersonalityPicked(personality)}
             >
                 <CardContent className="flex-shrink-0 p-0 h-[160px] sm:h-[180px] relative">
-                    <Image
-                        src={getPersonalityImageSrc(personality.key)}
-                        alt={personality.key}
-                        width={100}
-                        height={180}
+                    {personality.creator_id === null ? (
+                        <Image
+                            src={getPersonalityImageSrc(personality.key)}
+                            alt={personality.key}
+                            width={100}
+                            height={180}
                         className="rounded-3xl rounded-br-none rounded-bl-none w-full h-full object-cover"
                     />
+                    ) : (
+                        <div className="flex flex-row items-center justify-center h-full">
+                            <EmojiComponent personality={personality} />
+                        </div>
+                    )}
                     <Button
                         size="sm"
                         variant={isCurrentPersonality ? "default" : "outline"}
                         className={`absolute shadow-lg top-2 right-2 rounded-full h-9 w-9 p-0 ${isCurrentPersonality ? "bg-primary text-primary-foreground" : ""}`}
-                        onClick={() => onPersonalityPicked(personality.personality_id)}
+                        onClick={() => onPersonalityPicked(personality.personality_id!)}
                         aria-label={isCurrentPersonality ? "Deselect feature" : "Select feature"}
                     >
                         {true ? (

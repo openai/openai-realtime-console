@@ -7,6 +7,7 @@ interface DoctorPersonalitiesProps {
     languageState: string;
     disableButtons: boolean;
     selectedFilters: PersonalityFilter[];
+    myPersonalities: IPersonality[];
 }
 
 const DoctorPersonalities: React.FC<DoctorPersonalitiesProps> = ({
@@ -16,6 +17,7 @@ const DoctorPersonalities: React.FC<DoctorPersonalitiesProps> = ({
     languageState,
     disableButtons,
     selectedFilters,
+    myPersonalities,
 }) => {
     const doctorPersonalities = allPersonalities.filter(
         (personality) => {
@@ -38,6 +40,17 @@ const DoctorPersonalities: React.FC<DoctorPersonalitiesProps> = ({
                 title={"Doctor's AI Assistants"}
                 disableButtons={disableButtons}
             />
+            {myPersonalities.length > 0 && (
+                <CharacterSection
+                    selectedFilters={selectedFilters}
+                    allPersonalities={myPersonalities}
+                    languageState={languageState}
+                    personalityIdState={personalityIdState}
+                    onPersonalityPicked={onPersonalityPicked}
+                    title={"My Characters"}
+                    disableButtons={disableButtons}
+                />
+            )}
             <CharacterSection
                 selectedFilters={selectedFilters}
                 allPersonalities={nonDoctorPersonalities}

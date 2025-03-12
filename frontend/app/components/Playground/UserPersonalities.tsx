@@ -7,6 +7,7 @@ interface UserPersonalitiesProps {
     languageState: string;
     disableButtons: boolean;
     selectedFilters: PersonalityFilter[];
+    myPersonalities: IPersonality[];
 }
 
 const UserPersonalities: React.FC<UserPersonalitiesProps> = ({
@@ -16,9 +17,22 @@ const UserPersonalities: React.FC<UserPersonalitiesProps> = ({
     languageState,
     disableButtons,
     selectedFilters,
+    myPersonalities,
 }) => {
     return (
-        <CharacterSection
+        <div className="flex flex-col gap-8 w-full">
+            {myPersonalities.length > 0 && (
+                <CharacterSection
+                    selectedFilters={selectedFilters}
+                    allPersonalities={myPersonalities}
+                    languageState={languageState}
+                    personalityIdState={personalityIdState}
+                    onPersonalityPicked={onPersonalityPicked}
+                    title={"My Characters"}
+                    disableButtons={disableButtons}
+                />
+            )}
+ <CharacterSection
             allPersonalities={allPersonalities}
             languageState={languageState}
             personalityIdState={personalityIdState}
@@ -27,6 +41,8 @@ const UserPersonalities: React.FC<UserPersonalitiesProps> = ({
             disableButtons={disableButtons}
             selectedFilters={selectedFilters}
         />
+        </div>
+       
     );
 };
 

@@ -97,19 +97,21 @@ declare global {
 
     type TTSModel = "FISH" | "AZURE";
 
+    type OaiVoice = 'ash' | 'alloy' | 'echo' | 'shimmer' | 'ballad' | 'coral' | 'sage' | 'verse';
+
     // characters <-> personalities table
     interface IPersonality {
-        personality_id: string;
+        personality_id?: string;
         is_doctor: boolean;
         is_child_voice: boolean;
         key: string;
-        oai_voice: 'ash' | 'alloy' | 'echo' | 'shimmer' | 'ballad' | 'coral' | 'sage' | 'verse';
-        voice_description: string;
+        oai_voice: OaiVoice;
         title: string;
         subtitle: string;
         short_description: string;
         character_prompt: string;
         voice_prompt: string;
+        creator_id: string | null;
     }
 
     type PersonalityFilter = "is_child_voice" | "is_doctor";

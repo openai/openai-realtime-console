@@ -4,9 +4,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import Playground from "../components/Playground/PlaygroundComponent";
 import { defaultPersonalityId, defaultToyId } from "@/lib/data";
-import { getAllPersonalities } from "@/db/personalities";
-import { getAllLanguages } from "@/db/languages";
-// import { getAllLanguages } from "@/db/languages";
+import { getAllPersonalities, getMyPersonalities } from "@/db/personalities";
+
 
 export const revalidate = 0; // disable cache for this route
 export const dynamic = "force-dynamic";
@@ -38,12 +37,14 @@ export default async function Home() {
 
     const dbUser = await getUserById(supabase, user!.id);
     const allPersonalities = await getAllPersonalities(supabase);
+    const myPersonalities = await getMyPersonalities(supabase, user?.id ?? "");
 
     return (
         <div>
             {dbUser && (
                 <Playground
                     allPersonalities={allPersonalities}
+                    myPersonalities={myPersonalities}
                     currentUser={dbUser}
                 />
             )}

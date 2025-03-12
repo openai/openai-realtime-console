@@ -2,7 +2,6 @@ import { createClient } from "@/utils/supabase/server";
 import Illustration from "@/public/hero_section.svg";
 import FeaturesSection from "./components/LandingPage/FeaturesSection";
 import { getAllPersonalities } from "@/db/personalities";
-import InsightsDemoSection from "./components/LandingPage/InsightsDemoSection";
 import EndingSection from "./components/LandingPage/EndingSection";
 import FrontPage from "./components/LandingPage/FrontPage";
 import Personalities from "./components/LandingPage/Personalities";

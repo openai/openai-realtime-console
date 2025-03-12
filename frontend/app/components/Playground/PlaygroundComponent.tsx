@@ -33,11 +33,13 @@ const sortPersonalities = (
 interface PlaygroundProps {
     currentUser: IUser;
     allPersonalities: IPersonality[];
+    myPersonalities: IPersonality[];
 }
 
 const Playground: React.FC<PlaygroundProps> = ({
     currentUser,
     allPersonalities,
+    myPersonalities,
 }) => {
     const [hasApiKey, setHasApiKey] = useState<boolean>(false);
 
@@ -53,7 +55,7 @@ const Playground: React.FC<PlaygroundProps> = ({
 
     // Remove userState entirely and just use personalityState
     const [personalityIdState, setPersonalityIdState] = useState<string>(
-        currentUser.personality!.personality_id // Initial value from props
+        currentUser.personality!.personality_id! // Initial value from props
     );
 
     const [selectedFilters, setSelectedFilters] = useState<PersonalityFilter[]>(
@@ -119,6 +121,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                             currentUser={currentUser}
                             languageState={'en-US'}
                             disableButtons={false}
+                            myPersonalities={myPersonalities}
                         />
                     </div>
             </div>

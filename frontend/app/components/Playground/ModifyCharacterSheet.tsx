@@ -11,6 +11,8 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Airplay, Check, MonitorSmartphone, Phone } from "lucide-react";
 import { useState } from "react";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { getPersonalityImageSrc } from "@/lib/utils";
+import { EmojiComponent } from "./EmojiImage";
 
 interface ModifyCharacterSheetProps {
     openPersonality: IPersonality;
@@ -49,7 +51,7 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
                     disabled={isCurrentPersonality || disableButtons}
                     onClick={() => {
                         setIsSent(true);
-                        onPersonalityPicked(openPersonality.personality_id);
+                        onPersonalityPicked(openPersonality.personality_id!);
                         setTimeout(() => setIsSent(false), 10000);
                     }}
                 >
@@ -67,31 +69,35 @@ const ModifyCharacterSheet: React.FC<ModifyCharacterSheetProps> = ({
             <div className="container mx-auto p-4 max-w-4xl">
                 <div className="flex flex-col items-center gap-6">
                     <div className="relative w-full h-[300px] sm:h-[400px]">
-                        <Image
-                            src={`/personality/${openPersonality.key}.jpeg`}
-                            alt={openPersonality.title}
-                            className="rounded-lg object-top sm:object-center object-cover"
-                            fill
-                            // style={{
-                            //     objectFit: "cover",
+                        {openPersonality.creator_id === null ? (
+                            <Image
+                                src={getPersonalityImageSrc(openPersonality.key)}
+                                alt={openPersonality.title}
+                                className="rounded-lg object-top sm:object-center object-cover"
+                                fill
+                                // style={{
+                                //     objectFit: "cover",
                             //     objectPosition: "top sm:center",
                             // }}
-                        />
+                            />
+                        ) : (
+                            <EmojiComponent personality={openPersonality} size={100} />
+                        )}
                     </div>
-                    <div className="space-y-2">
-                        <div className="flex flex-row items-center gap-2">
-                            <h3 className="text-xl font-semibold">
-                                {openPersonality.title}
-                            </h3>
-                        </div>
+                    <div className="space-y-2 text-left w-full">
+                    <div className="flex flex-row items-center gap-2">
+                        <h3 className="text-xl font-semibold">
+                            {openPersonality.title}
+                        </h3>
+                    </div>
 
-                        <p className="text-gray-400">
-                            {openPersonality.subtitle}
-                        </p>
-                        <p className=" text-gray-600">
-                            {openPersonality.short_description}
-                        </p>
-                    </div>
+                    <p className="text-gray-400">
+                        {openPersonality.subtitle}
+                    </p>
+                    <p className="text-gray-600">
+                        {openPersonality.short_description}
+                    </p>
+                </div>
                 </div>
             </div>
         );
