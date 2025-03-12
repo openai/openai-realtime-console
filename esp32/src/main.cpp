@@ -135,33 +135,33 @@ void touchTask(void* parameter) {
     if (isTouched && !touched && (currentTime - lastTouchTime > DEBOUNCE_DELAY)) {
       touched = true;
       lastTouchTime = currentTime;
-    //   enterSleep();
+      enterSleep();
 
-      if (!webSocket.isConnected()) {
-        enterSleep();
-      } else if (deviceState == SPEAKING) {
-      // First, set the flag to prevent further audio processing
-        // deviceState = PROCESSING;
-        scheduleListeningRestart = true;
-        scheduledTime = millis() + 100; // Shorter delay
+    //   if (!webSocket.isConnected()) {
+    //     enterSleep();
+    //   } else if (deviceState == SPEAKING) {
+    //   // First, set the flag to prevent further audio processing
+    //     // deviceState = PROCESSING;
+    //     scheduleListeningRestart = true;
+    //     scheduledTime = millis() + 100; // Shorter delay
                 
-        unsigned long audio_end_ms = getSpeakingDuration();
+    //     unsigned long audio_end_ms = getSpeakingDuration();
 
-        // Use ArduinoJson to create the message
-        JsonDocument doc;
-        doc["type"] = "instruction";
-        doc["msg"] = "INTERRUPT";
-        doc["audio_end_ms"] = audio_end_ms;
+    //     // Use ArduinoJson to create the message
+    //     JsonDocument doc;
+    //     doc["type"] = "instruction";
+    //     doc["msg"] = "INTERRUPT";
+    //     doc["audio_end_ms"] = audio_end_ms;
         
-        String jsonString;
-        serializeJson(doc, jsonString);
+    //     String jsonString;
+    //     serializeJson(doc, jsonString);
         
-        // Take mutex to ensure clean WebSocket access
-        if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
-            webSocket.sendTXT(jsonString);
-            xSemaphoreGive(wsMutex);
-            }
-        }
+    //     // Take mutex to ensure clean WebSocket access
+    //     if (xSemaphoreTake(wsMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+    //         webSocket.sendTXT(jsonString);
+    //         xSemaphoreGive(wsMutex);
+    //         }
+    //     }
     }
 
     // Release detection
@@ -201,7 +201,7 @@ void setup()
 
     // INTERRUPT
     #ifdef TOUCH_MODE
-        xTaskCreate(touchTask, "Touch Task", 4096, NULL, configMAX_PRIORITIES-1, NULL);
+        xTaskCreate(touchTask, "Touch Task", 4096, NULL, configMAX_PRIORITIES-2, NULL);
     #else
         getErr = esp_sleep_enable_ext0_wakeup(BUTTON_PIN, LOW);
         printOutESP32Error(getErr);
@@ -212,27 +212,9 @@ void setup()
     #endif
 
     xTaskCreate(ledTask, "LED Task", 4096, NULL, 5, NULL);
-    // Pin critical audio tasks to different cores
-    xTaskCreatePinnedToCore(
-        audioStreamTask,     // Task function
-        "Speaker Task",      // Name
-        4096,               // Stack size
-        NULL,                // Parameters
-        3,                   // Priority
-        &speakerTaskHandle,  // Store the task handle for later control
-        1                    // Pin to Core 1
-    );
-    
-    xTaskCreatePinnedToCore(
-        micTask,             // Task function
-        "Microphone Task",   // Name
-        8192,                // Stack size
-        NULL,                // Parameters
-        4,                   // Priority
-        &micTaskHandle,      // Store the task handle
-        0                    // Pin to Core 0
-    );
-    xTaskCreate(networkTask, "Websocket Task", 8192, NULL, configMAX_PRIORITIES-2, &networkTaskHandle);
+    xTaskCreate(audioStreamTask, "Speaker Task", 4096, NULL, 3, NULL);
+    xTaskCreate(micTask, "Microphone Task", 4096, NULL, 4, NULL);
+    xTaskCreate(networkTask, "Websocket Task", 8192, NULL, configMAX_PRIORITIES-1, &networkTaskHandle);
 
     // WIFI
     setupWiFi();

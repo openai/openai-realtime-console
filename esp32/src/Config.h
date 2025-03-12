@@ -58,7 +58,7 @@ extern const uint16_t backend_port;
 extern const uint32_t SAMPLE_RATE;
 
 // ---------- Development ------------
-#define DEV_MODE
+// #define DEV_MODE
 #define TOUCH_MODE
 
 // ----------------- Pin Definitions -----------------
