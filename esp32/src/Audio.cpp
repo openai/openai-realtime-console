@@ -234,7 +234,7 @@ void micTask(void *parameter) {
 
         if (deviceState == LISTENING && webSocket.isConnected()) {
             // Use smaller chunk size to avoid blocking too long
-            micToWsCopier.copy(); // Reduced from 32
+            micToWsCopier.copyBytes(MIC_COPY_SIZE);
             
             // Yield more frequently
             vTaskDelay(1);
