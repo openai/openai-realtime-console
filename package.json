@@ -17,7 +17,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
-    "react-router-dom": "^6.20.0"
+    "react-router-dom": "^6.20.0",
+    "twilio": "^5.5.0",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

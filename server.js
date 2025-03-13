@@ -2,7 +2,8 @@ import express from "express";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import "dotenv/config";
-import { twiml as Twiml } from 'twilio';
+import pkg from 'twilio';
+const { twiml: Twiml } = pkg;
 import { WebSocketServer } from 'ws';
 
 
