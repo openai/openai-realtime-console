@@ -2,6 +2,9 @@ import express from "express";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import "dotenv/config";
+import { twiml as Twiml } from 'twilio';
+import { WebSocketServer } from 'ws';
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,6 +16,36 @@ const vite = await createViteServer({
   appType: "custom",
 });
 app.use(vite.middlewares);
+
+app.post('/twilio/voice', express.urlencoded({ extended: false }), (req, res) => {
+  const voiceResponse = new Twiml.VoiceResponse();
+
+  // Hier nutzen wir Twilio Media Streams, um den Audio-Stream an Deinen Server weiterzuleiten
+  // Die URL muss auf einen WebSocket-Endpunkt zeigen, den Du einrichten musst
+  voiceResponse.start().stream({
+    url: 'wss://dein-server.de/twilio/audio-stream'
+  });
+
+  // Optional: Weiterleitung oder weitere TwiML-Verben, z.B. <Say>, <Dial>, etc.
+  res.type('text/xml');
+  res.send(voiceResponse.toString());
+});
+
+
+const wss = new WebSocketServer({ port: 8080 });
+wss.on('connection', (ws) => {
+  console.log('Twilio Audio Stream verbunden.');
+
+  ws.on('message', (message) => {
+    // Hier verarbeitest Du die Audio-Daten von Twilio
+    // und leitest sie an Deine WebRTC-Session weiter
+    console.log('Audio-Daten empfangen:', message);
+  });
+
+  ws.on('close', () => {
+    console.log('Twilio Audio Stream getrennt.');
+  });
+});
 
 // API route for token generation
 app.get("/token", async (req, res) => {
@@ -27,7 +60,7 @@ app.get("/token", async (req, res) => {
         },
         body: JSON.stringify({
           model: "gpt-4o-realtime-preview-2024-12-17",
-          voice: "verse",
+          voice: "shimmer",
         }),
       },
     );
