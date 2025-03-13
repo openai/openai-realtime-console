@@ -43,9 +43,9 @@ const i2s_port_t I2S_PORT_OUT = I2S_NUM_0;
 
 #ifdef USE_NORMAL_ESP32
 
-const int BLUE_LED_PIN = 13;
-const int RED_LED_PIN = 9;
-const int GREEN_LED_PIN = 8;
+const int BLUE_LED_PIN = 8;
+const int RED_LED_PIN = 13;
+const int GREEN_LED_PIN = 9;
 
 const int I2S_SD = 14;
 const int I2S_WS = 4;
@@ -56,7 +56,7 @@ const int I2S_BCK_OUT = 6;
 const int I2S_DATA_OUT = 7;
 const int I2S_SD_OUT = 10;
 
-const gpio_num_t BUTTON_PIN = GPIO_NUM_2; // Only RTC IO are allowed - ESP32 Pin example
+const gpio_num_t BUTTON_PIN = GPIO_NUM_0; // Only RTC IO are allowed - ESP32 Pin example
 
 #endif
 
