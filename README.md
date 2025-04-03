@@ -2,6 +2,16 @@
 
 This is an example application showing how to use the [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) with [WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc).
 
+## Cloning the repository
+
+To clone the repository, use the following command:
+
+```bash
+gh repo clone openai/openai-realtime-console
+```
+
+Note: This repository has been cloned from `openai/openai-realtime-console`.
+
 ## Installation and usage
 
 Before you begin, you'll need an OpenAI API key - [create one in the dashboard here](https://platform.openai.com/settings/api-keys). Create a `.env` file from the example file and set your API key in there:
