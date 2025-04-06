@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CloudLightning, CloudOff, MessageSquare } from "react-feather";
 import Button from "./Button";
+import FeedbackAudioVisualizer from "./FeedbackAudioVisualizer";
 
 function SessionStopped({ startSession }) {
   const [isActivating, setIsActivating] = useState(false);
@@ -25,42 +26,56 @@ function SessionStopped({ startSession }) {
   );
 }
 
-function SessionActive({ stopSession, sendTextMessage }) {
+function SessionActive({ stopSession, sendTextMessage, getAudioStream }) {
   const [message, setMessage] = useState("");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioStream = getAudioStream ? getAudioStream() : null;
 
   function handleSendClientEvent() {
     sendTextMessage(message);
     setMessage("");
+    setIsPlaying(true);
+    setTimeout(() => setIsPlaying(false), 5000); // Stop after 5 seconds
   }
 
   return (
-    <div className="flex items-center justify-center w-full h-full gap-4">
-      <input
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && message.trim()) {
-            handleSendClientEvent();
-          }
-        }}
-        type="text"
-        placeholder="send a text message..."
-        className="border border-gray-200 rounded-full p-4 flex-1"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
-      <Button
-        onClick={() => {
-          if (message.trim()) {
-            handleSendClientEvent();
-          }
-        }}
-        icon={<MessageSquare height={16} />}
-        className="bg-blue-400"
-      >
-        send text
-      </Button>
-      <Button onClick={stopSession} icon={<CloudOff height={16} />}>
-        disconnect
-      </Button>
+    <div className="flex flex-col w-full h-full gap-2">
+      {/* Audio Visualizer */}
+      <div className="h-8 w-full">
+        <FeedbackAudioVisualizer 
+          audioStream={audioStream}
+          isPlaying={isPlaying}
+          className="h-8"
+        />
+      </div>
+      <div className="flex items-center justify-center w-full gap-4">
+        <input
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && message.trim()) {
+              handleSendClientEvent();
+            }
+          }}
+          type="text"
+          placeholder="send a text message..."
+          className="border border-gray-200 rounded-full p-4 flex-1"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <Button
+          onClick={() => {
+            if (message.trim()) {
+              handleSendClientEvent();
+            }
+          }}
+          icon={<MessageSquare height={16} />}
+          className="bg-blue-400"
+        >
+          send text
+        </Button>
+        <Button onClick={stopSession} icon={<CloudOff height={16} />}>
+          disconnect
+        </Button>
+      </div>
     </div>
   );
 }
@@ -72,6 +87,7 @@ export default function SessionControls({
   sendTextMessage,
   serverEvents,
   isSessionActive,
+  getAudioStream,
 }) {
   return (
     <div className="flex gap-4 border-t-2 border-gray-200 h-full rounded-md">
@@ -81,6 +97,7 @@ export default function SessionControls({
           sendClientEvent={sendClientEvent}
           sendTextMessage={sendTextMessage}
           serverEvents={serverEvents}
+          getAudioStream={getAudioStream}
         />
       ) : (
         <SessionStopped startSession={startSession} />

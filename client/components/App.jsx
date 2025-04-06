@@ -4,6 +4,10 @@ import EventLog from "./EventLog";
 import SessionControls from "./SessionControls";
 import ToolPanel from "./ToolPanel";
 
+export function getRemoteAudioStream(audioElementRef) {
+  return audioElementRef?.current?.srcObject || null;
+}
+
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState([]);
@@ -143,6 +147,8 @@ export default function App() {
     }
   }, [dataChannel]);
 
+  const getAudioStream = () => getRemoteAudioStream(audioElement);
+
   return (
     <>
       <nav className="absolute top-0 left-0 right-0 h-16 flex items-center">
@@ -164,6 +170,7 @@ export default function App() {
               sendTextMessage={sendTextMessage}
               events={events}
               isSessionActive={isSessionActive}
+              getAudioStream={getAudioStream}
             />
           </section>
         </section>
