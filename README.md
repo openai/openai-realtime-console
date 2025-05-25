@@ -3,7 +3,7 @@
 **talktive** は、[openai-realtime-console](https://github.com/openai/openai-realtime-console) をベースに、**音声のカスタマイズ機能**（TTS音声の選択や音量調整）を追加した拡張プロジェクトです。
 
 [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) と [WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc) を活用し、リアルタイムのAI音声体験を自分好みに調整できます。
-
+（未実装です）
 ---
 
 ## 🔊 主な特徴
