@@ -10,6 +10,8 @@ export default function App() {
   const [dataChannel, setDataChannel] = useState(null);
   const peerConnection = useRef(null);
   const audioElement = useRef(null);
+  const defaultModel = import.meta.env.VITE_OPENAI_MODEL || "gpt-4o-realtime-preview-2024-12-17";
+  const [selectedModel, setSelectedModel] = useState(defaultModel);
 
   async function startSession() {
     // Get a session token for OpenAI Realtime API
@@ -40,8 +42,9 @@ export default function App() {
     await pc.setLocalDescription(offer);
 
     const baseUrl = "https://api.openai.com/v1/realtime";
-    const model = "gpt-4o-realtime-preview-2024-12-17";
-    const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+    //const model = "gpt-4o-realtime-preview-2024-12-17";
+    //const model = "gpt-4o-mini-transcribe";
+    const sdpResponse = await fetch(`${baseUrl}?model=${selectedModel}`, {
       method: "POST",
       body: offer.sdp,
       headers: {
