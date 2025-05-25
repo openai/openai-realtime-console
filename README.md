@@ -1,39 +1,64 @@
-# OpenAI Realtime Console
+# talkive
 
-This is an example application showing how to use the [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) with [WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc).
+**talktive** は、[openai-realtime-console](https://github.com/openai/openai-realtime-console) をベースに、**音声のカスタマイズ機能**（TTS音声の選択や音量調整）を追加した拡張プロジェクトです。
 
-## Installation and usage
+[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) と [WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc) を活用し、リアルタイムのAI音声体験を自分好みに調整できます。
 
-Before you begin, you'll need an OpenAI API key - [create one in the dashboard here](https://platform.openai.com/settings/api-keys). Create a `.env` file from the example file and set your API key in there:
+---
+
+## 🔊 主な特徴
+
+- 🎙 **音声の種類を選択可能(実装予定)**  
+  - 使用可能な声：`alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`
+- 🔈 **音量ブースト対応（実装予定）**（Web Audio API による）
+- 🖥 WebRTCを利用した双方向のリアルタイム音声通信
+- 🔧 カスタム音声アプリや音声チャットUIのプロトタイピングに最適
+
+---
+
+## 🚀 はじめかた
+
+1. OpenAI の APIキーを取得  
+   👉 [こちらで作成](https://platform.openai.com/settings/api-keys)
+
+2. `.env` ファイルを作成してキーを設定：
 
 ```bash
 cp .env.example .env
-```
+````
 
-Running this application locally requires [Node.js](https://nodejs.org/) to be installed. Install dependencies for the application with:
+3. 必要なパッケージをインストール：
 
 ```bash
 npm install
 ```
 
-Start the application server with:
+4. アプリを起動：
 
 ```bash
 npm run dev
 ```
 
-This should start the console application on [http://localhost:3000](http://localhost:3000).
+5. ブラウザで以下にアクセス：
+   [http://localhost:3000](http://localhost:3000)
 
-This application is a minimal template that uses [express](https://expressjs.com/) to serve the React frontend contained in the [`/client`](./client) folder. The server is configured to use [vite](https://vitejs.dev/) to build the React frontend.
+---
 
-This application shows how to send and receive Realtime API events over the WebRTC data channel and configure client-side function calling. You can also view the JSON payloads for client and server events using the logging panel in the UI.
+## 📁 プロジェクト構成
 
-For a more comprehensive example, see the [OpenAI Realtime Agents](https://github.com/openai/openai-realtime-agents) demo built with Next.js, using an agentic architecture inspired by [OpenAI Swarm](https://github.com/openai/swarm).
+* `/client`：React + Vite ベースのフロントエンド
+* `/server.js`：セッション作成＆音声タイプ反映のExpressサーバー
+* `/public`：静的アセット
 
-## Previous WebSockets version
+---
 
-The previous version of this application that used WebSockets on the client (not recommended in browsers) [can be found here](https://github.com/openai/openai-realtime-console/tree/websockets).
+## 🧬 元になったプロジェクト
 
-## License
+このプロジェクトは OpenAI 公式の [openai-realtime-console](https://github.com/openai/openai-realtime-console) をベースに、音声カスタマイズ機能を追加したものです。
 
-MIT
+より高度な構成例を探している場合は、Next.js ベースの [openai-realtime-agents](https://github.com/openai/openai-realtime-agents) も参考になります。
+
+---
+
+## 📜 ライセンス
+MIT ライセンス
