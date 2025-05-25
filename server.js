@@ -22,7 +22,6 @@ function loadSystemPrompts() {
   }
 }
 
-
 // Configure Vite middleware for React client
 const vite = await createViteServer({
   server: { middlewareMode: true },
