@@ -19,3 +19,4 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+prompts.json
