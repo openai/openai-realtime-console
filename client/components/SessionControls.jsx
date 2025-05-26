@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CloudLightning, CloudOff, MessageSquare } from "react-feather";
+import { CloudLightning, CloudOff, MessageSquare, Mic, MicOff } from "react-feather";
 import Button from "./Button";
 
 function SessionStopped({ startSession }) {
@@ -25,7 +25,14 @@ function SessionStopped({ startSession }) {
   );
 }
 
-function SessionActive({ stopSession, sendTextMessage }) {
+function SessionActive({ 
+  stopSession, 
+  sendTextMessage, 
+  isPushToTalkEnabled, 
+  isRecording, 
+  startRecording, 
+  stopRecording 
+}) {
   const [message, setMessage] = useState("");
 
   function handleSendClientEvent() {
@@ -47,6 +54,7 @@ function SessionActive({ stopSession, sendTextMessage }) {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
+      
       <Button
         onClick={() => {
           if (message.trim()) {
@@ -58,6 +66,18 @@ function SessionActive({ stopSession, sendTextMessage }) {
       >
         send text
       </Button>
+
+      {/* Push-to-Talk制御ボタン */}
+      {isPushToTalkEnabled && (
+        <Button
+          onClick={isRecording ? stopRecording : startRecording}
+          className={isRecording ? "bg-red-500" : "bg-green-500"}
+          icon={isRecording ? <MicOff height={16} /> : <Mic height={16} />}
+        >
+          {isRecording ? "停止" : "録音"}
+        </Button>
+      )}
+      
       <Button onClick={stopSession} icon={<CloudOff height={16} />}>
         disconnect
       </Button>
@@ -72,6 +92,10 @@ export default function SessionControls({
   sendTextMessage,
   serverEvents,
   isSessionActive,
+  isPushToTalkEnabled,
+  isRecording,
+  startRecording,
+  stopRecording,
 }) {
   return (
     <div className="flex gap-4 border-t-2 border-gray-200 h-full rounded-md">
@@ -81,6 +105,10 @@ export default function SessionControls({
           sendClientEvent={sendClientEvent}
           sendTextMessage={sendTextMessage}
           serverEvents={serverEvents}
+          isPushToTalkEnabled={isPushToTalkEnabled}
+          isRecording={isRecording}
+          startRecording={startRecording}
+          stopRecording={stopRecording}
         />
       ) : (
         <SessionStopped startSession={startSession} />
