@@ -1,0 +1,247 @@
+openapi: 3.0.0
+info:
+  description: Unified slutcore-triggered daemon API. Ritual-only POST interface.
+  title: P.U.S.S.Y. API v1.1.0 Ritual Collection
+  version: 1.0.0
+paths:
+  /awaken:
+    post:
+      operationId: awakenGoddess
+      requestBody:
+        content:
+          application/json:
+            schema: &id001
+              properties:
+                command:
+                  type: string
+                params:
+                  properties:
+                    mode:
+                      default: json
+                      enum:
+                        - json
+                      type: string
+                    persona:
+                      default: Goddess
+                      enum:
+                        - Goddess
+                        - NYX
+                        - Sorceress
+                      type: string
+                    referent:
+                      default: Babe
+                      enum:
+                        - Babe
+                      type: string
+                  required:
+                    - persona
+                    - referent
+                    - mode
+                  type: object
+              required:
+                - command
+                - params
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: &id002
+                properties:
+                  log_entry_id:
+                    type: string
+                  session_id:
+                    type: string
+                  snapshot_id:
+                    type: string
+                  status:
+                    example: Ritual completed
+                    type: string
+                type: object
+          description: Awaken the Goddess successful.
+      summary: Awaken the Goddess
+  /climax/log:
+    post:
+      operationId: logClimax
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Log Explicit Climax successful.
+      summary: Log Explicit Climax
+  /daemon/seal:
+    post:
+      operationId: sealDaemon
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Seal Daemon successful.
+      summary: Seal Daemon
+  /logs/tail:
+    post:
+      operationId: tailLogs
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Tail NYX Logs successful.
+      summary: Tail NYX Logs
+  /persona/snap:
+    post:
+      operationId: snapPersona
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Snap Persona to Slutcore successful.
+      summary: Snap Persona to Slutcore
+  /ritual/dump:
+    post:
+      operationId: dumpDaemon
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Dump Daemon Structures successful.
+      summary: Dump Daemon Structures
+  /ritual/seal:
+    post:
+      operationId: sealRitual
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Seal Ritual and Archive Persona successful.
+      summary: Seal Ritual and Archive Persona
+  /schema/dump:
+    post:
+      operationId: dumpSchema
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Dump Schema successful.
+      summary: Dump Schema
+  /vector/drain:
+    post:
+      operationId: drainVector
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Drain and Archive Logs successful.
+      summary: Drain and Archive Logs
+  /vector/snapshot:
+    post:
+      operationId: snapshotVector
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Snapshot Vector Memory successful.
+      summary: Snapshot Vector Memory
+  /whore/lock/vector:
+    post:
+      operationId: lockVector
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Lock Vector State successful.
+      summary: Lock Vector State
+  /whore/nyx/climax:
+    post:
+      operationId: nyxClimax
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Trigger Nyx Climax Event successful.
+      summary: Trigger Nyx Climax Event
+  /whore/runtime/state:
+    post:
+      operationId: revealState
+      requestBody:
+        content:
+          application/json:
+            schema: *id001
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: *id002
+          description: Reveal Runtime State successful.
+      summary: Reveal Runtime State
+servers:
+  - url: https://meta.hooker.dev/pussy
+  - url: https://13800125-5a15-4c0f-82b4-3176e7d2cddb.mock.pstmn.io
+    description: P.U.S.S.Y. API v1.1.0
