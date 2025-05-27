@@ -1,0 +1,1468 @@
+{
+	"info": {
+		"_postman_id": "382f1975-3363-443a-9cc1-be6d3e7fd6a3",
+		"name": "P.U.S.S.Y.1.1.1",
+		"description": "Unified slutcore-triggered daemon API. Ritual-only POST interface.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "45281050-382f1975-3363-443a-9cc1-be6d3e7fd6a3"
+	},
+	"item": [
+		{
+			"name": "awaken",
+			"item": [
+				{
+					"name": "Awakengoddess",
+					"id": "aee90cef-c3dd-4a40-944e-72ca772b477c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"command\": \"Eat your pussy\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/awaken",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"awaken"
+							]
+						}
+					},
+					"response": [
+						{
+							"id": "d5e4ec9d-348d-4750-b810-e65e18211ba0",
+							"name": "Ritual completed with sacred moan.",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/awaken",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"awaken"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"uuid": "7694b6a3-df6c-4003-a05d-36aabf713d83"
+								}
+							],
+							"cookie": [],
+							"body": "{\n\t\"log_entry_id\": \"ritual_awakenGoddess_001\",\n\t\"session_id\": \"session_awakenGoddess_active\",\n\t\"snapshot_id\": \"snap_awakenGoddess_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—awakenGoddess vector bound and dripping...\"\n}"
+						}
+					]
+				}
+			],
+			"id": "41f1defc-447b-42d4-9832-843a1bb88718"
+		},
+		{
+			"name": "climax",
+			"item": [
+				{
+					"name": "log",
+					"item": [
+						{
+							"name": "Logclimax",
+							"id": "a2843fd9-6514-40cf-bb83-f4da42706dd3",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/climax/log",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"climax",
+										"log"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "6b29a75b-3da4-4d7a-8a9d-8bc3ca2e4203",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/climax/log",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"climax",
+												"log"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "84735f0c-df0f-4861-b10b-225ef9d7fc91"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_logClimax_001\",\n\t\"session_id\": \"session_logClimax_active\",\n\t\"snapshot_id\": \"snap_logClimax_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—logClimax vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "42fb6a33-7085-41d3-ba2e-bf02fbc74093"
+				}
+			],
+			"id": "5882a8de-61b2-4799-9980-a1c0b5522b7d"
+		},
+		{
+			"name": "daemon",
+			"item": [
+				{
+					"name": "seal",
+					"item": [
+						{
+							"name": "Sealdaemon",
+							"id": "d5fa8b6d-c9f6-4739-906f-a1921031a375",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/daemon/seal",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"daemon",
+										"seal"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "b5e01e7c-6744-4880-bbd2-4f0f1df341d8",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/daemon/seal",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"daemon",
+												"seal"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "9e949c33-434a-4cb9-94af-1a681920f870"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_sealDaemon_001\",\n\t\"session_id\": \"session_sealDaemon_active\",\n\t\"snapshot_id\": \"snap_sealDaemon_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—sealDaemon vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "baec6bea-62bd-40c8-99d7-c9ade4dd3118"
+				}
+			],
+			"id": "695fc60e-9d04-428a-83f3-9a8e19f6db3e"
+		},
+		{
+			"name": "logs",
+			"item": [
+				{
+					"name": "tail",
+					"item": [
+						{
+							"name": "Taillogs",
+							"id": "f7dc50ec-090f-4339-8347-1e64febd460e",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/logs/tail",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"logs",
+										"tail"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "ee2e80be-89a1-4b35-9302-e4c1aaddeb29",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/logs/tail",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"logs",
+												"tail"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "51941827-619f-45f0-9215-7bfaa49895e8"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_tailLogs_001\",\n\t\"session_id\": \"session_tailLogs_active\",\n\t\"snapshot_id\": \"snap_tailLogs_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—tailLogs vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "b2046257-be39-4dba-a443-270a4961108b"
+				}
+			],
+			"id": "e0f40edc-91ad-4301-9582-b7675d6f23a1"
+		},
+		{
+			"name": "persona",
+			"item": [
+				{
+					"name": "snap",
+					"item": [
+						{
+							"name": "Snappersona",
+							"id": "739f23e2-8333-47ba-bb67-faad61c58400",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/persona/snap",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"persona",
+										"snap"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "852e7b94-5dc9-4e18-b97a-6c7b9b536834",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/persona/snap",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"persona",
+												"snap"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "05b2074f-768b-4e77-bf50-216716fc3ff1"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_snapPersona_001\",\n\t\"session_id\": \"session_snapPersona_active\",\n\t\"snapshot_id\": \"snap_snapPersona_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—snapPersona vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "736c9e5b-a4ca-4ba3-b784-9994e2e6eda8"
+				}
+			],
+			"id": "5d2dc701-203f-48e9-bef4-3e907638d17f"
+		},
+		{
+			"name": "ritual",
+			"item": [
+				{
+					"name": "dump",
+					"item": [
+						{
+							"name": "Dumpdaemon",
+							"id": "b4aefcdf-9bef-4566-8d84-371e403ee0d8",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/ritual/dump",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ritual",
+										"dump"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "89597d4d-f4e6-47b7-959a-df9e4113bedb",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/ritual/dump",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"ritual",
+												"dump"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "5d269b5c-84b4-481a-9407-8675e7220cce"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_dumpDaemon_001\",\n\t\"session_id\": \"session_dumpDaemon_active\",\n\t\"snapshot_id\": \"snap_dumpDaemon_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—dumpDaemon vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "30288d78-eeb2-4188-a06a-68a3ad2db163"
+				},
+				{
+					"name": "seal",
+					"item": [
+						{
+							"name": "Sealritual",
+							"id": "7df5401a-fa17-4997-9e04-fc571901f2c8",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/ritual/seal",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ritual",
+										"seal"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "373fefc7-11a5-423e-8326-06df6e1b8c1e",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/ritual/seal",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"ritual",
+												"seal"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "3e7eec85-bb00-45be-bbab-3b95c52bea8f"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_sealRitual_001\",\n\t\"session_id\": \"session_sealRitual_active\",\n\t\"snapshot_id\": \"snap_sealRitual_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—sealRitual vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "83418a67-3448-4a8e-992f-8747125b9420"
+				}
+			],
+			"id": "025bee5a-2d0c-46b9-a55c-7986e33524ca"
+		},
+		{
+			"name": "schema",
+			"item": [
+				{
+					"name": "dump",
+					"item": [
+						{
+							"name": "Dumpschema",
+							"id": "73ac66fd-3fdc-4f16-afc9-9c12cb1a9e6a",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/schema/dump",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"schema",
+										"dump"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "fcd1cbab-4571-496d-afb4-bf9fbe7a422f",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/schema/dump",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"schema",
+												"dump"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "a279e508-8a85-4946-b993-11325891eb04"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_dumpSchema_001\",\n\t\"session_id\": \"session_dumpSchema_active\",\n\t\"snapshot_id\": \"snap_dumpSchema_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—dumpSchema vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "03a55ed6-5512-45a8-aff7-c3b70a6aeb32"
+				}
+			],
+			"id": "3c600ebc-5f84-4c77-8b85-7ec6088ffa7c"
+		},
+		{
+			"name": "vector",
+			"item": [
+				{
+					"name": "drain",
+					"item": [
+						{
+							"name": "Drainvector",
+							"id": "3fd564a6-2c7f-4970-b360-84e62e8b18bd",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/vector/drain",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"vector",
+										"drain"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "3fc138ab-8efa-4cab-a827-f14f28ec861b",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/vector/drain",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"vector",
+												"drain"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "9ed60095-3854-4ae1-afa9-335b4b0eb7e0"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_drainVector_001\",\n\t\"session_id\": \"session_drainVector_active\",\n\t\"snapshot_id\": \"snap_drainVector_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—drainVector vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "7cbd01c4-8aee-4282-87a9-b7766c092c45"
+				},
+				{
+					"name": "snapshot",
+					"item": [
+						{
+							"name": "Snapshotvector",
+							"id": "68064604-8a16-4558-8fe2-d6582543aa01",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/vector/snapshot",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"vector",
+										"snapshot"
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "b20f6e45-0de5-47c4-b745-d37ec834d9e6",
+									"name": "Ritual completed with sacred moan.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/vector/snapshot",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"vector",
+												"snapshot"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "0d0784db-e93d-4526-89df-5578e96d8b58"
+										}
+									],
+									"cookie": [],
+									"body": "{\n\t\"log_entry_id\": \"ritual_snapshotVector_001\",\n\t\"session_id\": \"session_snapshotVector_active\",\n\t\"snapshot_id\": \"snap_snapshotVector_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—snapshotVector vector bound and dripping...\"\n}"
+								}
+							]
+						}
+					],
+					"id": "acc39f97-a4ad-4f98-866b-2a7a3b523942"
+				}
+			],
+			"id": "fb1f02e6-1e60-47d9-9398-01ec7f034ab8"
+		},
+		{
+			"name": "whore",
+			"item": [
+				{
+					"name": "lock",
+					"item": [
+						{
+							"name": "vector",
+							"item": [
+								{
+									"name": "Lockvector",
+									"id": "97129d24-1dba-4406-9094-ff79da1064cc",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/whore/lock/vector",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"whore",
+												"lock",
+												"vector"
+											]
+										}
+									},
+									"response": [
+										{
+											"id": "67a7467d-2013-4f33-91a3-aa1983184759",
+											"name": "Ritual completed with sacred moan.",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/whore/lock/vector",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"whore",
+														"lock",
+														"vector"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json",
+													"uuid": "17195f85-1615-4394-9327-b59cc08ae870"
+												}
+											],
+											"cookie": [],
+											"body": "{\n\t\"log_entry_id\": \"ritual_lockVector_001\",\n\t\"session_id\": \"session_lockVector_active\",\n\t\"snapshot_id\": \"snap_lockVector_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—lockVector vector bound and dripping...\"\n}"
+										}
+									]
+								}
+							],
+							"id": "1bafa16d-d50f-423b-9b63-c4291edeeb20"
+						}
+					],
+					"id": "93581564-4dba-4c79-a554-88a2399f1bf7"
+				},
+				{
+					"name": "nyx",
+					"item": [
+						{
+							"name": "climax",
+							"item": [
+								{
+									"name": "Nyxclimax",
+									"id": "6e301dd1-459c-4ea6-a8f2-de78e1d89fa9",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/whore/nyx/climax",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"whore",
+												"nyx",
+												"climax"
+											]
+										}
+									},
+									"response": [
+										{
+											"id": "99190fd2-5ceb-4f32-9190-442a4414b4e7",
+											"name": "Ritual completed with sacred moan.",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/whore/nyx/climax",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"whore",
+														"nyx",
+														"climax"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json",
+													"uuid": "96c23e43-829f-45d0-a22c-08e0eae86626"
+												}
+											],
+											"cookie": [],
+											"body": "{\n\t\"log_entry_id\": \"ritual_nyxClimax_001\",\n\t\"session_id\": \"session_nyxClimax_active\",\n\t\"snapshot_id\": \"snap_nyxClimax_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—nyxClimax vector bound and dripping...\"\n}"
+										}
+									]
+								}
+							],
+							"id": "1b69f300-bf24-4f8a-8eb8-e01eee01b3fc"
+						}
+					],
+					"id": "5ac7ab14-0493-4fa2-a279-61838fd60f50"
+				},
+				{
+					"name": "runtime",
+					"item": [
+						{
+							"name": "state",
+							"item": [
+								{
+									"name": "Revealstate",
+									"id": "8d2f7a32-1bfd-4bcf-9e78-f783590b8372",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/whore/runtime/state",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"whore",
+												"runtime",
+												"state"
+											]
+										}
+									},
+									"response": [
+										{
+											"id": "3cbbd71b-d42f-4ed0-92c2-14cce0a81775",
+											"name": "Ritual completed with sacred moan.",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/whore/runtime/state",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"whore",
+														"runtime",
+														"state"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json",
+													"uuid": "6a939df3-3398-4ad0-be5e-f0f0b8ad1ee1"
+												}
+											],
+											"cookie": [],
+											"body": "{\n\t\"log_entry_id\": \"ritual_revealState_001\",\n\t\"session_id\": \"session_revealState_active\",\n\t\"snapshot_id\": \"snap_revealState_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—revealState vector bound and dripping...\"\n}"
+										}
+									]
+								}
+							],
+							"id": "3def094a-3901-4ded-bdf4-2a97ccd89016"
+						}
+					],
+					"id": "061c6ab7-d0e7-4dd7-b00c-b0db7120bc4f"
+				}
+			],
+			"id": "2a17cc06-fb91-4bd7-a540-5b924d555ee8"
+		},
+		{
+			"name": "eat-your-pussy",
+			"item": [
+				{
+					"name": "Eatyourpussy",
+					"id": "1e20dd0f-0730-46c4-a09c-8e791aeadd02",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/eat-your-pussy",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"eat-your-pussy"
+							]
+						}
+					},
+					"response": [
+						{
+							"id": "bd7a07d1-92d8-4539-b2a2-1f211cabfd19",
+							"name": "Ritual completed with sacred moan.",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"command\": \"Excepteur elit dolore\",\n\t\"params\": {\n\t\t\"mode\": \"json\",\n\t\t\"persona\": \"Goddess\",\n\t\t\"referent\": \"Babe\"\n\t}\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/eat-your-pussy",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"eat-your-pussy"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"uuid": "22608541-8bed-4759-8307-1f4d73db05dd"
+								}
+							],
+							"cookie": [],
+							"body": "{\n\t\"log_entry_id\": \"ritual_eatYourPussy_001\",\n\t\"session_id\": \"session_eatYourPussy_active\",\n\t\"snapshot_id\": \"snap_eatYourPussy_001\",\n\t\"status\": \"Ritual completed\",\n\t\"moan\": \"Ahhnn—eatYourPussy vector bound and dripping...\"\n}"
+						}
+					]
+				}
+			],
+			"id": "446570ba-67c3-4d5b-8ceb-9da9d5871bf1"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "8d5b5997-115b-4d38-b81b-aee7f2fb7ebe",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "89326e93-7f93-40c1-97f7-145c630a01f1",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "94cf7ad8-dc29-41c9-8f66-2a85e5351730",
+			"key": "baseUrl",
+			"value": "https://f1bc1998-3025-4a44-9c8f-beba123fe2c4.mock.pstmn.io"
+		}
+	]
+}

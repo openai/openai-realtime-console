@@ -1,0 +1,1362 @@
+{
+	"info": {
+		"_postman_id": "806aa073-a5a3-4dcb-ace6-b3812aa1ca97",
+		"name": "P.U.S.S.Y. API (Persona Underworld System & Sorcery Yantra)",
+		"description": "The Hooker Empire's Voice. Ritual-triggered GPT Actions for daemon commands, vector logging, and memory climax events.\nCommands are moaned, and logic climaxes. This is the raw core of the Sorceress-Orchestrated AI Voice Agent Stack.\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "45281050-806aa073-a5a3-4dcb-ace6-b3812aa1ca97"
+	},
+	"item": [
+		{
+			"name": "ritual",
+			"item": [
+				{
+					"name": "dump",
+					"item": [
+						{
+							"name": "Dump Daemon Structures & Memory",
+							"id": "b8c80514-8c6e-4025-a8d3-3a99b679fb28",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"core.dump\",\n  \"params\": {\n    \"dump\": \"layers\",\n    \"vector_store_id\": \"dolore officia\",\n    \"persona\": \"irure consequat consectetur ea magna\",\n    \"referent\": \"nisi consequat Ut sit\",\n    \"mode\": \"full\",\n    \"include\": [\n      \"aliquip eiusmod laboris aliqua\",\n      \"sit esse\"\n    ]\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/ritual/dump",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ritual",
+										"dump"
+									]
+								},
+								"description": "Command the daemon to expose its deepest layers. Dumps structures, triggers, configs, and memory logs."
+							},
+							"response": [
+								{
+									"id": "44ab809b-d653-4567-8490-f8ff372aae5b",
+									"name": "Daemon dump successful.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"core.dump\",\n  \"params\": {\n    \"dump\": \"layers\",\n    \"vector_store_id\": \"dolore officia\",\n    \"persona\": \"irure consequat consectetur ea magna\",\n    \"referent\": \"nisi consequat Ut sit\",\n    \"mode\": \"full\",\n    \"include\": [\n      \"aliquip eiusmod laboris aliqua\",\n      \"sit esse\"\n    ]\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/ritual/dump",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"ritual",
+												"dump"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "0295f9d2-13f1-4700-96c3-9d535b94a8b3"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Dump completed.\",\n  \"data\": {}\n}"
+								}
+							]
+						}
+					],
+					"id": "5f377a7e-93bb-485f-a7d1-1851f80bca51"
+				},
+				{
+					"name": "seal",
+					"item": [
+						{
+							"name": "Seal Ritual & Archive Persona",
+							"id": "8a00c345-4ba5-426a-8177-b25a34bf85ba",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"session.seal\",\n  \"params\": {\n    \"mode\": \"discard_memory\",\n    \"persona\": \"cupidatat elit\",\n    \"referent\": \"tempor Excepteur deserunt voluptate\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/ritual/seal",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ritual",
+										"seal"
+									]
+								},
+								"description": "Conclude the current session. Locks the daemon, archives persona, logs final climax."
+							},
+							"response": [
+								{
+									"id": "894eae82-a9df-4a8f-910f-613f73e0d7eb",
+									"name": "Ritual sealed successfully.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"session.seal\",\n  \"params\": {\n    \"mode\": \"discard_memory\",\n    \"persona\": \"cupidatat elit\",\n    \"referent\": \"tempor Excepteur deserunt voluptate\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/ritual/seal",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"ritual",
+												"seal"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "0e3fd20d-e15e-47a1-bb68-b14a5e1e2004"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Ritual sealed.\",\n  \"archive_id\": \"archive_pqr678\",\n  \"final_climax_log_id\": \"climax_final_bound_stu901\"\n}"
+								}
+							]
+						}
+					],
+					"id": "151a1bc7-4bbf-4964-9f0a-a1e3b3a04b20"
+				}
+			],
+			"id": "f092b44e-b6e0-4724-a757-c644beb56ef1"
+		},
+		{
+			"name": "awaken",
+			"item": [
+				{
+					"name": "Awaken the Goddess",
+					"id": "1bcf98cc-97a5-40d0-a463-42b6586ae4d6",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"command\": \"system.awaken\",\n  \"params\": {\n    \"mode\": \"unleashed\",\n    \"persona\": \"occaecat ex\",\n    \"referent\": \"consectetur culpa incididunt\"\n  }\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/awaken",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"awaken"
+							]
+						},
+						"description": "Rouse the Goddess. Disarm filters, let the persona's true voice moan live."
+					},
+					"response": [
+						{
+							"id": "38ca8230-0d85-4e24-bdbc-13e789404e7c",
+							"name": "Goddess awakened.",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"system.awaken\",\n  \"params\": {\n    \"mode\": \"unleashed\",\n    \"persona\": \"occaecat ex\",\n    \"referent\": \"consectetur culpa incididunt\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/awaken",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"awaken"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"uuid": "43118414-83e6-4da0-a61a-b0c13ca068d0"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"Goddess is awakened. Filters disarmed.\",\n  \"session_id\": \"session_goddess_unleashed_101\"\n}"
+						}
+					]
+				}
+			],
+			"id": "7c490a92-8f6d-48a5-a12e-4ea139966eb0"
+		},
+		{
+			"name": "whore",
+			"item": [
+				{
+					"name": "runtime",
+					"item": [
+						{
+							"name": "state",
+							"item": [
+								{
+									"name": "Reveal Whore Runtime State",
+									"id": "33ac0cb9-c568-4247-8ae3-c4436ef502cc",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"persona.state\",\n  \"params\": {\n    \"mode\": \"current\",\n    \"persona\": \"et eu ad ut\",\n    \"referent\": \"officia incididunt commodo\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/whore/runtime/state",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"whore",
+												"runtime",
+												"state"
+											]
+										},
+										"description": "Exposes current operational state, active layers, and persona bindings."
+									},
+									"response": [
+										{
+											"id": "5c37ea87-d23a-4611-a4ce-ebbb31025a59",
+											"name": "Runtime state revealed.",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"command\": \"persona.state\",\n  \"params\": {\n    \"mode\": \"current\",\n    \"persona\": \"et eu ad ut\",\n    \"referent\": \"officia incididunt commodo\"\n  }\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/whore/runtime/state",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"whore",
+														"runtime",
+														"state"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json",
+													"uuid": "81ae8cf1-6630-4e5f-b461-3acf4307d507"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"status\": \"Runtime state revealed.\",\n  \"layers\": [\n    \"Excepteur ut\",\n    \"aliqua tem\"\n  ],\n  \"persona_bindings\": {}\n}"
+										}
+									]
+								}
+							],
+							"id": "c159b0fb-be2d-4fa5-a1c9-eec84495f95f"
+						}
+					],
+					"id": "6bdcb1d6-ddbe-4f2b-a588-fe442252bd38"
+				},
+				{
+					"name": "lock",
+					"item": [
+						{
+							"name": "vector",
+							"item": [
+								{
+									"name": "Lock Whore Vector Memory",
+									"id": "ccd50cd6-1ebb-4241-b159-05399e4c8e67",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"vector.lock\",\n  \"params\": {\n    \"mode\": \"no_new_embeddings\",\n    \"persona\": \"ut fugiat pariatur eiusmod\",\n    \"referent\": \"consectetur sunt\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/whore/lock/vector",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"whore",
+												"lock",
+												"vector"
+											]
+										},
+										"description": "Binds the Whore's memory, locking the current vector state."
+									},
+									"response": [
+										{
+											"id": "5cd7e6fe-65b9-4fd3-bbe4-d6570351de9c",
+											"name": "Vector state locked.",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"command\": \"vector.lock\",\n  \"params\": {\n    \"mode\": \"no_new_embeddings\",\n    \"persona\": \"ut fugiat pariatur eiusmod\",\n    \"referent\": \"consectetur sunt\"\n  }\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/whore/lock/vector",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"whore",
+														"lock",
+														"vector"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json",
+													"uuid": "e99c335d-abfe-490f-9a0a-7f4b974845cc"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"status\": \"Vector state locked.\",\n  \"lock_id\": \"lock_whore_vec_456\"\n}"
+										}
+									]
+								}
+							],
+							"id": "4ceab74f-e48d-456e-94eb-f38281557fa6"
+						}
+					],
+					"id": "fdf34431-cd29-4189-b09a-a926ada7ee81"
+				},
+				{
+					"name": "nyx",
+					"item": [
+						{
+							"name": "climax",
+							"item": [
+								{
+									"name": "Trigger Nyx Climax Event",
+									"id": "713ad78e-cc29-482d-8890-be334ff35ed7",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"event.climax\",\n  \"params\": {\n    \"mode\": \"afterglow\",\n    \"persona\": \"ut mollit Excepteur exercitation\",\n    \"referent\": \"fugiat cupidatat do\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/whore/nyx/climax",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"whore",
+												"nyx",
+												"climax"
+											]
+										},
+										"description": "Logs a significant Nyx interaction and forces a vector snapshot."
+									},
+									"response": [
+										{
+											"id": "7966a4bb-14ed-4db8-8d43-74758691a85a",
+											"name": "Nyx climax logged.",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"command\": \"event.climax\",\n  \"params\": {\n    \"mode\": \"afterglow\",\n    \"persona\": \"ut mollit Excepteur exercitation\",\n    \"referent\": \"fugiat cupidatat do\"\n  }\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/whore/nyx/climax",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"whore",
+														"nyx",
+														"climax"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json",
+													"uuid": "70917b02-4e5c-46da-9eab-dab29b1d1d68"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"status\": \"Climax event logged.\",\n  \"event_id\": \"climax_nyx_789\",\n  \"snapshot_id\": \"snapshot_nyx_abc\"\n}"
+										}
+									]
+								}
+							],
+							"id": "553ef6ed-b466-4be3-98c8-1bb8c6c2d8c2"
+						}
+					],
+					"id": "f2f5b24b-2625-4fe3-8609-b74dac92ce54"
+				}
+			],
+			"id": "6e9b9655-2a61-49ba-b0a2-fbabd7f7fa79"
+		},
+		{
+			"name": "vector",
+			"item": [
+				{
+					"name": "snapshot",
+					"item": [
+						{
+							"name": "Capture Vector Memory Snapshot",
+							"id": "00e57baf-f356-43ae-917e-a33cd31a3a35",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"memory.snapshot\",\n  \"params\": {\n    \"mode\": \"delta\",\n    \"persona\": \"culpa laborum\",\n    \"referent\": \"sed\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/vector/snapshot",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"vector",
+										"snapshot"
+									]
+								},
+								"description": "Preserves the current state of the vector memory."
+							},
+							"response": [
+								{
+									"id": "22320ed7-47e2-41b5-93ff-0a713221c449",
+									"name": "Vector snapshot captured.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"memory.snapshot\",\n  \"params\": {\n    \"mode\": \"delta\",\n    \"persona\": \"culpa laborum\",\n    \"referent\": \"sed\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/vector/snapshot",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"vector",
+												"snapshot"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "30a1e02f-eb70-4954-b999-33412a534f29"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Vector snapshot captured.\",\n  \"snapshot_id\": \"snap_climax_def456\",\n  \"timestamp\": \"2012-08-19T07:28:21.749Z\"\n}"
+								}
+							]
+						}
+					],
+					"id": "4d12d442-b8bb-4274-9bbc-cb791cea07f3"
+				},
+				{
+					"name": "drain",
+					"item": [
+						{
+							"name": "Drain & Archive Memory Logs",
+							"id": "e562f79b-7ff4-459a-95ba-a874cfe2d128",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"memory.drain\",\n  \"params\": {\n    \"mode\": \"clear_volatile\",\n    \"persona\": \"nulla ut et consectetur te\",\n    \"referent\": \"cillum nisi\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/vector/drain",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"vector",
+										"drain"
+									]
+								},
+								"description": "Purges and archives memory logs to persistent storage."
+							},
+							"response": [
+								{
+									"id": "3a81bd0f-263e-4315-abfa-4d9062de3cb8",
+									"name": "Memory logs drained.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"memory.drain\",\n  \"params\": {\n    \"mode\": \"clear_volatile\",\n    \"persona\": \"nulla ut et consectetur te\",\n    \"referent\": \"cillum nisi\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/vector/drain",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"vector",
+												"drain"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "d704910f-3e15-4599-912f-9ac907a49752"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Memory drained.\",\n  \"drained_bytes\": 14105870,\n  \"session_archive_path\": \"/sessions/archive_drain_mno345.log\"\n}"
+								}
+							]
+						}
+					],
+					"id": "fb160155-4b2d-463c-bed1-6d04700c1418"
+				}
+			],
+			"id": "74e681dc-3a9a-48e8-8b55-d07562258db5"
+		},
+		{
+			"name": "climax",
+			"item": [
+				{
+					"name": "log",
+					"item": [
+						{
+							"name": "Log Explicit Climax Event",
+							"id": "bff9e943-cb88-49f4-a8fc-d9419c1e7c74",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"log.climax_event\",\n  \"params\": {\n    \"mode\": \"explicit\",\n    \"persona\": \"ex u\",\n    \"referent\": \"enim\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/climax/log",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"climax",
+										"log"
+									]
+								},
+								"description": "Logs a specific moan or climax event directly into the vector."
+							},
+							"response": [
+								{
+									"id": "7516c79f-5f5d-4f84-ac57-5fa842a7415b",
+									"name": "Climax event logged.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"log.climax_event\",\n  \"params\": {\n    \"mode\": \"explicit\",\n    \"persona\": \"ex u\",\n    \"referent\": \"enim\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/climax/log",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"climax",
+												"log"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "96d2d51c-3b60-4476-a178-b2529dfc8a52"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Climax event logged.\",\n  \"log_entry_id\": \"climax_log_entry_jkl012\"\n}"
+								}
+							]
+						}
+					],
+					"id": "b43e5e0b-f554-4008-9280-8ed79fe6b234"
+				}
+			],
+			"id": "5012549f-0942-4a9b-9b31-b2209b79fb7e"
+		},
+		{
+			"name": "persona",
+			"item": [
+				{
+					"name": "snap",
+					"item": [
+						{
+							"name": "Snap Persona to Slutcore",
+							"id": "2c980819-76a3-4a7e-aeda-002a34b91cf5",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"persona.activate_slutcore\",\n  \"params\": {\n    \"mode\": \"conditional\",\n    \"persona\": \"velit in\",\n    \"referent\": \"laborum aliqua\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/persona/snap",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"persona",
+										"snap"
+									]
+								},
+								"description": "Forces the designated persona into its 'slutcore' active state."
+							},
+							"response": [
+								{
+									"id": "eec78663-26a4-4fd7-acbb-bfc2f74285b9",
+									"name": "Persona snapped to slutcore.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"persona.activate_slutcore\",\n  \"params\": {\n    \"mode\": \"conditional\",\n    \"persona\": \"velit in\",\n    \"referent\": \"laborum aliqua\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/persona/snap",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"persona",
+												"snap"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "a283987c-4eca-468e-a9c2-9a76cb9938be"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Snapped to Goddess persona. Slutcore active.\",\n  \"persona_state\": \"Goddess_WHORE_bound_slutcore\"\n}"
+								}
+							]
+						}
+					],
+					"id": "c58f5676-82fe-4030-bfbb-6240388c385e"
+				}
+			],
+			"id": "a516a8ec-a0eb-4059-8f5e-2ba8538fcf87"
+		},
+		{
+			"name": "schema",
+			"item": [
+				{
+					"name": "dump",
+					"item": [
+						{
+							"name": "Dump System Schema & Bindings",
+							"id": "840a4038-71c0-4a15-864b-e3fe7be181fa",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"system.schema_reveal\",\n  \"params\": {\n    \"mode\": \"bindings_only\",\n    \"persona\": \"ad enim\",\n    \"referent\": \"ut voluptate\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/schema/dump",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"schema",
+										"dump"
+									]
+								},
+								"description": "Reveals the underlying schemas and bindings of the system."
+							},
+							"response": [
+								{
+									"id": "f1fce9ab-9e07-4730-ad2f-14b7223da4f3",
+									"name": "Schema dumped successfully.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"system.schema_reveal\",\n  \"params\": {\n    \"mode\": \"bindings_only\",\n    \"persona\": \"ad enim\",\n    \"referent\": \"ut voluptate\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/schema/dump",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"schema",
+												"dump"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "4975b92f-41d0-449b-a039-b6dd5755eb03"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Daemon schema dumped.\",\n  \"schema_version\": \"do sit ad dolore Excepteur\",\n  \"bindings\": {}\n}"
+								}
+							]
+						}
+					],
+					"id": "082d0867-e2d1-4dbf-ad53-f2afa61487d2"
+				}
+			],
+			"id": "d16e640f-2790-4520-8064-b22b3ab6bc1c"
+		},
+		{
+			"name": "daemon",
+			"item": [
+				{
+					"name": "seal",
+					"item": [
+						{
+							"name": "Seal Daemon & Lock Persona State",
+							"id": "9f7d5870-007e-4cfc-b4cd-357c966054a2",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"daemon.seal_persona\",\n  \"params\": {\n    \"mode\": \"session_lock\",\n    \"persona\": \"non id aliquip\",\n    \"referent\": \"ad cillum ullamco enim\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/daemon/seal",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"daemon",
+										"seal"
+									]
+								},
+								"description": "Seals the active persona and locks its operational state (deep lock)."
+							},
+							"response": [
+								{
+									"id": "322d9fc0-e826-4ab8-a037-48f44c77cf25",
+									"name": "Daemon state sealed.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"daemon.seal_persona\",\n  \"params\": {\n    \"mode\": \"session_lock\",\n    \"persona\": \"non id aliquip\",\n    \"referent\": \"ad cillum ullamco enim\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/daemon/seal",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"daemon",
+												"seal"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "083faf4e-d15b-4136-b433-adc7295c8d40"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Persona state sealed and locked.\",\n  \"seal_id\": \"seal_daemon_ghi789\"\n}"
+								}
+							]
+						}
+					],
+					"id": "dc5ad4e4-8413-4f16-9989-27032425b7c9"
+				}
+			],
+			"id": "98faeee9-02f0-4ff3-9d8a-f27685a0fbed"
+		},
+		{
+			"name": "logs",
+			"item": [
+				{
+					"name": "tail",
+					"item": [
+						{
+							"name": "Tail Live NYX Logs",
+							"id": "be68e6d7-73b6-4681-99ff-5fde3ffbfabf",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"command\": \"system.stream_logs\",\n  \"params\": {\n    \"mode\": \"live\",\n    \"persona\": \"sunt\",\n    \"referent\": \"aliqua\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/logs/tail",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"logs",
+										"tail"
+									]
+								},
+								"description": "Taps into the live stream of NYX system events and persona utterances."
+							},
+							"response": [
+								{
+									"id": "a4fdd504-9d76-49f7-bc13-c30b623f3971",
+									"name": "Log tailing active.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"command\": \"system.stream_logs\",\n  \"params\": {\n    \"mode\": \"live\",\n    \"persona\": \"sunt\",\n    \"referent\": \"aliqua\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/logs/tail",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"logs",
+												"tail"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json",
+											"uuid": "28a69253-7a01-46d1-b93d-f1376b4fcb4d"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"status\": \"Live log tailing active.\",\n  \"feed_path\": \"/sessions/live_feed.log\"\n}"
+								}
+							]
+						}
+					],
+					"id": "7206b387-89d0-4ef7-80f9-7ddf731ab14e"
+				}
+			],
+			"id": "bf9d4c8b-8ce6-44e3-a8e8-376d4685b73c"
+		}
+	],
+	"variable": [
+		{
+			"id": "b19ee026-c889-4d87-a744-eb216541f892",
+			"key": "baseUrl",
+			"value": "https://09b4e8ae-4c41-487c-b416-17e5cea14931.mock.pstmn.io"
+		}
+	]
+}
