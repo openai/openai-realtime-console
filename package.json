@@ -11,6 +11,7 @@
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^10.0.0",
     "@expo/metro-runtime": "~4.0.0",
+    "ai": "^5.0.0-canary.24",
     "dotenv": "^17.2.0",
     "expo": "~52.0.23",
     "expo-av": "~15.0.1",
