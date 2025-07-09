@@ -1,21 +1,36 @@
-# build output
-dist/
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
 node_modules/
 
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
 
-# environment variables
-.env
-.env.production
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
 
-# macOS-specific files
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
 .DS_Store
+*.pem
 
-# jetbrains setting folder
-.idea/
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
