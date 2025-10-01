@@ -1,8 +1,11 @@
+// client/components/App.jsx
 import { useEffect, useRef, useState } from "react";
 import logo from "/assets/openai-logomark.svg";
 import EventLog from "./EventLog";
 import SessionControls from "./SessionControls";
 import ToolPanel from "./ToolPanel";
+import { computeCostFromUsage } from "./billingFromUsage";
+import BillingSummary from "./BillingSummary";
 
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
@@ -11,31 +14,72 @@ export default function App() {
   const peerConnection = useRef(null);
   const audioElement = useRef(null);
 
+  // Billing
+  const [totalBilling, setTotalBilling] = useState(0);
+  const [totalBreakdown, setTotalBreakdown] = useState({
+    costInText: 0,
+    costInAudio: 0,
+    costCached: 0,
+    costOutText: 0,
+    costOutAudio: 0,
+  });
+  const billedEventIdsRef = useRef(new Set());
+
+  // --- Helper: recalc billing ---
+  function recalcBilling(allEvents) {
+    const sorted = allEvents
+      .filter(ev => ev.billing)
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    let total = 0;
+    const breakdown = {
+      costInText: 0,
+      costInAudio: 0,
+      costCached: 0,
+      costOutText: 0,
+      costOutAudio: 0,
+    };
+
+    sorted.forEach(ev => {
+      const b = ev.billing.breakdown;
+      total += ev.billing.total;
+      breakdown.costInText += b.costInText;
+      breakdown.costInAudio += b.costInAudio;
+      breakdown.costCached += b.costCached;
+      breakdown.costOutText += b.costOutText;
+      breakdown.costOutAudio += b.costOutAudio;
+    });
+
+    return { totalBilling: total, totalBreakdown: breakdown };
+  }
+
   async function startSession() {
-    // Get a session token for OpenAI Realtime API
     const tokenResponse = await fetch("/token");
     const data = await tokenResponse.json();
     const EPHEMERAL_KEY = data.value;
 
-    // Create a peer connection
     const pc = new RTCPeerConnection();
 
-    // Set up to play remote audio from the model
     audioElement.current = document.createElement("audio");
     audioElement.current.autoplay = true;
     pc.ontrack = (e) => (audioElement.current.srcObject = e.streams[0]);
 
-    // Add local audio track for microphone input in the browser
-    const ms = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
+    const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
     pc.addTrack(ms.getTracks()[0]);
 
-    // Set up data channel for sending and receiving events
     const dc = pc.createDataChannel("oai-events");
     setDataChannel(dc);
 
-    // Start the session using the Session Description Protocol (SDP)
+    pc.ondatachannel = (evt) => {
+      const incoming = evt.channel;
+      incoming.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          console.log("Incoming dataChannel (server → client):", msg);
+        } catch {}
+      };
+    };
+
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
@@ -51,95 +95,99 @@ export default function App() {
     });
 
     const sdp = await sdpResponse.text();
-    const answer = { type: "answer", sdp };
-    await pc.setRemoteDescription(answer);
+    await pc.setRemoteDescription({ type: "answer", sdp });
 
     peerConnection.current = pc;
   }
 
-  // Stop current session, clean up peer connection and data channel
   function stopSession() {
-    if (dataChannel) {
-      dataChannel.close();
-    }
-
-    peerConnection.current.getSenders().forEach((sender) => {
-      if (sender.track) {
-        sender.track.stop();
-      }
-    });
-
-    if (peerConnection.current) {
-      peerConnection.current.close();
-    }
+    dataChannel?.close();
+    peerConnection.current?.getSenders().forEach(sender => sender.track?.stop());
+    peerConnection.current?.close();
 
     setIsSessionActive(false);
     setDataChannel(null);
     peerConnection.current = null;
+
+    setTotalBilling(0);
+    setTotalBreakdown({
+      costInText: 0,
+      costInAudio: 0,
+      costCached: 0,
+      costOutText: 0,
+      costOutAudio: 0,
+    });
+    billedEventIdsRef.current.clear();
   }
 
-  // Send a message to the model
   function sendClientEvent(message) {
     if (dataChannel) {
-      const timestamp = new Date().toLocaleTimeString();
+      const timestamp = new Date().toISOString();
       message.event_id = message.event_id || crypto.randomUUID();
-
-      // send event before setting timestamp since the backend peer doesn't expect this field
+      message.timestamp = message.timestamp || timestamp;
       dataChannel.send(JSON.stringify(message));
-
-      // if guard just in case the timestamp exists by miracle
-      if (!message.timestamp) {
-        message.timestamp = timestamp;
-      }
       setEvents((prev) => [message, ...prev]);
-    } else {
-      console.error(
-        "Failed to send message - no data channel available",
-        message,
-      );
     }
   }
 
-  // Send a text message to the model
   function sendTextMessage(message) {
     const event = {
       type: "conversation.item.create",
-      item: {
-        type: "message",
-        role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: message,
-          },
-        ],
-      },
+      item: { type: "message", role: "user", content: [{ type: "input_text", text: message }] },
     };
-
     sendClientEvent(event);
     sendClientEvent({ type: "response.create" });
   }
 
-  // Attach event listeners to the data channel when a new one is created
   useEffect(() => {
-    if (dataChannel) {
-      // Append new server events to the list
-      dataChannel.addEventListener("message", (e) => {
-        const event = JSON.parse(e.data);
-        if (!event.timestamp) {
-          event.timestamp = new Date().toLocaleTimeString();
+    if (!dataChannel) return;
+
+    const onMessage = (e) => {
+      let event;
+      try { event = JSON.parse(e.data); } 
+      catch { return; }
+
+      // If the billing is already computed
+      if ((event.type === "response.done" || event.type === "response.completed") && event.response?.usage) {
+        const eventId = event.event_id || event.response?.id;
+
+        if (!billedEventIdsRef.current.has(eventId)) {
+          const cost = computeCostFromUsage(event.response.usage);
+          event.billing = cost;
+          billedEventIdsRef.current.add(eventId);
         }
 
-        setEvents((prev) => [event, ...prev]);
-      });
+        // Recalculation by chronology
+        const { totalBilling, totalBreakdown } = recalcBilling([event, ...events]);
+        setTotalBilling(totalBilling);
+        setTotalBreakdown(totalBreakdown);
+      }
 
-      // Set session active when the data channel is opened
-      dataChannel.addEventListener("open", () => {
-        setIsSessionActive(true);
-        setEvents([]);
+      if (!event.timestamp) event.timestamp = new Date().toISOString();
+      setEvents((prev) => [event, ...prev]);
+    };
+
+    const onOpen = () => {
+      setIsSessionActive(true);
+      setEvents([]);
+      setTotalBilling(0);
+      setTotalBreakdown({
+        costInText: 0,
+        costInAudio: 0,
+        costCached: 0,
+        costOutText: 0,
+        costOutAudio: 0,
       });
-    }
-  }, [dataChannel]);
+      billedEventIdsRef.current.clear();
+    };
+
+    dataChannel.addEventListener("message", onMessage);
+    dataChannel.addEventListener("open", onOpen);
+    return () => {
+      dataChannel.removeEventListener("message", onMessage);
+      dataChannel.removeEventListener("open", onOpen);
+    };
+  }, [dataChannel, events]);
 
   return (
     <>
@@ -147,6 +195,9 @@ export default function App() {
         <div className="flex items-center gap-4 w-full m-4 pb-2 border-0 border-b border-solid border-gray-200">
           <img style={{ width: "24px" }} src={logo} />
           <h1>realtime console</h1>
+          <div className="ml-auto text-sm text-gray-600">
+            Session cost: <span className="font-semibold">${totalBilling.toFixed(6)}</span>
+          </div>
         </div>
       </nav>
       <main className="absolute top-16 left-0 right-0 bottom-0">
@@ -177,3 +228,5 @@ export default function App() {
     </>
   );
 }
+
+
