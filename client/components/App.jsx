@@ -200,6 +200,43 @@ export default function App() {
     sendClientEvent({ type: "response.create" });
   }
 
+  async function handleFunctionCall(callId, name, args) {
+    console.log(`[REFLECT] Function call: ${name}`, args);
+    let result;
+    try {
+      if (name === "save_annotation") {
+        const resp = await fetch("/api/annotations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(args),
+        });
+        result = await resp.json();
+      } else if (name === "search_memory") {
+        const resp = await fetch(`/api/search-memory?q=${encodeURIComponent(args.query)}`);
+        result = await resp.json();
+      } else {
+        result = { error: `Unknown function: ${name}` };
+      }
+    } catch (e) {
+      console.error(`[REFLECT] Function ${name} failed:`, e);
+      result = { error: e.message };
+    }
+
+    if (dataChannel && dataChannel.readyState === "open") {
+      const responseEvent = {
+        type: "conversation.item.create",
+        item: {
+          type: "function_call_output",
+          call_id: callId,
+          output: JSON.stringify(result),
+        },
+      };
+      dataChannel.send(JSON.stringify(responseEvent));
+      dataChannel.send(JSON.stringify({ type: "response.create" }));
+      console.log(`[REFLECT] Sent function result for ${name}`);
+    }
+  }
+
   useEffect(() => {
     if (dataChannel) {
       dataChannel.addEventListener("message", (e) => {
@@ -207,7 +244,14 @@ export default function App() {
         if (!event.timestamp) {
           event.timestamp = new Date().toLocaleTimeString();
         }
-        if (event.type === "error") {
+        if (event.type === "response.function_call_arguments.done") {
+          try {
+            const args = JSON.parse(event.arguments);
+            handleFunctionCall(event.call_id, event.name, args);
+          } catch (parseErr) {
+            console.error("[REFLECT] Failed to parse function args:", parseErr);
+          }
+        } else if (event.type === "error") {
           console.error("[REFLECT] Server error event:", JSON.stringify(event).substring(0, 500));
         } else if (event.type === "session.created" || event.type === "session.updated") {
           console.log("[REFLECT] Session event:", event.type, JSON.stringify(event.session || {}).substring(0, 200));
@@ -308,6 +352,7 @@ export default function App() {
       if (e.type === "response.audio_transcript.delta") return { t, msg: `AI: "${(e.delta || "").substring(0, 60)}"`, color: "#c9a55a" };
       if (e.type === "response.audio_transcript.done") return { t, msg: `AI said: "${(e.transcript || "").substring(0, 80)}..."`, color: "#c9a55a" };
       if (e.type === "conversation.item.input_audio_transcription.completed") return { t, msg: `You said: "${(e.transcript || "").substring(0, 80)}"`, color: "#e8e4df" };
+      if (e.type === "response.function_call_arguments.done") return { t, msg: `Tool: ${e.name}`, color: "#a78bfa" };
       if (e.type === "response.done") return { t, msg: "AI finished responding", color: "#5a5550" };
       if (e.type === "response.created") return { t, msg: "AI thinking...", color: "#5a5550" };
       if (e.type === "error") return { t, msg: `Error: ${e.error?.message || "unknown"}`.substring(0, 80), color: "#c95a5a" };

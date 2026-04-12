@@ -1,10 +1,15 @@
 import express from "express";
 import fs from "fs";
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import { createServer as createViteServer } from "vite";
+import Database from "better-sqlite3";
 import "dotenv/config";
 
+const UNIFIED_ROOT = "/Users/minjaekwon1/Projects/Active/voice-system-unified";
+const DB_PATH = `${UNIFIED_ROOT}/database/transcriptions.db`;
+
 const app = express();
+app.use(express.json());
 app.use(express.text());
 const port = process.env.PORT || 3000;
 const apiKey = process.env.OPENAI_API_KEY;
@@ -41,6 +46,47 @@ ${context}`;
       type: "realtime",
       model: model,
       instructions: instructions,
+      tools: [
+        {
+          type: "function",
+          name: "save_annotation",
+          description: "Save a note, correction, or observation the user wants remembered. Call this when the user says things like 'remember this', 'note that', 'that's wrong', 'actually...', or asks you to keep track of something.",
+          parameters: {
+            type: "object",
+            properties: {
+              type: {
+                type: "string",
+                enum: ["noticeable", "correction", "context", "learned", "remember", "comment"],
+                description: "Category: 'correction' when fixing something wrong, 'remember' for explicit requests to remember, 'learned' for new info about the user, 'context' for situational background, 'noticeable' for patterns worth tracking, 'comment' for general remarks",
+              },
+              content: {
+                type: "string",
+                description: "The annotation content to save",
+              },
+              section_ref: {
+                type: "string",
+                description: "Optional reference to the section of the daily context this relates to",
+              },
+            },
+            required: ["type", "content"],
+          },
+        },
+        {
+          type: "function",
+          name: "search_memory",
+          description: "Search across all past voice memo transcripts and analyses. Call this when the user asks about past conversations, patterns, or mentions of a topic.",
+          parameters: {
+            type: "object",
+            properties: {
+              query: {
+                type: "string",
+                description: "Search query — keywords or phrases to find in past recordings",
+              },
+            },
+            required: ["query"],
+          },
+        },
+      ],
     },
   });
 }
@@ -150,6 +196,54 @@ ${context}`;
   } catch (e) {
     console.error("Failed to load reflection context:", e.message);
     res.json({ instructions: "You are a helpful voice assistant for daily reflection. Ask the user about their day." });
+  }
+});
+
+// --- Write-back tool endpoints ---
+
+const ALLOWED_ANNOTATION_TYPES = ["noticeable", "correction", "context", "learned", "remember", "comment"];
+
+app.post("/api/annotations", (req, res) => {
+  try {
+    const { type, content, section_ref } = req.body;
+    if (!type || !content) {
+      return res.status(400).json({ error: "type and content are required" });
+    }
+    if (!ALLOWED_ANNOTATION_TYPES.includes(type)) {
+      return res.status(400).json({ error: "invalid annotation type" });
+    }
+
+    const db = new Database(DB_PATH);
+    db.prepare(
+      `INSERT INTO annotations (recording_id, annotation_type, content, section_ref, feed_to_prompt, review_status) VALUES (0, ?, ?, ?, 0, 'pending')`
+    ).run(type, content, section_ref || null);
+    db.close();
+
+    console.log(`[REFLECT] Saved annotation: [${type}] ${content.substring(0, 80)}`);
+    res.json({ ok: true, message: `Noted: ${content.substring(0, 60)}` });
+  } catch (e) {
+    console.error("[REFLECT] Failed to save annotation:", e.message);
+    res.status(500).json({ error: "Failed to save annotation" });
+  }
+});
+
+app.get("/api/search-memory", (req, res) => {
+  try {
+    const query = req.query.q;
+    if (!query) {
+      return res.status(400).json({ error: "query parameter q is required" });
+    }
+
+    const result = execFileSync(
+      "python3",
+      ["scripts/memory_search.py", query],
+      { cwd: UNIFIED_ROOT, timeout: 15000, encoding: "utf-8" }
+    );
+    console.log(`[REFLECT] Memory search for "${query}": ${result.length} chars`);
+    res.json({ ok: true, results: result });
+  } catch (e) {
+    console.error("[REFLECT] Memory search failed:", e.message);
+    res.status(500).json({ error: "Search failed" });
   }
 });
 
