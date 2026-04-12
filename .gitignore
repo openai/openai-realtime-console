@@ -19,3 +19,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+.gstack/
+OPENAI_API_KEY
+AZURE_OPENAI_KEY
+.env
+*.tmp

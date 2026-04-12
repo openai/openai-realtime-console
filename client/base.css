@@ -1,15 +1,6 @@
-/*
-@tailwind base; adds base styles to all elements:
-https://tailwindcss.com/docs/preflight
-*/
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --color-base: #efefef;
-  --color-highlight: #ff80ff;
-}
 
 html,
 body {
@@ -18,7 +9,19 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: "Consolas", "Andale Mono", monospace;
-  font-size: 0.9rem;
-  background-color: var(--color-base);
+  background: #0a0a0f;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(-5%, 25%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 15%); }
+  80% { transform: translate(3%, 35%); }
+  90% { transform: translate(-10%, 10%); }
 }
