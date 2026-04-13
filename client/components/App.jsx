@@ -255,6 +255,10 @@ export default function App() {
       peerConnection.current = null;
     }
 
+    if (window._reflectPersist) {
+      window.removeEventListener("beforeunload", window._reflectPersist);
+      window._reflectPersist = null;
+    }
     setIsSessionActive(false);
     setDataChannel(null);
     console.log("[REFLECT] Session stopped.");
@@ -366,6 +370,8 @@ export default function App() {
         transcriptRef.current = [];
         sessionStartRef.current = new Date();
         sessionIdRef.current = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        window._reflectPersist = () => persistToLocal();
+        window.addEventListener("beforeunload", window._reflectPersist);
         setIsSessionActive(true);
         setEvents([]);
 
