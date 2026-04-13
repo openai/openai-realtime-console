@@ -37,9 +37,12 @@ export default function App() {
   }
 
   useEffect(() => {
+    const keys = [];
     for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (!key || !key.startsWith("reflection_")) continue;
+      const k = localStorage.key(i);
+      if (k?.startsWith("reflection_")) keys.push(k);
+    }
+    for (const key of keys) {
       try {
         const data = JSON.parse(localStorage.getItem(key));
         if (!data?.transcript?.length) { localStorage.removeItem(key); continue; }
@@ -357,7 +360,7 @@ export default function App() {
         console.log("[REFLECT] Data channel OPEN! Session is live.");
         transcriptRef.current = [];
         sessionStartRef.current = new Date();
-        sessionIdRef.current = crypto.randomUUID();
+        sessionIdRef.current = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         setIsSessionActive(true);
         setEvents([]);
 
