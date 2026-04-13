@@ -380,6 +380,17 @@ export default function App() {
         setIsSessionActive(true);
         setEvents([]);
 
+        // Enable transcription IMMEDIATELY — before any async work
+        dataChannel.send(JSON.stringify({
+          type: "session.update",
+          session: {
+            type: "realtime",
+            input_audio_transcription: { model: "whisper-1" },
+            turn_detection: { type: "server_vad" },
+          },
+        }));
+        console.log("[REFLECT] ✅ Sent immediate session.update with transcription + VAD");
+
         console.log("[REFLECT] Fetching reflection context...");
         setContextStatus("loading");
         try {
@@ -401,12 +412,10 @@ export default function App() {
                 type: "realtime",
                 instructions: ctxData.instructions,
                 voice: "ash",
-                turn_detection: { type: "server_vad" },
-                input_audio_transcription: { model: "whisper-1" },
               },
             };
             dataChannel.send(JSON.stringify(sessionUpdate));
-            console.log("[REFLECT] ✅ Sent session.update with reflection context + voice=ash + VAD");
+            console.log("[REFLECT] ✅ Sent session.update with reflection context + voice=ash");
             setContextStatus({ chars: instrLen, hasProfile, hasLocation, hasRecordings });
           } else {
             console.warn("[REFLECT] ⚠️ No instructions in context response");
