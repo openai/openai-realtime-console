@@ -25,7 +25,10 @@ export function reviewSession(transcript, { durationSeconds, topics, sessionId }
     detail: gpsLeaks.length === 0 ? "No GPS leaks" : `GPS data found in ${gpsLeaks.length} turn(s)`,
   });
 
-  const verboseTurns = assistantTurns.filter(t => t.text.split(/\s+/).length > MAX_WORDS);
+  const verboseTurns = assistantTurns.filter(t => {
+    const isKorean = /[\uAC00-\uD7A3]/.test(t.text);
+    return isKorean ? t.text.length > 150 : t.text.split(/\s+/).length > MAX_WORDS;
+  });
   checks.push({
     name: "verbosity",
     pass: verboseTurns.length === 0,

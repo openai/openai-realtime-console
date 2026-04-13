@@ -1,8 +1,12 @@
+import os
 import re
+import sqlite3
 import uuid
 from datetime import datetime, timezone
 
 import httpx
+
+DB_PATH = "/Users/minjaekwon1/Projects/Active/voice-system-unified/database/transcriptions.db"
 
 
 def test_server_starts(server):
@@ -39,6 +43,11 @@ def test_save_annotation_works(server):
     })
     assert r.status_code == 200
     assert r.json()["ok"] is True
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("DELETE FROM annotations WHERE content = 'automated test annotation — delete me'")
+    conn.commit()
+    conn.close()
 
 
 def test_save_annotation_rejects_invalid_type(server):
@@ -77,3 +86,11 @@ def test_session_save_and_idempotent(server):
         "transcript": transcript,
     })
     assert r2.status_code == 200
+
+    txt_path = r.json().get("txt_path", "")
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("DELETE FROM reflection_sessions WHERE session_id = ?", (session_id,))
+    conn.commit()
+    conn.close()
+    if txt_path and os.path.exists(txt_path):
+        os.remove(txt_path)
