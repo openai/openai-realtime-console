@@ -24,8 +24,9 @@ export default function App() {
   }
 
   function persistToLocal() {
-    if (transcriptRef.current.length === 0) return;
+    if (transcriptRef.current.length === 0) { console.log("[REFLECT] persistToLocal: skipped (empty transcript)"); return; }
     try {
+      console.log("[REFLECT] 💾 Saving to localStorage:", transcriptRef.current.length, "turns, key:", getLocalKey());
       localStorage.setItem(getLocalKey(), JSON.stringify({
         session_id: sessionIdRef.current,
         started_at: sessionStartRef.current?.toISOString(),
@@ -355,10 +356,13 @@ export default function App() {
           console.log("[REFLECT] Server event:", event.type);
         }
         if (event.type === "conversation.item.input_audio_transcription.completed") {
+          console.log("[REFLECT] 📝 User transcript captured:", (event.transcript || "").substring(0, 80));
           transcriptRef.current.push({ role: "user", text: event.transcript, ts: new Date().toISOString() });
         } else if (event.type === "response.audio_transcript.done") {
+          console.log("[REFLECT] 📝 AI transcript captured:", (event.transcript || "").substring(0, 80));
           transcriptRef.current.push({ role: "assistant", text: event.transcript, ts: new Date().toISOString() });
         } else if (event.type === "response.function_call_arguments.done") {
+          console.log("[REFLECT] 📝 Tool call captured:", event.name);
           transcriptRef.current.push({ role: "tool_call", name: event.name, args: event.arguments, ts: new Date().toISOString() });
         }
 
