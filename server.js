@@ -82,12 +82,15 @@ const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
 const azureDeployment = process.env.AZURE_OPENAI_DEPLOYMENT;
 const useAzure = true;
 
-// Configure Vite middleware for React client
-const vite = await createViteServer({
-  server: { middlewareMode: true },
-  appType: "custom",
-});
-app.use(vite.middlewares);
+// Configure Vite middleware for React client (skip in test mode)
+let vite;
+if (!process.env.TEST_MODE) {
+  vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: "custom",
+  });
+  app.use(vite.middlewares);
+}
 
 function getSessionConfig() {
   let instructions;
@@ -378,24 +381,25 @@ app.post("/api/shutdown", (req, res) => {
   }, 10000);
 });
 
-// Render the React client
-app.use("*", async (req, res, next) => {
-  const url = req.originalUrl;
-
-  try {
-    const template = await vite.transformIndexHtml(
-      url,
-      fs.readFileSync("./client/index.html", "utf-8"),
-    );
-    const { render } = await vite.ssrLoadModule("./client/entry-server.jsx");
-    const appHtml = await render(url);
-    const html = template.replace(`<!--ssr-outlet-->`, appHtml?.html);
-    res.status(200).set({ "Content-Type": "text/html" }).end(html);
-  } catch (e) {
-    vite.ssrFixStacktrace(e);
-    next(e);
-  }
-});
+// Render the React client (skip in test mode)
+if (!process.env.TEST_MODE) {
+  app.use("*", async (req, res, next) => {
+    const url = req.originalUrl;
+    try {
+      const template = await vite.transformIndexHtml(
+        url,
+        fs.readFileSync("./client/index.html", "utf-8"),
+      );
+      const { render } = await vite.ssrLoadModule("./client/entry-server.jsx");
+      const appHtml = await render(url);
+      const html = template.replace(`<!--ssr-outlet-->`, appHtml?.html);
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    } catch (e) {
+      vite.ssrFixStacktrace(e);
+      next(e);
+    }
+  });
+}
 
 app.listen(port, () => {
   console.log(`Express server running on *:${port}`);
