@@ -265,9 +265,13 @@ app.get("/api/search-memory", (req, res) => {
   }
 });
 
-app.post("/api/sessions/save", (req, res) => {
+app.post("/api/sessions/save", express.text({ type: "*/*" }), (req, res) => {
   try {
-    const { started_at, ended_at, transcript } = req.body;
+    let body = req.body;
+    if (typeof body === "string") {
+      try { body = JSON.parse(body); } catch { return res.status(400).json({ error: "invalid JSON" }); }
+    }
+    const { started_at, ended_at, transcript, partial } = body;
     if (!transcript || !transcript.length) {
       return res.status(400).json({ error: "transcript is required" });
     }

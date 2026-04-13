@@ -18,6 +18,41 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!isSessionActive) return;
+
+    const handleBeforeUnload = () => {
+      if (transcriptRef.current.length > 0) {
+        navigator.sendBeacon("/api/sessions/save", JSON.stringify({
+          started_at: sessionStartRef.current?.toISOString(),
+          ended_at: new Date().toISOString(),
+          transcript: transcriptRef.current,
+        }));
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    const autoSave = setInterval(() => {
+      if (transcriptRef.current.length > 0) {
+        fetch("/api/sessions/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            started_at: sessionStartRef.current?.toISOString(),
+            ended_at: new Date().toISOString(),
+            transcript: transcriptRef.current,
+            partial: true,
+          }),
+        }).catch(() => {});
+      }
+    }, 60000);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      clearInterval(autoSave);
+    };
+  }, [isSessionActive]);
+
+  useEffect(() => {
     if (!isSessionActive) {
       setVoiceState("idle");
       return;
@@ -316,6 +351,7 @@ export default function App() {
             const sessionUpdate = {
               type: "session.update",
               session: {
+                type: "realtime",
                 instructions: ctxData.instructions,
                 voice: "ash",
                 turn_detection: { type: "server_vad" },
