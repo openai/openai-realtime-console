@@ -7,6 +7,9 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [voiceState, setVoiceState] = useState("idle");
   const [contextStatus, setContextStatus] = useState(null);
+  const [sleepTimer, setSleepTimer] = useState(null);
+  const [sleepRemaining, setSleepRemaining] = useState(null);
+  const sleepTimerRef = useRef(null);
   const peerConnection = useRef(null);
   const audioElement = useRef(null);
   const transcriptRef = useRef([]);
@@ -263,6 +266,33 @@ export default function App() {
     setIsSessionActive(false);
     setDataChannel(null);
     console.log("[REFLECT] Session stopped.");
+  }
+
+  function startSleepTimer(minutes) {
+    if (sleepTimerRef.current) clearInterval(sleepTimerRef.current);
+    const endTime = Date.now() + minutes * 60 * 1000;
+    setSleepTimer(minutes);
+    setSleepRemaining(minutes * 60);
+
+    sleepTimerRef.current = setInterval(() => {
+      const remaining = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+      setSleepRemaining(remaining);
+      if (remaining <= 0) {
+        clearInterval(sleepTimerRef.current);
+        sleepTimerRef.current = null;
+        setSleepTimer(null);
+        setSleepRemaining(null);
+        if (isSessionActive) stopSession();
+        fetch("/api/shutdown", { method: "POST" }).catch(() => {});
+      }
+    }, 1000);
+  }
+
+  function cancelSleepTimer() {
+    if (sleepTimerRef.current) clearInterval(sleepTimerRef.current);
+    sleepTimerRef.current = null;
+    setSleepTimer(null);
+    setSleepRemaining(null);
   }
 
   function sendClientEvent(message) {
@@ -628,6 +658,60 @@ export default function App() {
         >
           {isSessionActive ? "End" : "Begin"}
         </button>
+      </div>
+
+      {/* Sleep timer — top left */}
+      <div style={{
+        position: "absolute",
+        top: 20,
+        left: 20,
+        zIndex: 4,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}>
+        {sleepRemaining !== null ? (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 999,
+            padding: "6px 14px",
+          }}>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.75rem",
+              color: sleepRemaining < 60 ? "#c95a5a" : "rgba(255,255,255,0.5)",
+            }}>
+              💤 {Math.floor(sleepRemaining / 60)}:{String(sleepRemaining % 60).padStart(2, "0")}
+            </span>
+            <button onClick={cancelSleepTimer} style={{
+              background: "none", border: "none", color: "rgba(255,255,255,0.4)",
+              cursor: "pointer", fontSize: "0.7rem", padding: 0,
+            }}>✕</button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", gap: 6 }}>
+            {[5, 10, 15, 30].map(m => (
+              <button key={m} onClick={() => startSleepTimer(m)} style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 999,
+                padding: "4px 10px",
+                color: "rgba(255,255,255,0.35)",
+                fontFamily: "-apple-system, sans-serif",
+                fontSize: "0.65rem",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => { e.target.style.color = "rgba(255,255,255,0.7)"; e.target.style.borderColor = "rgba(255,255,255,0.2)"; }}
+              onMouseLeave={e => { e.target.style.color = "rgba(255,255,255,0.35)"; e.target.style.borderColor = "rgba(255,255,255,0.08)"; }}
+              >💤 {m}m</button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Context status indicator — top right */}

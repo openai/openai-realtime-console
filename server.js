@@ -337,6 +337,15 @@ app.post("/api/sessions/save", (req, res) => {
   }
 });
 
+// Sleep timer — shut down Mac
+app.post("/api/shutdown", (req, res) => {
+  console.log("[REFLECT] Sleep timer triggered — shutting down in 10 seconds");
+  res.json({ ok: true });
+  setTimeout(() => {
+    execSync('osascript -e \'tell application "System Events" to sleep\'');
+  }, 10000);
+});
+
 // Render the React client
 app.use("*", async (req, res, next) => {
   const url = req.originalUrl;
