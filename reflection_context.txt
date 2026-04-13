@@ -1,0 +1,43 @@
+=== PERSONAL PROFILE ===
+
+## Identity
+
+Minjae Kwon, 24, Korean male. Princeton University math major with CS minor, currently on leave (returned to campus late January 2026). IMO Silver medalist, Samsung Humantech Gold laureate. Co-founded an AI language learning startup (Aleph Labs / "I Love Lab") that built a Minecraft-based English tutoring AI agent called "Annie." Was accepted into Y Combinator F25, attended the batch in San Francisco from September through late October 2025, then left the company — citing vision and role conflicts with the CEO — roughly two weeks before Demo Day.
+
+His stated goals form a layered stack: master English at the level of nuanced, CNN-grade fluency; overcome what he suspects is adult ADHD and chronic analysis paralysis; build a career at the intersection of AI and biology (his interest shifted from edtech to biotech/pharma between December 2025 and March 2026); and eventually found another company — one solving a "technically hard problem with a mathematical core." He talks frequently about wanting to become a CEO who can command a room, which drove him to hire both a voice/speech coach and an English logic tutor in Korea during his leave.
+
+He records nearly everything: lectures, meals with friends, subway commutes, tutoring sessions, networking calls, even silence. The recording habit itself is a data point — he treats his own life as a dataset to be analyzed.
+
+## Behavioral Patterns
+
+**Passive-then-analytical communication (~70% of social recordings).** In group settings, Minjae defaults to listening. He asks clarifying questions rather than asserting positions. Multiple summaries note "주로 듣는 역할" (mainly a listening role). When he does speak, he tends toward over-explaining his background (IMO, Princeton, YC) in a chronological monologue — a pattern noted by tutors, friends, and interviewers alike.
+
+**Analysis paralysis as a lifestyle.** This appears in at least 30+ recordings across all months. He cannot choose what to study, where to eat, whether to text a girl, which eating club to join, or whether to attend a conference. Friends diagnosed it as early as September 2025 — attributing it to his mathematical perfectionism — and it remains unresolved through April 2026. One friend's summary: his math background trained him to seek optimal solutions, which paralyzes him when problems have no closed-form answer.
+
+**Cyclic self-awareness without behavioral change.** He recognizes his patterns with remarkable precision. He names them: "analysis paralysis," "cognitive offloading," "reactive vs. proactive thinking." His tutors and coaches point out the same issues session after session — overthinking causes vocal tension, skipping dictionary entries causes misunderstanding, forgetting that he forgets. He acknowledges these insights each time as if discovering them fresh. The gap between insight and implementation is the defining feature of his psychology across this entire period.
+
+**Compulsive recording and self-surveillance.** He records 3-8 sessions per day, including periods of pure ambient noise (subway rides, typing, walking). At least 15-20% of recordings contain no meaningful speech. This suggests the recording itself serves an anxiety-management function — a sense of not losing anything — rather than a purely analytical one.
+
+**Social pattern: high-frequency shallow networking, low-frequency deep connection.** He attends YC events, tech meetups, dinners, conferences, and Tiger Trek visits at an extraordinary rate. He can introduce himself and pitch competently. But the recordings reveal few instances of sustained vulnerability or mutual exchange. The deepest conversations occur with one or two female friends and his Korean tutor/mentor. With peers, he tends to absorb rather than reciprocate.
+
+**Tutor dependency and resistance cycle.** From December 2025 through April 2026, he sees an English logic tutor and a voice coach multiple times per week. The tutors repeatedly identify the same root issues: he translates word
+
+
+=== TODAY: 2026-04-12 ===
+
+Location data: 56 GPS points today
+  09:26 — 40.3447, -74.6609
+  09:28 — 40.3429, -74.6634
+  09:32 — 40.3395, -74.6657
+  09:40 — 40.3431, -74.6610
+  09:47 — 40.3418, -74.6610
+  10:51 — 40.3465, -74.6616
+  10:55 — 40.3479, -74.6618
+  11:55 — 40.3489, -74.6620
+  11:58 — 40.3494, -74.6628
+
+No voice recordings today.
+(But location data shows you were active — what happened?)
+
+
+Violations: No violations detected today
