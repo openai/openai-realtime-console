@@ -6,6 +6,7 @@ import { execSync, execFileSync } from "child_process";
 import { createServer as createViteServer } from "vite";
 import Database from "better-sqlite3";
 import "dotenv/config";
+import { reviewSession } from "./server/reviewSession.js";
 
 const UNIFIED_ROOT = "/Users/minjaekwon1/Projects/Active/voice-system-unified";
 const DB_PATH = `${UNIFIED_ROOT}/database/transcriptions.db`;
@@ -365,7 +366,26 @@ app.post("/api/sessions/save", (req, res) => {
     } else {
       console.log(`[REFLECT] Duplicate session ${sessionId}, skipped file write`);
     }
-    res.json({ ok: true, session_id: sessionId, txt_path: txtPath });
+    let review = null;
+    try {
+      review = reviewSession(transcript, { durationSeconds, topics, sessionId });
+      if (review.issues.length > 0) {
+        console.warn(`[REFLECT] Review issues for ${sessionId}:`, review.issues);
+      }
+      const reviewDate = startDate.toISOString().slice(0, 10).replace(/-/g, "");
+      const reviewPath = path.join(reflectionsDir, `review_${reviewDate}.txt`);
+      const reviewLines = [
+        `\n--- REVIEW: ${sessionId} (${new Date().toISOString()}) ---`,
+        ...review.checks.map(c => `  [${c.pass ? "PASS" : "FAIL"}] ${c.name}: ${c.detail}`),
+        review.issues.length === 0 ? "  No issues." : `  Issues: ${review.issues.join("; ")}`,
+        "",
+      ];
+      fs.appendFileSync(reviewPath, reviewLines.join("\n"), "utf-8");
+    } catch (reviewErr) {
+      console.error("[REFLECT] Review failed (non-fatal):", reviewErr.message);
+    }
+
+    res.json({ ok: true, session_id: sessionId, txt_path: txtPath, review });
   } catch (e) {
     console.error("[REFLECT] Failed to save session:", e.message);
     res.status(500).json({ error: "Failed to save session" });

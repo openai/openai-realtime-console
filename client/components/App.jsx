@@ -232,6 +232,10 @@ export default function App() {
         }),
       });
       if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+      const data = await resp.json();
+      if (data.review?.issues?.length > 0) {
+        console.warn("[REFLECT] Session review issues:", data.review.issues);
+      }
       localStorage.removeItem(getLocalKey());
       transcriptRef.current = [];
       console.log("[REFLECT] Session saved");
