@@ -23,6 +23,7 @@ const DB_PATH = `${UNIFIED_ROOT}/database/transcriptions.db`;
     txt_path TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+  db.exec(`INSERT OR IGNORE INTO recordings (id, filename, filepath, status) VALUES (0, '_voice_session', '_voice_session', 'transcribed')`);
   db.close();
 }
 
@@ -320,7 +321,7 @@ app.post("/api/sessions/save", (req, res) => {
 
     const db = new Database(DB_PATH);
     const result = db.prepare(
-      `INSERT OR IGNORE INTO reflection_sessions (session_id, started_at, ended_at, transcript_json, topics, duration_seconds, txt_path) VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO reflection_sessions (session_id, started_at, ended_at, transcript_json, topics, duration_seconds, txt_path) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(session_id) DO UPDATE SET ended_at=excluded.ended_at, transcript_json=excluded.transcript_json, topics=excluded.topics, duration_seconds=excluded.duration_seconds, txt_path=excluded.txt_path`
     ).run(sessionId, started_at, ended_at, JSON.stringify(transcript), topics, durationSeconds, txtPath);
     db.close();
 
