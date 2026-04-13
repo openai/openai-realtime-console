@@ -90,7 +90,7 @@ export default function App() {
       return;
     }
 
-    if (lastEvent.type === "response.audio.delta" || lastEvent.type === "response.audio_transcript.delta") {
+    if (lastEvent.type === "response.audio.delta" || lastEvent.type === "response.output_audio_transcript.delta") {
       setVoiceState("ai-speaking");
     } else if (lastEvent.type === "input_audio_buffer.speech_started") {
       setVoiceState("user-speaking");
@@ -358,7 +358,7 @@ export default function App() {
         if (event.type === "conversation.item.input_audio_transcription.completed") {
           console.log("[REFLECT] 📝 User transcript captured:", (event.transcript || "").substring(0, 80));
           transcriptRef.current.push({ role: "user", text: event.transcript, ts: new Date().toISOString() });
-        } else if (event.type === "response.audio_transcript.done") {
+        } else if (event.type === "response.output_audio_transcript.done") {
           console.log("[REFLECT] 📝 AI transcript captured:", (event.transcript || "").substring(0, 80));
           transcriptRef.current.push({ role: "assistant", text: event.transcript, ts: new Date().toISOString() });
         } else if (event.type === "response.function_call_arguments.done") {
@@ -380,16 +380,16 @@ export default function App() {
         setIsSessionActive(true);
         setEvents([]);
 
-        // Enable transcription IMMEDIATELY — before any async work
+        // Note: Azure gpt-realtime-1.5 does NOT support input_audio_transcription or voice via session.update
+        // User speech transcription is not available — only AI responses are captured
         dataChannel.send(JSON.stringify({
           type: "session.update",
           session: {
             type: "realtime",
-            input_audio_transcription: { model: "whisper-1" },
             turn_detection: { type: "server_vad" },
           },
         }));
-        console.log("[REFLECT] ✅ Sent immediate session.update with transcription + VAD");
+        console.log("[REFLECT] ✅ Sent session.update with VAD");
 
         console.log("[REFLECT] Fetching reflection context...");
         setContextStatus("loading");
@@ -411,7 +411,6 @@ export default function App() {
               session: {
                 type: "realtime",
                 instructions: ctxData.instructions,
-                voice: "ash",
               },
             };
             dataChannel.send(JSON.stringify(sessionUpdate));
@@ -473,8 +472,8 @@ export default function App() {
       if (e.type === "session.updated") return { t, msg: "Context loaded", color: "#5ac978" };
       if (e.type === "input_audio_buffer.speech_started") return { t, msg: "You started speaking", color: "#8fa8c8" };
       if (e.type === "input_audio_buffer.speech_stopped") return { t, msg: "You stopped speaking", color: "#8fa8c8" };
-      if (e.type === "response.audio_transcript.delta") return { t, msg: `AI: "${(e.delta || "").substring(0, 60)}"`, color: "#c9a55a" };
-      if (e.type === "response.audio_transcript.done") return { t, msg: `AI said: "${(e.transcript || "").substring(0, 80)}..."`, color: "#c9a55a" };
+      if (e.type === "response.output_audio_transcript.delta") return { t, msg: `AI: "${(e.delta || "").substring(0, 60)}"`, color: "#c9a55a" };
+      if (e.type === "response.output_audio_transcript.done") return { t, msg: `AI said: "${(e.transcript || "").substring(0, 80)}..."`, color: "#c9a55a" };
       if (e.type === "conversation.item.input_audio_transcription.completed") return { t, msg: `You said: "${(e.transcript || "").substring(0, 80)}"`, color: "#e8e4df" };
       if (e.type === "response.function_call_arguments.done") return { t, msg: `Tool: ${e.name}`, color: "#a78bfa" };
       if (e.type === "response.done") return { t, msg: "AI finished responding", color: "#5a5550" };
