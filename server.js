@@ -1,5 +1,7 @@
 import express from "express";
 import fs from "fs";
+import path from "path";
+import crypto from "crypto";
 import { execSync, execFileSync } from "child_process";
 import { createServer as createViteServer } from "vite";
 import Database from "better-sqlite3";
@@ -7,6 +9,22 @@ import "dotenv/config";
 
 const UNIFIED_ROOT = "/Users/minjaekwon1/Projects/Active/voice-system-unified";
 const DB_PATH = `${UNIFIED_ROOT}/database/transcriptions.db`;
+
+{
+  const db = new Database(DB_PATH);
+  db.exec(`CREATE TABLE IF NOT EXISTS reflection_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL UNIQUE,
+    started_at DATETIME,
+    ended_at DATETIME,
+    transcript_json TEXT NOT NULL,
+    topics TEXT,
+    duration_seconds INTEGER,
+    txt_path TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+  db.close();
+}
 
 const app = express();
 app.use(express.json());
@@ -87,6 +105,7 @@ ${context}`;
           },
         },
       ],
+      input_audio_transcription: { model: "whisper-1" },
     },
   });
 }
@@ -244,6 +263,70 @@ app.get("/api/search-memory", (req, res) => {
   } catch (e) {
     console.error("[REFLECT] Memory search failed:", e.message);
     res.status(500).json({ error: "Search failed" });
+  }
+});
+
+app.post("/api/sessions/save", (req, res) => {
+  try {
+    const { started_at, ended_at, transcript } = req.body;
+    if (!transcript || !transcript.length) {
+      return res.status(400).json({ error: "transcript is required" });
+    }
+
+    const sessionId = crypto.randomUUID();
+    const startDate = started_at ? new Date(started_at) : new Date();
+    const endDate = ended_at ? new Date(ended_at) : new Date();
+    const durationSeconds = Math.round((endDate - startDate) / 1000);
+
+    const allText = transcript
+      .filter(t => t.text)
+      .map(t => t.text)
+      .join(" ");
+    const words = allText.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/).filter(w => w.length > 3);
+    const freq = {};
+    const stopWords = new Set(["that", "this", "with", "have", "from", "they", "been", "were", "will", "would", "could", "should", "about", "their", "there", "what", "when", "your", "just", "like", "know", "think", "really", "going", "something", "actually"]);
+    for (const w of words) {
+      if (!stopWords.has(w)) freq[w] = (freq[w] || 0) + 1;
+    }
+    const topics = Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([w]) => w)
+      .join(", ");
+
+    const dateLabel = startDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const durationMin = Math.round(durationSeconds / 60);
+    const lines = [`REFLECTION SESSION — ${dateLabel}`, `Duration: ${durationMin} minute${durationMin !== 1 ? "s" : ""}`, ""];
+    for (const turn of transcript) {
+      const ts = new Date(turn.ts);
+      const timeLabel = ts.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      if (turn.role === "user") {
+        lines.push(`[${timeLabel}] You: ${turn.text}`);
+      } else if (turn.role === "assistant") {
+        lines.push(`[${timeLabel}] AI: ${turn.text}`);
+      } else if (turn.role === "tool_call") {
+        lines.push(`[${timeLabel}] Tool: ${turn.name}(${turn.args})`);
+      }
+    }
+
+    const reflectionsDir = path.join(UNIFIED_ROOT, "output", "reflections");
+    fs.mkdirSync(reflectionsDir, { recursive: true });
+    const fileTs = startDate.toISOString().replace(/[-:]/g, "").replace("T", "_").substring(0, 15);
+    const txtFilename = `reflection_${fileTs}.txt`;
+    const txtPath = path.join(reflectionsDir, txtFilename);
+    fs.writeFileSync(txtPath, lines.join("\n"), "utf-8");
+
+    const db = new Database(DB_PATH);
+    db.prepare(
+      `INSERT INTO reflection_sessions (session_id, started_at, ended_at, transcript_json, topics, duration_seconds, txt_path) VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).run(sessionId, started_at, ended_at, JSON.stringify(transcript), topics, durationSeconds, txtPath);
+    db.close();
+
+    console.log(`[REFLECT] Session saved: ${sessionId} (${durationMin}min, ${transcript.length} turns) → ${txtFilename}`);
+    res.json({ ok: true, session_id: sessionId, txt_path: txtPath });
+  } catch (e) {
+    console.error("[REFLECT] Failed to save session:", e.message);
+    res.status(500).json({ error: "Failed to save session" });
   }
 });
 

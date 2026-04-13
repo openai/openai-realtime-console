@@ -9,6 +9,8 @@ export default function App() {
   const [contextStatus, setContextStatus] = useState(null);
   const peerConnection = useRef(null);
   const audioElement = useRef(null);
+  const transcriptRef = useRef([]);
+  const sessionStartRef = useRef(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -147,25 +149,44 @@ export default function App() {
     peerConnection.current = pc;
   }
 
-  function stopSession() {
+  async function saveSession() {
+    if (!transcriptRef.current.length) return;
+    try {
+      await fetch("/api/sessions/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          started_at: sessionStartRef.current?.toISOString(),
+          ended_at: new Date().toISOString(),
+          transcript: transcriptRef.current,
+        }),
+      });
+      console.log("[REFLECT] Session saved");
+    } catch (e) {
+      console.error("[REFLECT] Failed to save session:", e);
+    }
+  }
+
+  async function stopSession() {
     console.log("[REFLECT] Stopping session...");
+    await saveSession();
+
     if (dataChannel) {
       dataChannel.close();
     }
 
-    peerConnection.current.getSenders().forEach((sender) => {
-      if (sender.track) {
-        sender.track.stop();
-      }
-    });
-
     if (peerConnection.current) {
+      peerConnection.current.getSenders().forEach((sender) => {
+        if (sender.track) {
+          sender.track.stop();
+        }
+      });
       peerConnection.current.close();
+      peerConnection.current = null;
     }
 
     setIsSessionActive(false);
     setDataChannel(null);
-    peerConnection.current = null;
     console.log("[REFLECT] Session stopped.");
   }
 
@@ -259,11 +280,21 @@ export default function App() {
         } else {
           console.log("[REFLECT] Server event:", event.type);
         }
+        if (event.type === "conversation.item.input_audio_transcription.completed") {
+          transcriptRef.current.push({ role: "user", text: event.transcript, ts: new Date().toISOString() });
+        } else if (event.type === "response.audio_transcript.done") {
+          transcriptRef.current.push({ role: "assistant", text: event.transcript, ts: new Date().toISOString() });
+        } else if (event.type === "response.function_call_arguments.done") {
+          transcriptRef.current.push({ role: "tool_call", name: event.name, args: event.arguments, ts: new Date().toISOString() });
+        }
+
         setEvents((prev) => [event, ...prev]);
       });
 
       dataChannel.addEventListener("open", async () => {
         console.log("[REFLECT] Data channel OPEN! Session is live.");
+        transcriptRef.current = [];
+        sessionStartRef.current = new Date();
         setIsSessionActive(true);
         setEvents([]);
 
@@ -288,6 +319,7 @@ export default function App() {
                 instructions: ctxData.instructions,
                 voice: "ash",
                 turn_detection: { type: "server_vad" },
+                input_audio_transcription: { model: "whisper-1" },
               },
             };
             dataChannel.send(JSON.stringify(sessionUpdate));
