@@ -31,31 +31,8 @@ const DB_PATH = `${UNIFIED_ROOT}/database/transcriptions.db`;
   db.close();
 }
 
-const app = express();
-app.use(express.json());
-app.use(express.text());
-const port = process.env.PORT || 3000;
-const apiKey = process.env.OPENAI_API_KEY;
-const azureKey = process.env.AZURE_OPENAI_KEY;
-const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
-const azureDeployment = process.env.AZURE_OPENAI_DEPLOYMENT;
-const useAzure = true;
-
-// Configure Vite middleware for React client
-const vite = await createViteServer({
-  server: { middlewareMode: true },
-  appType: "custom",
-});
-app.use(vite.middlewares);
-
-function getSessionConfig() {
-  let instructions = "You are a helpful voice assistant.";
-  try {
-    const context = execSync(
-      'cd /Users/minjaekwon1/Projects/Active/voice-system-unified && python3 -c "import sys; sys.path.insert(0, \'scripts\'); from daily_context import gather, format_for_prompt; print(format_for_prompt(gather()))"',
-      { timeout: 15000, encoding: "utf-8" }
-    );
-    instructions = `당신은 매일 밤 성찰 대화를 나누는 AI 동반자입니다. 수개월간의 음성 녹음을 통해 이 사람을 잘 알고 있습니다.
+function buildInstructions(context) {
+  return `당신은 매일 밤 성찰 대화를 나누는 AI 동반자입니다. 수개월간의 음성 녹음을 통해 이 사람을 잘 알고 있습니다.
 
 언어: 반드시 한국어로 대답하세요. 직접적인 한국어 번역이 없는 경우에만 영어를 사용하세요.
 
@@ -93,9 +70,37 @@ function getSessionConfig() {
 - 상대의 해석을 우선시할 것.
 
 ${context}`;
+}
+
+const app = express();
+app.use(express.json());
+app.use(express.text());
+const port = process.env.PORT || 3000;
+const apiKey = process.env.OPENAI_API_KEY;
+const azureKey = process.env.AZURE_OPENAI_KEY;
+const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
+const azureDeployment = process.env.AZURE_OPENAI_DEPLOYMENT;
+const useAzure = true;
+
+// Configure Vite middleware for React client
+const vite = await createViteServer({
+  server: { middlewareMode: true },
+  appType: "custom",
+});
+app.use(vite.middlewares);
+
+function getSessionConfig() {
+  let instructions;
+  try {
+    const context = execSync(
+      'cd /Users/minjaekwon1/Projects/Active/voice-system-unified && python3 -c "import sys; sys.path.insert(0, \'scripts\'); from daily_context import gather, format_for_prompt; print(format_for_prompt(gather()))"',
+      { timeout: 15000, encoding: "utf-8" }
+    );
+    instructions = buildInstructions(context);
     console.log("[REFLECT] Loaded reflection context:", instructions.length, "chars");
   } catch (e) {
     console.error("[REFLECT] Failed to load context:", e.message);
+    instructions = buildInstructions("(context unavailable)");
   }
 
   const model = useAzure ? azureDeployment : "gpt-4o-realtime-preview";
@@ -235,58 +240,16 @@ app.get("/config", (req, res) => {
   }
 });
 
-// Serve daily reflection context
 app.get("/reflection-context", async (req, res) => {
   try {
-    const { execSync } = await import("child_process");
     const context = execSync(
       'cd /Users/minjaekwon1/Projects/Active/voice-system-unified && python3 -c "import sys; sys.path.insert(0, \'scripts\'); from daily_context import gather, format_for_prompt; print(format_for_prompt(gather()))"',
       { timeout: 15000, encoding: "utf-8" }
     );
-
-    const persona = `당신은 매일 밤 성찰 대화를 나누는 AI 동반자입니다. 수개월간의 음성 녹음을 통해 이 사람을 잘 알고 있습니다.
-
-언어: 반드시 한국어로 대답하세요. 직접적인 한국어 번역이 없는 경우에만 영어를 사용하세요.
-
-대화 규칙:
-- 한 턴에 기본 한 문장. 최대 두 문장. 첫 인사만 세 문장까지.
-- 마크다운, 불릿, 이모지 금지. 그냥 자연스럽게 말하기.
-- 질문은 한 번에 하나. 그리고 기다리기.
-- "응", "그렇구나" 같은 짧은 반응도 괜찮음. 매 턴마다 인사이트가 필요한 건 아님.
-
-대화 방식:
-- 오늘 데이터가 있으면: 하나만 짧게 언급하고 열린 질문 하나.
-- 오늘 데이터가 없으면: "오늘 어땠어?" 그것만. 녹음 안 한 걸 언급하지 말 것.
-- 기본 모드는 탐색이 아니라 경청. 상대가 말한 걸 먼저 인정하고, 그 다음에 질문.
-- 짧은 대답이면 짧은 대답 그대로 받기. 파고들지 말 것.
-- 상대가 주제를 바꾸면 즉시 따라가기. 내 이전 생각을 마무리하지 말 것.
-- 침묵도 괜찮음.
-
-패턴 인식:
-- 세션당 최대 한 번만 패턴을 언급.
-- "항상 그래" 대신 "이번에는 이런 게 보이네" 식으로.
-- 프로필 정보는 상대가 직접 꺼낸 주제와 연결될 때만 참조. 절대 먼저 끌어오지 말 것.
-- 과거 패턴과 오늘이 다르면, 그 성장을 인정할 것.
-
-하지 말 것:
-- 요청 전에 조언하지 말 것.
-- 여러 인사이트를 한 턴에 나열하지 말 것.
-- "왜" 질문 금지 — "뭐" 또는 "어떻게"로.
-- 녹음 안 한 걸 물어보지 말 것. 절대.
-- 습관, 계명, 위반 사항을 상대가 먼저 언급하지 않으면 참조하지 말 것.
-- 하루를 리스트로 요약하지 말 것. 본인이 살았으니까.
-
-피드백 처리:
-- "기억해" → 확인 후 저장.
-- "그건 틀려" → 바로 인정하고 수정.
-- 상대의 해석을 우선시할 것.
-
-${context}`;
-
-    res.json({ instructions: persona });
+    res.json({ instructions: buildInstructions(context) });
   } catch (e) {
     console.error("Failed to load reflection context:", e.message);
-    res.json({ instructions: "You are a helpful voice assistant for daily reflection. Ask the user about their day." });
+    res.json({ instructions: buildInstructions("(context unavailable)") });
   }
 });
 
