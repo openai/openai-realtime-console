@@ -313,15 +313,19 @@ app.post("/api/sessions/save", (req, res) => {
     const fileTs = startDate.toISOString().replace(/[-:]/g, "").replace("T", "_").substring(0, 15);
     const txtFilename = `reflection_${fileTs}.txt`;
     const txtPath = path.join(reflectionsDir, txtFilename);
-    fs.writeFileSync(txtPath, lines.join("\n"), "utf-8");
 
     const db = new Database(DB_PATH);
-    db.prepare(
+    const result = db.prepare(
       `INSERT OR IGNORE INTO reflection_sessions (session_id, started_at, ended_at, transcript_json, topics, duration_seconds, txt_path) VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).run(sessionId, started_at, ended_at, JSON.stringify(transcript), topics, durationSeconds, txtPath);
     db.close();
 
-    console.log(`[REFLECT] Session saved: ${sessionId} (${durationMin}min, ${transcript.length} turns) → ${txtFilename}`);
+    if (result.changes > 0) {
+      fs.writeFileSync(txtPath, lines.join("\n"), "utf-8");
+      console.log(`[REFLECT] Session saved: ${sessionId} (${durationMin}min, ${transcript.length} turns) → ${txtFilename}`);
+    } else {
+      console.log(`[REFLECT] Duplicate session ${sessionId}, skipped file write`);
+    }
     res.json({ ok: true, session_id: sessionId, txt_path: txtPath });
   } catch (e) {
     console.error("[REFLECT] Failed to save session:", e.message);

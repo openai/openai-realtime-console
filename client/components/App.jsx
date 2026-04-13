@@ -98,7 +98,11 @@ export default function App() {
     }
   }, [events, isSessionActive]);
 
+  const isStartingRef = useRef(false);
+
   async function startSession() {
+    if (isStartingRef.current || isSessionActive) return;
+    isStartingRef.current = true;
     console.log("[REFLECT] Starting session...");
 
     console.log("[REFLECT] Fetching ephemeral token from /token...");
@@ -207,6 +211,7 @@ export default function App() {
     console.log("[REFLECT] Remote description set. Connection establishing...");
 
     peerConnection.current = pc;
+    isStartingRef.current = false;
   }
 
   async function saveSession() {
