@@ -24,7 +24,7 @@ export default function App() {
   }
 
   function persistToLocal() {
-    if (transcriptRef.current.length === 0) { console.log("[REFLECT] persistToLocal: skipped (empty transcript)"); return; }
+    if (transcriptRef.current.length === 0 && !sessionStartRef.current) return;
     try {
       console.log("[REFLECT] 💾 Saving to localStorage:", transcriptRef.current.length, "turns, key:", getLocalKey());
       localStorage.setItem(getLocalKey(), JSON.stringify({
@@ -376,6 +376,7 @@ export default function App() {
         sessionIdRef.current = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         window._reflectPersist = () => persistToLocal();
         window.addEventListener("beforeunload", window._reflectPersist);
+        persistToLocal();
         setIsSessionActive(true);
         setEvents([]);
 
