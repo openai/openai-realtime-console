@@ -105,7 +105,6 @@ ${context}`;
           },
         },
       ],
-      input_audio_transcription: { model: "whisper-1" },
     },
   });
 }
