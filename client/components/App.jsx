@@ -17,38 +17,49 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  function persistToLocal() {
+    if (transcriptRef.current.length === 0) return;
+    try {
+      localStorage.setItem("reflection_session", JSON.stringify({
+        started_at: sessionStartRef.current?.toISOString(),
+        transcript: transcriptRef.current,
+      }));
+    } catch {}
+  }
+
+  useEffect(() => {
+    const saved = localStorage.getItem("reflection_session");
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.transcript && data.transcript.length > 0) {
+          console.log("[REFLECT] Recovering unsaved session:", data.transcript.length, "turns");
+          fetch("/api/sessions/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...data, ended_at: new Date().toISOString() }),
+          }).then(() => {
+            localStorage.removeItem("reflection_session");
+            console.log("[REFLECT] Recovered session saved");
+          }).catch(() => console.warn("[REFLECT] Recovery failed, will retry next load"));
+        } else {
+          localStorage.removeItem("reflection_session");
+        }
+      } catch { localStorage.removeItem("reflection_session"); }
+    }
+  }, []);
+
   useEffect(() => {
     if (!isSessionActive) return;
 
-    const handleBeforeUnload = () => {
-      if (transcriptRef.current.length > 0) {
-        navigator.sendBeacon("/api/sessions/save", JSON.stringify({
-          started_at: sessionStartRef.current?.toISOString(),
-          ended_at: new Date().toISOString(),
-          transcript: transcriptRef.current,
-        }));
-      }
-    };
+    const handleBeforeUnload = () => persistToLocal();
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    const autoSave = setInterval(() => {
-      if (transcriptRef.current.length > 0) {
-        fetch("/api/sessions/save", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            started_at: sessionStartRef.current?.toISOString(),
-            ended_at: new Date().toISOString(),
-            transcript: transcriptRef.current,
-            partial: true,
-          }),
-        }).catch(() => {});
-      }
-    }, 60000);
+    const localSave = setInterval(() => persistToLocal(), 10000);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      clearInterval(autoSave);
+      clearInterval(localSave);
     };
   }, [isSessionActive]);
 
@@ -196,9 +207,11 @@ export default function App() {
           transcript: transcriptRef.current,
         }),
       });
+      localStorage.removeItem("reflection_session");
       console.log("[REFLECT] Session saved");
     } catch (e) {
-      console.error("[REFLECT] Failed to save session:", e);
+      console.error("[REFLECT] Failed to save session, persisting locally:", e);
+      persistToLocal();
     }
   }
 
