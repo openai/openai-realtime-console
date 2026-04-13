@@ -17,35 +17,46 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  const sessionIdRef = useRef(null);
+
+  function getLocalKey() {
+    return sessionIdRef.current ? `reflection_${sessionIdRef.current}` : "reflection_session";
+  }
+
   function persistToLocal() {
     if (transcriptRef.current.length === 0) return;
     try {
-      localStorage.setItem("reflection_session", JSON.stringify({
+      localStorage.setItem(getLocalKey(), JSON.stringify({
+        session_id: sessionIdRef.current,
         started_at: sessionStartRef.current?.toISOString(),
         transcript: transcriptRef.current,
       }));
-    } catch {}
+    } catch (e) {
+      console.error("[REFLECT] localStorage write failed (quota?):", e.message);
+    }
   }
 
   useEffect(() => {
-    const saved = localStorage.getItem("reflection_session");
-    if (saved) {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith("reflection_")) continue;
       try {
-        const data = JSON.parse(saved);
-        if (data.transcript && data.transcript.length > 0) {
-          console.log("[REFLECT] Recovering unsaved session:", data.transcript.length, "turns");
-          fetch("/api/sessions/save", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...data, ended_at: new Date().toISOString() }),
-          }).then(() => {
-            localStorage.removeItem("reflection_session");
+        const data = JSON.parse(localStorage.getItem(key));
+        if (!data?.transcript?.length) { localStorage.removeItem(key); continue; }
+        console.log("[REFLECT] Recovering unsaved session:", data.transcript.length, "turns");
+        fetch("/api/sessions/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...data, ended_at: new Date().toISOString() }),
+        }).then(async (resp) => {
+          if (resp.ok) {
+            localStorage.removeItem(key);
             console.log("[REFLECT] Recovered session saved");
-          }).catch(() => console.warn("[REFLECT] Recovery failed, will retry next load"));
-        } else {
-          localStorage.removeItem("reflection_session");
-        }
-      } catch { localStorage.removeItem("reflection_session"); }
+          } else {
+            console.warn("[REFLECT] Recovery got", resp.status, "— will retry next load");
+          }
+        }).catch(() => console.warn("[REFLECT] Recovery failed, will retry next load"));
+      } catch { localStorage.removeItem(key); }
     }
   }, []);
 
@@ -198,16 +209,19 @@ export default function App() {
   async function saveSession() {
     if (!transcriptRef.current.length) return;
     try {
-      await fetch("/api/sessions/save", {
+      const resp = await fetch("/api/sessions/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          session_id: sessionIdRef.current,
           started_at: sessionStartRef.current?.toISOString(),
           ended_at: new Date().toISOString(),
           transcript: transcriptRef.current,
         }),
       });
-      localStorage.removeItem("reflection_session");
+      if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+      localStorage.removeItem(getLocalKey());
+      transcriptRef.current = [];
       console.log("[REFLECT] Session saved");
     } catch (e) {
       console.error("[REFLECT] Failed to save session, persisting locally:", e);
@@ -343,6 +357,7 @@ export default function App() {
         console.log("[REFLECT] Data channel OPEN! Session is live.");
         transcriptRef.current = [];
         sessionStartRef.current = new Date();
+        sessionIdRef.current = crypto.randomUUID();
         setIsSessionActive(true);
         setEvents([]);
 

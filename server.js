@@ -267,12 +267,12 @@ app.get("/api/search-memory", (req, res) => {
 
 app.post("/api/sessions/save", (req, res) => {
   try {
-    const { started_at, ended_at, transcript } = req.body;
+    const { session_id, started_at, ended_at, transcript } = req.body;
     if (!transcript || !transcript.length) {
       return res.status(400).json({ error: "transcript is required" });
     }
 
-    const sessionId = crypto.randomUUID();
+    const sessionId = session_id || crypto.randomUUID();
     const startDate = started_at ? new Date(started_at) : new Date();
     const endDate = ended_at ? new Date(ended_at) : new Date();
     const durationSeconds = Math.round((endDate - startDate) / 1000);
@@ -317,7 +317,7 @@ app.post("/api/sessions/save", (req, res) => {
 
     const db = new Database(DB_PATH);
     db.prepare(
-      `INSERT INTO reflection_sessions (session_id, started_at, ended_at, transcript_json, topics, duration_seconds, txt_path) VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT OR IGNORE INTO reflection_sessions (session_id, started_at, ended_at, transcript_json, topics, duration_seconds, txt_path) VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).run(sessionId, started_at, ended_at, JSON.stringify(transcript), topics, durationSeconds, txtPath);
     db.close();
 
