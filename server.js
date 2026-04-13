@@ -290,7 +290,7 @@ app.post("/api/sessions/save", (req, res) => {
       .filter(t => t.text)
       .map(t => t.text)
       .join(" ");
-    const words = allText.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/).filter(w => w.length > 3);
+    const words = allText.toLowerCase().replace(/[^\p{L}\s]/gu, "").split(/\s+/).filter(w => w.length > 1);
     const freq = {};
     const stopWords = new Set(["that", "this", "with", "have", "from", "they", "been", "were", "will", "would", "could", "should", "about", "their", "there", "what", "when", "your", "just", "like", "know", "think", "really", "going", "something", "actually"]);
     for (const w of words) {

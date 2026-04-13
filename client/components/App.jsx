@@ -337,9 +337,11 @@ export default function App() {
           body: JSON.stringify(args),
         });
         result = await resp.json();
+        if (!resp.ok) result = { error: result.error || `Server returned ${resp.status}` };
       } else if (name === "search_memory") {
         const resp = await fetch(`/api/search-memory?q=${encodeURIComponent(args.query)}`);
         result = await resp.json();
+        if (!resp.ok) result = { error: result.error || `Server returned ${resp.status}` };
       } else {
         result = { error: `Unknown function: ${name}` };
       }
@@ -376,6 +378,13 @@ export default function App() {
             handleFunctionCall(event.call_id, event.name, args);
           } catch (parseErr) {
             console.error("[REFLECT] Failed to parse function args:", parseErr);
+            if (dataChannel?.readyState === "open") {
+              dataChannel.send(JSON.stringify({
+                type: "conversation.item.create",
+                item: { type: "function_call_output", call_id: event.call_id, output: JSON.stringify({ error: "Failed to parse arguments" }) },
+              }));
+              dataChannel.send(JSON.stringify({ type: "response.create" }));
+            }
           }
         } else if (event.type === "error") {
           console.error("[REFLECT] Server error event:", JSON.stringify(event).substring(0, 500));
