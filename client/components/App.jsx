@@ -14,6 +14,8 @@ export default function App() {
   const audioElement = useRef(null);
   const transcriptRef = useRef([]);
   const sessionStartRef = useRef(null);
+  const speechRecognitionRef = useRef(null);
+  const speechRestartRef = useRef(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -103,6 +105,68 @@ export default function App() {
   }, [events, isSessionActive]);
 
   const isStartingRef = useRef(false);
+
+  function startUserSpeechCapture() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      console.warn("[REFLECT] ⚠️ Web Speech API unavailable — user speech will not be captured");
+      return;
+    }
+    if (speechRecognitionRef.current) return;
+
+    const recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "ko-KR";
+
+    recognition.onresult = (ev) => {
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const result = ev.results[i];
+        if (!result.isFinal) continue;
+        const text = result[0]?.transcript?.trim();
+        if (!text) continue;
+        console.log("[REFLECT] 📝 User transcript (Web Speech):", text.substring(0, 80));
+        transcriptRef.current.push({ role: "user", text, ts: new Date().toISOString() });
+      }
+    };
+
+    recognition.onerror = (ev) => {
+      if (ev.error === "no-speech" || ev.error === "aborted") return;
+      console.warn("[REFLECT] Web Speech error:", ev.error);
+    };
+
+    recognition.onend = () => {
+      if (speechRestartRef.current) {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn("[REFLECT] Web Speech restart failed:", e.message);
+        }
+      }
+    };
+
+    speechRestartRef.current = true;
+    speechRecognitionRef.current = recognition;
+    try {
+      recognition.start();
+      console.log("[REFLECT] ✅ Web Speech API started (lang=ko-KR) for user speech capture");
+    } catch (e) {
+      console.warn("[REFLECT] Web Speech start failed:", e.message);
+    }
+  }
+
+  function stopUserSpeechCapture() {
+    speechRestartRef.current = false;
+    if (speechRecognitionRef.current) {
+      try {
+        speechRecognitionRef.current.stop();
+      } catch (e) {
+        // already stopped
+      }
+      speechRecognitionRef.current = null;
+      console.log("[REFLECT] Web Speech API stopped");
+    }
+  }
 
   async function startSession() {
     if (isStartingRef.current || isSessionActive) return;
@@ -247,6 +311,7 @@ export default function App() {
 
   async function stopSession() {
     console.log("[REFLECT] Stopping session...");
+    stopUserSpeechCapture();
     await saveSession();
 
     if (dataChannel) {
@@ -423,8 +488,8 @@ export default function App() {
         setIsSessionActive(true);
         setEvents([]);
 
-        // Note: Azure gpt-realtime-1.5 does NOT support input_audio_transcription or voice via session.update
-        // User speech transcription is not available — only AI responses are captured
+        startUserSpeechCapture();
+
         dataChannel.send(JSON.stringify({
           type: "session.update",
           session: {

@@ -294,7 +294,7 @@ app.get("/api/search-memory", (req, res) => {
   try {
     const result = execFileSync(
       "python3",
-      ["scripts/hybrid_search.py", query, "--format", "prose"],
+      ["scripts/hybrid_search.py", "--format", "prose", "--", query],
       { cwd: UNIFIED_ROOT, timeout: 15000, encoding: "utf-8" }
     );
     console.log(`[REFLECT] Memory search for "${query}": ${result.length} chars`);
