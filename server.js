@@ -141,13 +141,13 @@ function getSessionConfig() {
         {
           type: "function",
           name: "search_memory",
-          description: "Search across all past voice memo transcripts and analyses. Call this when the user asks about past conversations, patterns, or mentions of a topic.",
+          description: "Searches user's voice memo transcripts, analyses, and past reflection sessions for relevant memories. Call this when the user references past events, or when additional context would deepen the conversation. Returns natural-language summaries of matching memories with dates. Do NOT call for general knowledge questions; only for the user's personal history.",
           parameters: {
             type: "object",
             properties: {
               query: {
                 type: "string",
-                description: "Search query — keywords or phrases to find in past recordings",
+                description: "Search query — keywords or phrases from the user's past recordings",
               },
             },
             required: ["query"],
@@ -286,22 +286,22 @@ app.post("/api/annotations", (req, res) => {
 });
 
 app.get("/api/search-memory", (req, res) => {
-  try {
-    const query = req.query.q;
-    if (!query) {
-      return res.status(400).json({ error: "query parameter q is required" });
-    }
+  const query = req.query.q;
+  if (!query) {
+    return res.status(400).json({ error: "query parameter q is required" });
+  }
 
+  try {
     const result = execFileSync(
       "python3",
-      ["scripts/memory_search.py", query],
+      ["scripts/hybrid_search.py", query, "--format", "prose"],
       { cwd: UNIFIED_ROOT, timeout: 15000, encoding: "utf-8" }
     );
     console.log(`[REFLECT] Memory search for "${query}": ${result.length} chars`);
     res.json({ ok: true, results: result });
   } catch (e) {
     console.error("[REFLECT] Memory search failed:", e.message);
-    res.status(500).json({ error: "Search failed" });
+    res.json({ ok: true, results: "Unable to search memories right now." });
   }
 });
 
