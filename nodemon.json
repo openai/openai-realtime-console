@@ -1,0 +1,5 @@
+{
+  "watch": ["server.js"],
+  "ext": "js,mjs,cjs,json",
+  "ignore": ["client/**", "**/*.timestamp-*.mjs"]
+}
