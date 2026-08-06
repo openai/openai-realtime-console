@@ -71,7 +71,12 @@ export default function Scene({ state, micStream, aiStream, theme, audioLevel })
       <Orb state={state} getAudioLevel={getAudioLevel} theme={theme} baseAudioLevel={audioLevel} />
       <Particles state={state} />
       <EffectComposer multisampling={0}>
-        <Bloom intensity={0.9} luminanceThreshold={0.15} luminanceSmoothing={0.4} mipmapBlur />
+        {/* Lower intensity + higher threshold than the "looks nice at rest"
+            defaults - bloom amplifies whatever's already bright, so with
+            the fragment shader's glow now capped, these just add a safety
+            margin against a hot rim spreading into a full whiteout under
+            loud real audio. */}
+        <Bloom intensity={0.6} luminanceThreshold={0.3} luminanceSmoothing={0.4} mipmapBlur />
       </EffectComposer>
     </Canvas>
   );

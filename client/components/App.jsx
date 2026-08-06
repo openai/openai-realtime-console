@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import logo from "/assets/openai-logomark.svg";
-import SiriOrb, { useConversationState } from "./SiriOrb";
+import SiriOrb, { ORB_STATES, useConversationState } from "./SiriOrb";
 import SessionControls from "./SessionControls";
-import ToolPanel from "./ToolPanel";
+import BusinessPanel from "./BusinessPanel";
 
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
@@ -14,6 +14,10 @@ export default function App() {
   const audioElement = useRef(null);
 
   const orbState = useConversationState(events, isSessionActive);
+  // The Realtime API only allows one active response at a time - block
+  // sending another message while the AI is still thinking/speaking so a
+  // second response.create can't silently collide with the first.
+  const isResponding = orbState === ORB_STATES.THINKING || orbState === ORB_STATES.SPEAKING;
 
   async function startSession() {
     // Get a session token for OpenAI Realtime API
@@ -171,6 +175,7 @@ export default function App() {
                 micStream={micStream}
                 aiStream={remoteStream}
                 theme="default"
+                isSessionActive={isSessionActive}
               />
             </div>
           </section>
@@ -182,13 +187,13 @@ export default function App() {
               sendTextMessage={sendTextMessage}
               events={events}
               isSessionActive={isSessionActive}
+              isResponding={isResponding}
             />
           </section>
         </section>
         <section className="absolute top-0 w-[380px] right-0 bottom-0 p-4 pt-0 overflow-y-auto">
-          <ToolPanel
+          <BusinessPanel
             sendClientEvent={sendClientEvent}
-            sendTextMessage={sendTextMessage}
             events={events}
             isSessionActive={isSessionActive}
           />

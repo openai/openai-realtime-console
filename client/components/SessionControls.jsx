@@ -25,7 +25,7 @@ function SessionStopped({ startSession }) {
   );
 }
 
-function SessionActive({ stopSession, sendTextMessage }) {
+function SessionActive({ stopSession, sendTextMessage, isResponding }) {
   const [message, setMessage] = useState("");
 
   function handleSendClientEvent() {
@@ -37,24 +37,26 @@ function SessionActive({ stopSession, sendTextMessage }) {
     <div className="flex items-center justify-center w-full h-full gap-4">
       <input
         onKeyDown={(e) => {
-          if (e.key === "Enter" && message.trim()) {
+          if (e.key === "Enter" && message.trim() && !isResponding) {
             handleSendClientEvent();
           }
         }}
         type="text"
-        placeholder="send a text message..."
-        className="border border-gray-200 rounded-full p-4 flex-1"
+        placeholder={isResponding ? "waiting for the AI to finish..." : "send a text message..."}
+        className="border border-gray-200 rounded-full p-4 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        disabled={isResponding}
       />
       <Button
         onClick={() => {
-          if (message.trim()) {
+          if (message.trim() && !isResponding) {
             handleSendClientEvent();
           }
         }}
         icon={<MessageSquare height={16} />}
-        className="bg-blue-400"
+        className={`bg-blue-400 ${isResponding ? "opacity-50 cursor-not-allowed" : ""}`}
+        disabled={isResponding}
       >
         send text
       </Button>
@@ -72,6 +74,7 @@ export default function SessionControls({
   sendTextMessage,
   serverEvents,
   isSessionActive,
+  isResponding,
 }) {
   return (
     <div className="flex gap-4 border-t-2 border-gray-200 h-full rounded-md">
@@ -81,6 +84,7 @@ export default function SessionControls({
           sendClientEvent={sendClientEvent}
           sendTextMessage={sendTextMessage}
           serverEvents={serverEvents}
+          isResponding={isResponding}
         />
       ) : (
         <SessionStopped startSession={startSession} />

@@ -1,0 +1,270 @@
+{
+  "source": "https://woyce.ai/",
+  "scraped_at": "2026-08-06",
+  "note": "Business/company data only. Blog articles (500+ posts at /blog) intentionally excluded.",
+  "company": {
+    "legal_name": "Woyce Technologies Pvt. Ltd.",
+    "tagline": "A product studio shipping web, mobile, and AI software for founders and teams who need real work done.",
+    "founded": "2020, by two engineers from enterprise software backgrounds",
+    "locations": [
+      {
+        "office": "Rajkot Studio (opened 2023)",
+        "address": "R.K. World Tower, 150 Feet Ring Rd, Sheetal Park, Shastri Nagar, Dharam Nagar, Rajkot, Gujarat 360007, India",
+        "hours": "Mon-Fri, 10:00-19:00 IST"
+      },
+      {
+        "office": "Pune Studio (opened 2024)",
+        "address": "Amanora Chambers, 327, Amanora Town Centre, Amanora Park Town, Hadapsar, Pune, Maharashtra 411028, India",
+        "hours": "Mon-Fri, 10:00-19:00 IST"
+      }
+    ],
+    "serves_clients_in": ["US", "UK", "Europe", "Australia", "Canada"],
+    "stats": {
+      "note": "Figures vary slightly by page (likely updated at different times) - recorded as-is per source page.",
+      "from_homepage": { "projects_shipped": "40+", "team_size": "16+" },
+      "from_about_page": { "team_size": "22+", "projects_shipped": "40+", "booking_status": "Q3 2026, 3 slots available" },
+      "from_careers_page": { "engineers": "17+", "countries": 6, "products_shipped_to_active_users": "80+" }
+    },
+    "milestones": [
+      { "year": 2021, "event": "Made senior-hiring commitment; shipped six projects" },
+      { "year": 2022, "event": "Delivered iOS/Android logistics app in 16 weeks for 50,000+ daily users" },
+      { "year": 2023, "event": "Launched AI & LLM practice with ML engineer hire" },
+      { "year": 2024, "event": "Reached 25+ shipped projects; opened Pune office" }
+    ],
+    "operating_principles": [
+      "Senior-only teams (minimum 8 years experience per person)",
+      "Fast delivery: 8-16 weeks from kickoff to production",
+      "Fixed-price proposals with no surprise invoices",
+      "Weekly demos with working software",
+      "Client code ownership (GitHub repositories from day one)",
+      "Selective project intake"
+    ],
+    "pricing_model": "No public price list; fixed-price proposal delivered within 48 hours of a consultation call"
+  },
+  "contact": {
+    "email": "info@woyce.ai",
+    "phone": "+91 96623 20707",
+    "whatsapp": "wa.me/919662320707",
+    "timezone": "IST (GMT+5:30)",
+    "response_commitment": "Initial reply within 48 hours; typically 1-2 hours during UK/US business hours",
+    "social_media": ["LinkedIn", "X (Twitter)", "GitHub", "Dribbble"]
+  },
+  "services": {
+    "high_level_areas": [
+      "Web apps (SaaS, dashboards, marketing sites)",
+      "Mobile apps (iOS, Android, React Native, Flutter)",
+      "AI & LLMs (RAG, agents, fine-tuning, integrations)",
+      "AI Agents (autonomous task planning and execution)",
+      "Product design (UX research, UI, design systems)",
+      "Tech consulting (architecture, CTO advisory, audits)"
+    ],
+    "detailed_categories": [
+      {
+        "name": "AI and Machine Learning",
+        "description": "Cutting-edge AI solutions leveraging LLMs, custom training, fine-tuning, and vector databases for intelligent automation and predictive analytics."
+      },
+      {
+        "name": "Conversational AI and Chatbots",
+        "description": "End-to-end chatbot solutions with NLP, deployed across SMS, Web, WhatsApp, Slack, etc. using Dialogflow, Amazon Lex, or custom builds."
+      },
+      {
+        "name": "Twilio Communication Platform",
+        "description": "Full Twilio ecosystem: SMS, Voice, Video, Messaging, Chat, TaskRouter, Studio, Flex, with custom workflows and webhooks."
+      },
+      {
+        "name": "Cloud Architecture and AWS Services",
+        "description": "Cloud solutions on AWS, Azure, GCP including Lambda, EC2, S3, DynamoDB, RDS, serverless architectures, DevOps."
+      },
+      {
+        "name": "Backend and Server Infrastructure",
+        "description": "Node.js, Python, Express.js, RabbitMQ messaging, cross-platform server configuration."
+      },
+      {
+        "name": "Custom Software Development",
+        "description": "Web and mobile applications tailored to specific business needs."
+      },
+      {
+        "name": "Database Engineering",
+        "description": "Design/optimization across SQL Server, MySQL, PostgreSQL, MongoDB, Firebase, with security hardening and backups."
+      },
+      {
+        "name": "Full-Stack Web Development",
+        "description": "End-to-end development using MERN/MEAN stacks with responsive design and performance optimization."
+      },
+      {
+        "name": "System and DevOps Management",
+        "description": "System setup/administration with Docker, Nginx, Apache."
+      },
+      {
+        "name": "Real-Time Communication Systems",
+        "description": "Socket.io and WebSocket-based applications for instant data transmission."
+      },
+      {
+        "name": "Multi-Channel Bot Deployment",
+        "description": "Conversational interfaces across SMS, web, WhatsApp, Facebook, Skype, Slack, Google Assistant, Viber, Telegram."
+      },
+      {
+        "name": "API Design and Development",
+        "description": "REST & SOAP APIs with security best practices, rate limiting, authentication, testing."
+      },
+      {
+        "name": "Computer Vision",
+        "description": "Image classification, object detection, custom OpenCV projects."
+      },
+      {
+        "name": "ChatBot Platform Expertise",
+        "description": "End-to-end chatbot solutions with custom integrations for customer engagement."
+      }
+    ]
+  },
+  "process": {
+    "total_timeline": "8-16 weeks, kickoff to production",
+    "steps": [
+      {
+        "name": "Discover",
+        "duration": "Week 1",
+        "description": "Kickoff alignment, technical audits, stakeholder interviews, competitive analysis, ending in a fixed-price proposal."
+      },
+      {
+        "name": "Design",
+        "duration": "2-3 weeks",
+        "description": "User flows, wireframes, visual designs, clickable prototype and design system before development."
+      },
+      {
+        "name": "Build",
+        "duration": "6-14 weeks",
+        "description": "Weekly sprints with working software demoed every Friday; full repo access; shared Slack channel; automated testing and staging."
+      },
+      {
+        "name": "Launch & Support",
+        "duration": "Ongoing",
+        "description": "Deployment, monitoring setup, documentation, team handover; optional maintenance/feature retainers."
+      }
+    ]
+  },
+  "team": {
+    "total": "16+ (per /team page)",
+    "average_experience_years": "5+",
+    "members": [
+      { "name": "Jaydev Vara", "role": "QA Lead & Team Lead", "skills": "Angular, React, Next.js" },
+      { "name": "Hardik Devmurari", "role": "Full Stack & Mobile Engineer", "skills": "Node.js, React Native, PostgreSQL, MongoDB, AWS, Docker, OpenAI APIs" },
+      { "name": "Rajesh Desai", "role": "Project Lead & Full Stack", "skills": "React, Angular, Node.js, PostgreSQL" },
+      { "name": "Manoj Ghediya", "role": "Frontend Engineer", "skills": "Angular, React, MongoDB, PostgreSQL, MySQL, Firebase, Socket.io" },
+      { "name": "Vashu Mandora", "role": "React.js & Next.js Developer", "skills": "PostgreSQL, MySQL, Firebase, Python" },
+      { "name": "Avi Makvana", "role": "Web Developer", "skills": "React, Next.js, responsive design" },
+      { "name": "Keyur Fataniya", "role": "Full Stack Developer", "skills": "React, Node.js, Next.js, Python, AI integration" },
+      { "name": "Ashutosh Singh", "role": "Mobile & React Native Developer", "skills": "React Native, Android, Node.js" },
+      { "name": "Jagdish Parmar", "role": "Backend, DevOps & AI Architect", "skills": "NestJS, Laravel, GraphQL, AWS, Docker, CI/CD, AI APIs" },
+      { "name": "Rajendra Yadav", "role": "Backend & Server Management", "skills": "Node.js, PostgreSQL" },
+      { "name": "Nikunj Pandya", "role": "Backend & Automation Specialist", "skills": "Node.js, n8n, Zapier" },
+      { "name": "Abhishek Singh", "role": "Backend & Pipeline Engineering", "skills": "Node.js, Angular, CI/CD" },
+      { "name": "Harshit Sharma", "role": "UI/UX Designer", "skills": "Figma, Photoshop, Adobe Illustrator" },
+      { "name": "Nayan Sarvaiya", "role": "UI/UX Engineer", "skills": "Figma prototyping, design systems" },
+      { "name": "Gautam Pal", "role": "QA Engineer", "skills": "React knowledge" },
+      { "name": "Shubham Patil", "role": "QA Engineer", "skills": "Testing, defect tracking, process improvement" }
+    ]
+  },
+  "case_studies": [
+    { "name": "Medical Office Force", "industry": "Healthcare", "description": "EMR, patient records, billing, telehealth, and AI virtual assistant platform.", "result": "40% faster billing cycles" },
+    { "name": "HComb.ai", "industry": "AI / HR", "description": "AI-powered hiring system automating candidate matching, job postings, and interviews.", "result": "3x faster time-to-hire" },
+    { "name": "QuickReviews", "industry": "Conversational AI", "description": "Customer support using Amazon Lex and Connect for voice and chatbot automation.", "result": "70% queries auto-resolved" },
+    { "name": "Stockly", "industry": "FinTech", "description": "Investment platform with real-time stock insights and peer discussion.", "result": "50K+ active investors" },
+    { "name": "Incorporight", "industry": "LegalTech", "description": "Blockchain-secured corporate records management for shareholders/directors/compliance.", "result": "100% audit-ready records" },
+    { "name": "Krone", "industry": "Consulting", "description": "ESG and compliance advisory platform streamlining regulatory workflows.", "result": "60% reduced compliance time" },
+    { "name": "PCO Intelligence", "industry": "Conversational AI", "description": "Customer service combining Amazon Lex AI with cloud call center capabilities.", "result": "5x scale without extra staff" },
+    { "name": "FrontDesk Clinic", "industry": "Healthcare", "description": "AI virtual assistant automating scheduling, reminders, insurance verification.", "result": "80% admin tasks automated" },
+    { "name": "Yellow Pad", "industry": "LegalTech", "description": "AI legal document platform with intelligent templates and smart suggestions.", "result": "10x faster document drafting" },
+    { "name": "AdvancedCare", "industry": "Healthcare", "description": "EHR system with integrated telehealth and claims processing automation.", "result": "35% faster claims processing" },
+    { "name": "Reknew-Ai", "industry": "AI / Enterprise", "description": "Enterprise modernization platform with automation and predictive analytics.", "result": "4x process throughput gain" },
+    { "name": "Aiva-Ai", "industry": "Voice AI", "description": "Platform for managing AI assistants with Twilio calling and real-time logs.", "result": "<2 min agent setup time" }
+  ],
+  "additional_success_stories": [
+    { "project": "Twilio SMS to Gemini Integration", "industry": "Tech/Communications", "description": "Integrated SMS messaging with Gemini API via Twilio.", "rating": "5.00/5" },
+    { "project": "AWS Send Email Resolution", "industry": "Cloud Services", "description": "Resolved AWS email delivery issues.", "rating": "5.00/5" },
+    { "project": "Google Assistant Service", "industry": "AI/Chatbots", "description": "Implemented Dialogflow-based Google Assistant service.", "rating": "5.00/5" },
+    { "project": "Web Chat UI Integration", "industry": "SaaS/AI", "description": "Built web-based chat interface integrated with OpenAI.", "rating": "5.00/5" },
+    { "project": "AWS Lambda/DynamoDB Data Fetching", "industry": "Cloud/Backend", "description": "Resolved AWS serverless data retrieval problems.", "rating": "5.00/5" },
+    { "project": "Website Chatbot", "industry": "Customer Support", "description": "Deployed chatbot exceeding client expectations.", "rating": "4.85/5" },
+    { "project": "Vicuna LLM Model Setup", "industry": "AI/ML", "description": "Installed and configured open-source LLM model.", "rating": "5.00/5" },
+    { "project": "Speech-Enabled Chatbot", "industry": "AI/Accessibility", "description": "Developed voice-interactive chatbot system.", "rating": "5.00/5" },
+    { "project": "ChatGPT API Obituary Writer", "industry": "AI/Content", "description": "Built ChatGPT-powered application for obituary writing.", "rating": "4.95/5" },
+    { "project": "ChatGPT Customer Support Plugin", "industry": "Support/SaaS", "description": "Created AI plugin reducing support burden for a portal with hundreds of daily users.", "rating": "5.00/5" },
+    { "project": "Dialogflow-Excel Webhook", "industry": "Automation", "description": "Linked chatbot to spreadsheet via webhook integration.", "rating": "5.00/5" },
+    { "project": "BotPress WhatsApp Integration", "industry": "Messaging", "description": "Set up and connected BotPress with WhatsApp API.", "rating": "5.00/5" },
+    { "project": "OpenAI to SMS Phase 2", "industry": "Communications/AI", "description": "Developed SMS interface for OpenAI services.", "rating": "5.00/5" }
+  ],
+  "testimonials": [
+    { "name": "Sarah Mitchell", "title": "VP Engineering, FinScale", "quote": "We went from a Figma prototype to a production dashboard used by 400 operators in 14 weeks." },
+    { "name": "Rohan Kapoor", "title": "CTO, RouteWise Logistics", "quote": "They shipped our iOS and Android app in under four months. The code quality is excellent." },
+    { "name": "Dr. Anjali Desai", "title": "Chief Digital Officer, MediCore Health", "quote": "Their team shipped a RAG assistant that deflected 62% of support tickets and saved us $400K." },
+    { "name": "Preethi Varma", "title": "Head of Product, Clarisma", "quote": "The design system Woyce built for us cut our frontend development time by 40%." },
+    { "name": "Nikhil Kumar", "title": "Founder & CEO, Launchpad", "quote": "Woyce got on a call Monday, had a proposal by Wednesday, and shipped by week seven." },
+    { "name": "Aryan Reddy", "title": "Co-founder & CTO, Callify", "quote": "Our voice AI agent handles 2,000+ calls per day. The latency is under 800ms." },
+    { "name": "Meghna Shah", "title": "CEO, FocusFlow", "quote": "Our app hit #8 on the App Store in the productivity category. The code and design surpassed expectations." },
+    { "name": "James Thornton", "title": "VP Product, Vesper Finance", "quote": "They ask the right questions before writing code, tell you when ideas are wrong, and ship." }
+  ],
+  "careers": {
+    "open_positions": [
+      { "title": "Full Stack Developer", "department": "Engineering", "location": "Remote/Pune, India", "requirement": "2+ years experience" },
+      { "title": "AI/ML Engineer", "department": "AI Platform", "location": "Remote/Pune, India", "requirement": "2-4 years experience" },
+      { "title": "DevOps Engineer", "department": "Infrastructure", "location": "Remote/Pune, India", "requirement": "3+ years experience" },
+      { "title": "Product Designer", "department": "Design", "location": "Remote", "requirement": "Full-time" },
+      { "title": "iOS Developer", "department": "Mobile", "location": "Remote", "requirement": "Full-time" }
+    ],
+    "culture": "Remote-first & async friendly, flat structure, flexible hours",
+    "benefits": [
+      "Competitive compensation with equity options",
+      "Annual learning budget for courses/certifications/conferences",
+      "Setup allowance for MacBook or home office",
+      "Mental health days and wellness allowance",
+      "Monthly gaming events, virtual coffee sessions, quarterly retreats",
+      "Dedicated innovation time for hackathons/side projects",
+      "Flexible time off"
+    ]
+  },
+  "partnerships": {
+    "models": [
+      {
+        "type": "Referral Partner",
+        "for": "Consultants, freelancers, startup advisors, VCs",
+        "terms": "10-15% referral fee on first engagement, shared Slack channels, co-branded case studies, priority scheduling"
+      },
+      {
+        "type": "Agency Partner",
+        "for": "Design firms and strategy consultancies",
+        "terms": "White-label/co-branded collaboration, dedicated engineering teams per project, shared PM systems, joint enterprise GTM, preferential pricing for repeat work"
+      },
+      {
+        "type": "Technology Partner",
+        "for": "SaaS platforms and developer tool providers",
+        "terms": "Mutual integrations/referrals, listings in Woyce's tech guides, co-authored content, early access to internal tooling assessments"
+      }
+    ],
+    "application_process": ["Application submission", "20-minute onboarding call", "Introduction facilitation", "Payment within 30 days of engagement closure"],
+    "terms": {
+      "setup_fees": "None",
+      "exclusivity_required": false,
+      "application_response_time": "3 business days"
+    }
+  },
+  "brand": {
+    "legal_name": "Woyce Technologies Pvt. Ltd.",
+    "tagline": "A product studio shipping web, mobile, and AI software for founders and teams who need real work done.",
+    "brand_voice": "Write like a senior engineer talking to a peer. Direct, specific, and free of jargon.",
+    "logos": ["Full logo (dark background)", "Full logo (light background)", "Icon mark (standalone W)"],
+    "logo_formats": ["SVG", "PNG", "PDF"],
+    "colors": [
+      { "name": "Background/Void", "hex": "#0A0A0B", "usage": "Primary dark background" },
+      { "name": "Primary Text/Snow", "hex": "#F0F6FC", "usage": "Headlines and emphasis" },
+      { "name": "Accent - Leaf", "hex": "#7EE787", "usage": "Engineering, positive states" },
+      { "name": "Accent - Sky", "hex": "#79C0FF", "usage": "Links, web development" },
+      { "name": "Accent - Iris", "hex": "#D2A8FF", "usage": "AI, research contexts" },
+      { "name": "Accent - Ember", "hex": "#FFA657", "usage": "Consulting, warning states" }
+    ],
+    "typography": [
+      { "font": "Geist", "use": "Display/headings", "weight": 500, "letter_spacing": "-0.035em" },
+      { "font": "Geist Mono", "use": "Labels/code", "size": "10-13px" }
+    ],
+    "iconography": "Minimal stroke icon set, 40 icons, 1.5px stroke weight"
+  }
+}

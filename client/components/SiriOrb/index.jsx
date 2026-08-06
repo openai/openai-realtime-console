@@ -8,7 +8,7 @@ export { useConversationState } from "./hooks/useConversationState";
 export { ORB_STATES };
 
 const STATUS_LABEL = {
-  [ORB_STATES.IDLE]: "Awaiting session...",
+  [ORB_STATES.IDLE]: "Connected — say something",
   [ORB_STATES.LISTENING]: "Listening...",
   [ORB_STATES.THINKING]: "Thinking...",
   [ORB_STATES.SPEAKING]: "Speaking...",
@@ -30,6 +30,7 @@ export default function SiriOrb({
   aiStream = null,
   theme = "default",
   showStatus = true,
+  isSessionActive = true,
   className = "",
 }) {
   const setState = useOrbStore((s) => s.setState);
@@ -69,7 +70,9 @@ export default function SiriOrb({
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              {STATUS_LABEL[storeState] ?? STATUS_LABEL[ORB_STATES.IDLE]}
+              {isSessionActive
+                ? STATUS_LABEL[storeState] ?? STATUS_LABEL[ORB_STATES.IDLE]
+                : "Awaiting session..."}
             </motion.span>
           </AnimatePresence>
         </div>

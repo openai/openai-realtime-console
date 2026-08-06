@@ -1,0 +1,22 @@
+.business-panel-stage {
+  /* Same dark-stage idea as the SiriOrb - subtle radial glow on near-black,
+     so brand-colored borders/badges actually read as accents instead of
+     disappearing against a flat background. */
+  background: radial-gradient(circle at 15% 0%, #14142b 0%, #0a0a0b 55%, #05050a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.business-panel-stage::-webkit-scrollbar {
+  width: 6px;
+}
+
+.business-panel-stage::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.business-panel-stage::-webkit-scrollbar-track {
+  background: transparent;
+}
