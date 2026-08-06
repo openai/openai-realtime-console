@@ -1,0 +1,31 @@
+.siri-orb-container {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  position: relative;
+  border-radius: 9999px;
+  overflow: hidden;
+  /* Bloom/fresnel glow only reads as "glow" against a dark backdrop —
+     the orb is designed to sit on a dark stage, matching Siri/Gemini-style
+     voice UIs, even inside an otherwise light host page. */
+  background: radial-gradient(circle at 50% 45%, #0f1029 0%, #05050f 70%, #020208 100%);
+  box-shadow: 0 20px 60px rgba(30, 27, 75, 0.35);
+}
+
+.siri-orb-container canvas {
+  display: block;
+  touch-action: none;
+  outline: none;
+}
+
+.siri-orb-status {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.25rem;
+  text-align: center;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: rgba(226, 232, 240, 0.75);
+  pointer-events: none;
+}

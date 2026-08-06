@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import logo from "/assets/openai-logomark.svg";
-import EventLog from "./EventLog";
+import SiriOrb, { useConversationState } from "./SiriOrb";
 import SessionControls from "./SessionControls";
 import ToolPanel from "./ToolPanel";
 
@@ -8,8 +8,12 @@ export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState([]);
   const [dataChannel, setDataChannel] = useState(null);
+  const [micStream, setMicStream] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
   const peerConnection = useRef(null);
   const audioElement = useRef(null);
+
+  const orbState = useConversationState(events, isSessionActive);
 
   async function startSession() {
     // Get a session token for OpenAI Realtime API
@@ -23,13 +27,20 @@ export default function App() {
     // Set up to play remote audio from the model
     audioElement.current = document.createElement("audio");
     audioElement.current.autoplay = true;
-    pc.ontrack = (e) => (audioElement.current.srcObject = e.streams[0]);
+    pc.ontrack = (e) => {
+      audioElement.current.srcObject = e.streams[0];
+      // Expose the same stream to the orb so it can analyze AI audio
+      // amplitude without opening a second connection to anything.
+      setRemoteStream(e.streams[0]);
+    };
 
     // Add local audio track for microphone input in the browser
     const ms = await navigator.mediaDevices.getUserMedia({
       audio: true,
     });
     pc.addTrack(ms.getTracks()[0]);
+    // Expose the same mic stream to the orb — no second getUserMedia call.
+    setMicStream(ms);
 
     // Set up data channel for sending and receiving events
     const dc = pc.createDataChannel("oai-events");
@@ -75,6 +86,8 @@ export default function App() {
 
     setIsSessionActive(false);
     setDataChannel(null);
+    setMicStream(null);
+    setRemoteStream(null);
     peerConnection.current = null;
   }
 
@@ -151,8 +164,15 @@ export default function App() {
       </nav>
       <main className="absolute top-16 left-0 right-0 bottom-0">
         <section className="absolute top-0 left-0 right-[380px] bottom-0 flex">
-          <section className="absolute top-0 left-0 right-0 bottom-32 px-4 overflow-y-auto">
-            <EventLog events={events} />
+          <section className="absolute top-0 left-0 right-0 bottom-32 px-4 flex items-center justify-center">
+            <div className="w-full h-full max-w-[420px] max-h-[420px] aspect-square">
+              <SiriOrb
+                state={orbState}
+                micStream={micStream}
+                aiStream={remoteStream}
+                theme="default"
+              />
+            </div>
           </section>
           <section className="absolute h-32 left-0 right-0 bottom-0 p-4">
             <SessionControls
