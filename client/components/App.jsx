@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import logo from "/assets/openai-logomark.svg";
+import logo from "/assets/favicon/android-chrome-192x192.png";
 import SiriOrb, { ORB_STATES, useConversationState } from "./SiriOrb";
 import SessionControls from "./SessionControls";
 import BusinessPanel from "./BusinessPanel";
@@ -207,15 +207,15 @@ export default function App() {
 
   return (
     <>
-      <nav className="absolute top-0 left-0 right-0 h-16 flex items-center">
-        <div className="flex items-center gap-4 w-full m-4 pb-2 border-0 border-b border-solid border-gray-200">
-          <img style={{ width: "24px" }} src={logo} />
-          <h1>realtime console</h1>
+      <nav className="absolute top-0 left-0 right-0 h-16 flex items-center bg-white/[0.02] backdrop-blur-sm border-0 border-b border-solid border-white/[0.06]">
+        <div className="flex items-center gap-3 w-full mx-4">
+          <img src={logo} className="w-[24px] h-[24px] rounded-md shrink-0" alt="Woyce Glance" />
+          <h1 className="text-[#F0F6FC]/90 text-sm tracking-wide">Woyce Glance</h1>
         </div>
       </nav>
       <main className="absolute top-16 left-0 right-0 bottom-0">
         <section className="absolute top-0 left-0 right-[380px] bottom-0 flex">
-          <section className="absolute top-0 left-0 right-0 bottom-32 px-4 flex items-center justify-center">
+          <section className="absolute top-0 left-0 right-0 bottom-28 px-4 flex items-center justify-center">
             <div className="w-full h-full max-w-[420px] max-h-[420px] aspect-square">
               <SiriOrb
                 state={orbState}
@@ -226,7 +226,7 @@ export default function App() {
               />
             </div>
           </section>
-          <section className="absolute h-32 left-0 right-0 bottom-0 p-4">
+          <section className="absolute h-28 left-0 right-0 bottom-0 px-4 pb-4">
             <SessionControls
               startSession={startSession}
               stopSession={stopSession}
@@ -238,7 +238,7 @@ export default function App() {
             />
           </section>
         </section>
-        <section className="absolute top-0 w-[380px] right-0 bottom-0 p-4 pt-0 overflow-y-auto">
+        <section className="absolute top-0 w-[380px] right-0 bottom-0 p-4 overflow-y-auto">
           <BusinessPanel
             sendClientEvent={sendClientEvent}
             events={events}

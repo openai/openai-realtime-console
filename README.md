@@ -1,6 +1,6 @@
-# OpenAI Realtime Console
+# Woyce Glance
 
-This is an example application showing how to use the [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) with [WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc).
+Ask a question out loud, get the answer shown instantly on screen - images, content, videos - no scrolling or searching required. Built on the [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) with [WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc).
 
 ## Installation and usage
 

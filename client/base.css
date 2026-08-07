@@ -7,7 +7,7 @@ https://tailwindcss.com/docs/preflight
 @tailwind utilities;
 
 :root {
-  --color-base: #efefef;
+  --color-base: #05050a;
   --color-highlight: #ff80ff;
 }
 
@@ -20,5 +20,9 @@ body {
   overflow: hidden;
   font-family: "Consolas", "Andale Mono", monospace;
   font-size: 0.9rem;
-  background-color: var(--color-base);
+  color: #e2e8f0;
+  /* Same dark-stage family as the SiriOrb/BusinessPanel, so the whole page
+     reads as one surface instead of two dark islands on a light backdrop. */
+  background: radial-gradient(circle at 50% -10%, #14142b 0%, #0a0a0f 45%, #05050a 100%);
+  background-attachment: fixed;
 }

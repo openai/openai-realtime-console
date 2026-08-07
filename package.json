@@ -1,4 +1,5 @@
 {
+  "name": "woyce-glance",
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js --dev",

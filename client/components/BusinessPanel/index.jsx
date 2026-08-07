@@ -292,7 +292,7 @@ export default function BusinessPanel({ isSessionActive, sendClientEvent, events
                 <div className="w-8 h-8 rounded-md flex items-center justify-center bg-white/[0.06] text-white/50 shrink-0">
                   <MessageCircle size={16} />
                 </div>
-                <h2 className="text-base font-bold text-[#F0F6FC]">Woyce Business Info</h2>
+                <h2 className="text-base font-bold text-[#F0F6FC]">Woyce Glance</h2>
               </div>
               <p className="text-white/40 text-sm">
                 {isSessionActive

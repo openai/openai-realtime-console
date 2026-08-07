@@ -1,7 +1,7 @@
 export default function Button({ icon, children, onClick, className, disabled }) {
   return (
     <button
-      className={`bg-gray-800 text-white rounded-full p-4 flex items-center gap-1 hover:opacity-90 ${className}`}
+      className={`rounded-full px-5 py-3 flex items-center gap-2 text-sm font-medium border backdrop-blur-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
