@@ -4,16 +4,29 @@ import Button from "./Button";
 
 function SessionStopped({ startSession }) {
   const [isActivating, setIsActivating] = useState(false);
+  const [error, setError] = useState(null);
 
-  function handleStartSession() {
+  async function handleStartSession() {
     if (isActivating) return;
 
     setIsActivating(true);
-    startSession();
+    setError(null);
+    try {
+      await startSession();
+    } catch (err) {
+      // Without this the button was left stuck on "starting session..."
+      // forever on any failure (mic permission denied, network error, the
+      // Realtime API rejecting the connection) with no way to retry short
+      // of reloading the page.
+      console.error("Failed to start session:", err);
+      setError(err?.message || "Failed to start session - please try again.");
+    } finally {
+      setIsActivating(false);
+    }
   }
 
   return (
-    <div className="flex items-center justify-center w-full h-full">
+    <div className="flex flex-col items-center justify-center w-full h-full gap-2">
       <Button
         onClick={handleStartSession}
         className={isActivating ? "bg-gray-600" : "bg-red-600"}
@@ -21,6 +34,7 @@ function SessionStopped({ startSession }) {
       >
         {isActivating ? "starting session..." : "start session"}
       </Button>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
     </div>
   );
 }

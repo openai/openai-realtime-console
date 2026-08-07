@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ORB_STATES } from "../store/orbStore";
 
 /**
@@ -19,38 +19,55 @@ import { ORB_STATES } from "../store/orbStore";
  */
 export function useConversationState(events, isSessionActive) {
   const [state, setState] = useState(ORB_STATES.IDLE);
+  // React can batch several data-channel messages that arrive in the same
+  // tick into a single render (e.g. response.done immediately followed by
+  // rate_limits.updated). Reacting to only events[0] would then silently
+  // skip response.done and leave the orb stuck "thinking" forever - so we
+  // track the last event we actually processed and walk every event newer
+  // than it, oldest to newest, on each render.
+  const lastSeenIdRef = useRef(null);
 
   useEffect(() => {
     if (!isSessionActive) {
       setState(ORB_STATES.IDLE);
+      lastSeenIdRef.current = null;
     }
   }, [isSessionActive]);
 
   useEffect(() => {
     if (!isSessionActive || !events || events.length === 0) return;
 
-    const latest = events[0];
-    switch (latest.type) {
-      case "input_audio_buffer.speech_started":
-        setState(ORB_STATES.LISTENING);
-        break;
-      case "input_audio_buffer.speech_stopped":
-      case "response.created":
-        setState(ORB_STATES.THINKING);
-        break;
-      case "output_audio_buffer.started":
-        setState(ORB_STATES.SPEAKING);
-        break;
-      case "output_audio_buffer.stopped":
-        setState(ORB_STATES.IDLE);
-        break;
-      case "response.done":
-        setState((prev) =>
-          prev === ORB_STATES.THINKING ? ORB_STATES.IDLE : prev,
-        );
-        break;
-      default:
-        break;
+    const lastSeenId = lastSeenIdRef.current;
+    let boundary = events.length;
+    if (lastSeenId != null) {
+      const idx = events.findIndex((e) => e.event_id === lastSeenId);
+      if (idx !== -1) boundary = idx;
+    }
+    lastSeenIdRef.current = events[0].event_id ?? lastSeenIdRef.current;
+
+    for (let i = boundary - 1; i >= 0; i--) {
+      switch (events[i].type) {
+        case "input_audio_buffer.speech_started":
+          setState(ORB_STATES.LISTENING);
+          break;
+        case "input_audio_buffer.speech_stopped":
+        case "response.created":
+          setState(ORB_STATES.THINKING);
+          break;
+        case "output_audio_buffer.started":
+          setState(ORB_STATES.SPEAKING);
+          break;
+        case "output_audio_buffer.stopped":
+          setState(ORB_STATES.IDLE);
+          break;
+        case "response.done":
+          setState((prev) =>
+            prev === ORB_STATES.THINKING ? ORB_STATES.IDLE : prev,
+          );
+          break;
+        default:
+          break;
+      }
     }
   }, [events, isSessionActive]);
 

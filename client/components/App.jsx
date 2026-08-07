@@ -4,6 +4,15 @@ import SiriOrb, { ORB_STATES, useConversationState } from "./SiriOrb";
 import SessionControls from "./SessionControls";
 import BusinessPanel from "./BusinessPanel";
 
+// Consumers (the orb's conversation-state hook, the business panel) only
+// ever look at the newest event or a handful of recent ones - they never
+// need the full session history. Keeping the array unbounded meant every
+// single streamed token (transcript deltas fire many times a second) did
+// an O(n) copy of an ever-growing array for the life of the session, which
+// piles up latency exactly where we need the UI to stay live and in sync
+// with the audio. Cap it to a rolling window instead.
+const MAX_EVENTS = 200;
+
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState([]);
@@ -20,56 +29,84 @@ export default function App() {
   const isResponding = orbState === ORB_STATES.THINKING || orbState === ORB_STATES.SPEAKING;
 
   async function startSession() {
-    // Get a session token for OpenAI Realtime API
-    const tokenResponse = await fetch("/token");
-    const data = await tokenResponse.json();
-    const EPHEMERAL_KEY = data.value;
+    // Tracked in local vars (not state) so a failure partway through can
+    // tear down exactly what got created, even before the corresponding
+    // setState call has landed.
+    let pc;
+    let ms;
+    try {
+      // Get a session token for OpenAI Realtime API
+      const tokenResponse = await fetch("/token");
+      const data = await tokenResponse.json();
+      const EPHEMERAL_KEY = data.value;
 
-    // Create a peer connection
-    const pc = new RTCPeerConnection();
+      // Create a peer connection
+      pc = new RTCPeerConnection();
 
-    // Set up to play remote audio from the model
-    audioElement.current = document.createElement("audio");
-    audioElement.current.autoplay = true;
-    pc.ontrack = (e) => {
-      audioElement.current.srcObject = e.streams[0];
-      // Expose the same stream to the orb so it can analyze AI audio
-      // amplitude without opening a second connection to anything.
-      setRemoteStream(e.streams[0]);
-    };
+      // Set up to play remote audio from the model
+      audioElement.current = document.createElement("audio");
+      audioElement.current.autoplay = true;
+      pc.ontrack = (e) => {
+        audioElement.current.srcObject = e.streams[0];
+        // Expose the same stream to the orb so it can analyze AI audio
+        // amplitude without opening a second connection to anything.
+        setRemoteStream(e.streams[0]);
+      };
 
-    // Add local audio track for microphone input in the browser
-    const ms = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
-    pc.addTrack(ms.getTracks()[0]);
-    // Expose the same mic stream to the orb — no second getUserMedia call.
-    setMicStream(ms);
+      // Add local audio track for microphone input in the browser
+      ms = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      pc.addTrack(ms.getTracks()[0]);
+      // Expose the same mic stream to the orb — no second getUserMedia call.
+      setMicStream(ms);
 
-    // Set up data channel for sending and receiving events
-    const dc = pc.createDataChannel("oai-events");
-    setDataChannel(dc);
+      // Set up data channel for sending and receiving events
+      const dc = pc.createDataChannel("oai-events");
+      setDataChannel(dc);
 
-    // Start the session using the Session Description Protocol (SDP)
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
+      // Start the session using the Session Description Protocol (SDP)
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
 
-    const baseUrl = "https://api.openai.com/v1/realtime/calls";
-    const model = "gpt-realtime";
-    const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
-      method: "POST",
-      body: offer.sdp,
-      headers: {
-        Authorization: `Bearer ${EPHEMERAL_KEY}`,
-        "Content-Type": "application/sdp",
-      },
-    });
+      const baseUrl = "https://api.openai.com/v1/realtime/calls";
+      const model = "gpt-realtime";
+      const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+        method: "POST",
+        body: offer.sdp,
+        headers: {
+          Authorization: `Bearer ${EPHEMERAL_KEY}`,
+          "Content-Type": "application/sdp",
+        },
+      });
 
-    const sdp = await sdpResponse.text();
-    const answer = { type: "answer", sdp };
-    await pc.setRemoteDescription(answer);
+      if (!sdpResponse.ok) {
+        // A non-2xx response body isn't valid SDP (e.g. a 429 rate-limit
+        // returns an error JSON), and setRemoteDescription would otherwise
+        // fail with an opaque "Failed to parse SessionDescription" error.
+        // Surface the actual status instead.
+        throw new Error(
+          `Realtime API rejected the connection (${sdpResponse.status})`,
+        );
+      }
 
-    peerConnection.current = pc;
+      const sdp = await sdpResponse.text();
+      const answer = { type: "answer", sdp };
+      await pc.setRemoteDescription(answer);
+
+      peerConnection.current = pc;
+    } catch (err) {
+      // Tear down whatever partial state this attempt created so a retry
+      // starts clean instead of leaking an open mic or a half-set-up
+      // connection, and reset any state already exposed to the rest of the
+      // app so it doesn't look like a session is active.
+      ms?.getTracks().forEach((track) => track.stop());
+      pc?.close();
+      setMicStream(null);
+      setDataChannel(null);
+      setRemoteStream(null);
+      throw err;
+    }
   }
 
   // Stop current session, clean up peer connection and data channel
@@ -78,13 +115,12 @@ export default function App() {
       dataChannel.close();
     }
 
-    peerConnection.current.getSenders().forEach((sender) => {
-      if (sender.track) {
-        sender.track.stop();
-      }
-    });
-
     if (peerConnection.current) {
+      peerConnection.current.getSenders().forEach((sender) => {
+        if (sender.track) {
+          sender.track.stop();
+        }
+      });
       peerConnection.current.close();
     }
 
@@ -98,17 +134,20 @@ export default function App() {
   // Send a message to the model
   function sendClientEvent(message) {
     if (dataChannel) {
-      const timestamp = new Date().toLocaleTimeString();
-      message.event_id = message.event_id || crypto.randomUUID();
+      // Never mutate the caller's object - some callers (e.g. BusinessPanel's
+      // session.update payload) reuse the same module-level object across
+      // every session in a page load. Mutating it in place used to leave a
+      // stale `timestamp` field on it after the first send, which the
+      // server then rejected as an unknown parameter on every later
+      // reconnect - silently breaking session.update (instructions + tools)
+      // with no visible error until now.
+      const outgoing = { ...message, event_id: message.event_id || crypto.randomUUID() };
 
-      // send event before setting timestamp since the backend peer doesn't expect this field
-      dataChannel.send(JSON.stringify(message));
+      dataChannel.send(JSON.stringify(outgoing));
 
-      // if guard just in case the timestamp exists by miracle
-      if (!message.timestamp) {
-        message.timestamp = timestamp;
-      }
-      setEvents((prev) => [message, ...prev]);
+      setEvents((prev) =>
+        [{ ...outgoing, timestamp: new Date().toLocaleTimeString() }, ...prev].slice(0, MAX_EVENTS),
+      );
     } else {
       console.error(
         "Failed to send message - no data channel available",
@@ -147,7 +186,15 @@ export default function App() {
           event.timestamp = new Date().toLocaleTimeString();
         }
 
-        setEvents((prev) => [event, ...prev]);
+        // Surface server-side errors (e.g. a rejected session.update) instead
+        // of failing silently - these can otherwise leave the model without
+        // its instructions/tools for the rest of the session with no visible
+        // sign anything went wrong.
+        if (event.type === "error") {
+          console.error("Realtime API error:", event.error);
+        }
+
+        setEvents((prev) => [event, ...prev].slice(0, MAX_EVENTS));
       });
 
       // Set session active when the data channel is opened

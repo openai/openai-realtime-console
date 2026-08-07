@@ -34,11 +34,19 @@ const SECTION_RENDERERS = {
 const functionDescription = `
 Call this function whenever the user asks anything about Woyce Technologies
 as a company - services, team, process, pricing, case studies, testimonials,
-careers, partnerships, brand, or contact info. Always call it alongside your
-spoken answer (never instead of one) so a matching visual appears on screen.
-Call it every time this happens, even on back-to-back follow-up questions
-about the same topic - the visual must stay in sync with your current answer,
-not a previous one.
+careers, partnerships, brand, or contact info. Call it FIRST, as the very
+first thing you do in the turn, before you say a single word of your spoken
+answer - not after, not alongside the end of it. The visual needs to appear
+the instant you start talking, not after you finish. Call it every time this
+happens, even on back-to-back follow-up questions about the same topic - the
+visual must stay in sync with your current answer, not a previous one.
+
+Calling this function is NOT a complete answer by itself - it only makes a
+visual appear silently on screen. The user cannot see it speak, so if you
+call this function and then stop without saying anything out loud, the user
+gets a picture and total silence, which is broken. You must always continue
+talking immediately after this call, in the same turn, and actually give
+your spoken answer out loud.
 `;
 
 const sessionUpdate = {
@@ -51,7 +59,7 @@ ${businessSummary}
 
 SCOPE: Only discuss Woyce Technologies using the facts above. Do not answer general-knowledge questions, questions about other companies, personal/technical advice unrelated to Woyce, or any other off-topic request - even if you know the answer. If asked something outside this scope, briefly say you can only help with questions about Woyce Technologies and invite them to ask about the company (its services, team, process, case studies, etc). Do not call display_business_info for an off-topic question - only call it when the question is actually about the company.
 
-For EVERY on-topic question about the company, do both: give a brief spoken answer using the facts above, AND call display_business_info with the section that best matches so a visual appears alongside your answer.
+For EVERY on-topic question about the company, do both, IN THIS ORDER, WITHIN THE SAME TURN: (1) call display_business_info with the section that best matches, as your first action and before you say anything out loud, so the visual appears immediately; THEN (2) - without waiting for anything, without stopping, in that same turn - give your brief spoken answer using the facts above. Never speak first and call the function afterward or at the end - by then the visual arrives too late to feel connected to what you're saying. And never treat the function call alone as a finished response - a turn that calls the function and then goes silent has failed at its actual job, which is answering the user out loud. The function call is the opening move of the turn, immediately followed by you speaking, every single time.
 
 This is not a one-time action. Call display_business_info again on every single turn that touches the company - including follow-up questions, questions that stay on the same topic, and questions that repeat something already asked. The panel on screen must always match what you are currently saying, never something from an earlier turn. Never skip the call just because you already showed something similar before.
 
@@ -124,56 +132,112 @@ export default function BusinessPanel({ isSessionActive, sendClientEvent, events
   // actually said (see inferSection.js) instead of leaving the panel stale.
   const transcriptRef = useRef("");
   const gotFunctionCallRef = useRef(false);
+  // Prompting the model to call the tool before speaking sometimes makes it
+  // treat the function call as a complete response and stop, leaving the
+  // panel updated but the AI silent. These track the in-flight call's id
+  // and cap how many times we'll nudge the model to continue, so a single
+  // silent turn gets one shot at recovering into an actual spoken answer
+  // instead of looping forever if the model keeps doing it.
+  const pendingCallIdRef = useRef(null);
+  const autoContinueAttemptsRef = useRef(0);
+  // React can batch several data-channel messages arriving in the same
+  // tick into a single render (transcript deltas fire many times a second,
+  // and function_call_arguments.done is typically followed immediately by
+  // conversation.item.done / response.output_item.done / response.done /
+  // rate_limits.updated). Reacting to only events[0] would silently skip
+  // whichever of those landed in the same batch - dropping most transcript
+  // text and sometimes the function-call event itself. Track the last
+  // event actually processed and walk every event newer than it, oldest
+  // to newest, so nothing in a burst gets shadowed.
+  const lastSeenIdRef = useRef(null);
 
   useEffect(() => {
     if (!events || events.length === 0) return;
 
-    const firstEvent = events[events.length - 1];
-    if (!toolRegistered && firstEvent.type === "session.created") {
-      sendClientEvent(sessionUpdate);
-      setToolRegistered(true);
+    const lastSeenId = lastSeenIdRef.current;
+    let boundary = events.length;
+    if (lastSeenId != null) {
+      const idx = events.findIndex((e) => e.event_id === lastSeenId);
+      if (idx !== -1) boundary = idx;
     }
+    lastSeenIdRef.current = events[0].event_id ?? lastSeenIdRef.current;
 
-    const mostRecentEvent = events[0];
+    for (let i = boundary - 1; i >= 0; i--) {
+      const event = events[i];
 
-    if (mostRecentEvent.type === "response.created") {
-      transcriptRef.current = "";
-      gotFunctionCallRef.current = false;
-    }
-
-    if (mostRecentEvent.type === "response.output_audio_transcript.delta") {
-      transcriptRef.current += mostRecentEvent.delta || "";
-    }
-
-    // Update the panel the moment the model has decided what to show,
-    // rather than waiting for response.done (which only fires once the
-    // ENTIRE turn - including the rest of its spoken answer - is over).
-    // function_call_arguments.done fires as soon as that one function
-    // call's arguments finish streaming in, so the visual appears live
-    // while the AI is still talking instead of after a long delay. This
-    // fires fresh on every turn (see the session instructions above), so
-    // follow-up questions keep the panel synced to the AI's latest answer.
-    if (
-      mostRecentEvent.type === "response.function_call_arguments.done" &&
-      mostRecentEvent.name === "display_business_info"
-    ) {
-      try {
-        const args = JSON.parse(mostRecentEvent.arguments);
-        setView({ section: args.section, query: args.query || "" });
-        setUpdateCount((c) => c + 1);
-        gotFunctionCallRef.current = true;
-      } catch {
-        // Malformed arguments from the model - just ignore this call.
+      if (!toolRegistered && event.type === "session.created") {
+        sendClientEvent(sessionUpdate);
+        setToolRegistered(true);
       }
-    }
 
-    // Safety net: the model spoke a full answer but never called the tool.
-    // Guess the section from its own transcript so the panel still moves.
-    if (mostRecentEvent.type === "response.done" && !gotFunctionCallRef.current) {
-      const inferred = inferSectionFromText(transcriptRef.current);
-      if (inferred) {
-        setView({ section: inferred, query: "" });
-        setUpdateCount((c) => c + 1);
+      if (event.type === "response.created") {
+        transcriptRef.current = "";
+        gotFunctionCallRef.current = false;
+        pendingCallIdRef.current = null;
+      }
+
+      if (event.type === "response.output_audio_transcript.delta") {
+        transcriptRef.current += event.delta || "";
+      }
+
+      // Update the panel the moment the model has decided what to show,
+      // rather than waiting for response.done (which only fires once the
+      // ENTIRE turn - including the rest of its spoken answer - is over).
+      // function_call_arguments.done fires as soon as that one function
+      // call's arguments finish streaming in, so the visual appears live
+      // while the AI is still talking instead of after a long delay. This
+      // fires fresh on every turn (see the session instructions above), so
+      // follow-up questions keep the panel synced to the AI's latest answer.
+      if (
+        event.type === "response.function_call_arguments.done" &&
+        event.name === "display_business_info"
+      ) {
+        try {
+          const args = JSON.parse(event.arguments);
+          setView({ section: args.section, query: args.query || "" });
+          setUpdateCount((c) => c + 1);
+          gotFunctionCallRef.current = true;
+          pendingCallIdRef.current = event.call_id ?? null;
+        } catch {
+          // Malformed arguments from the model - just ignore this call.
+        }
+      }
+
+      if (event.type === "response.done") {
+        if (!gotFunctionCallRef.current) {
+          // Safety net: the model spoke a full answer but never called the
+          // tool. Guess the section from its own transcript so the panel
+          // still moves.
+          const inferred = inferSectionFromText(transcriptRef.current);
+          if (inferred) {
+            setView({ section: inferred, query: "" });
+            setUpdateCount((c) => c + 1);
+          }
+          autoContinueAttemptsRef.current = 0;
+        } else if (!transcriptRef.current.trim() && pendingCallIdRef.current) {
+          // Safety net: the model called the tool (so the panel is already
+          // showing the right visual) but stopped without ever speaking -
+          // the API is waiting on a function result before the model will
+          // continue. Give it a trivial one and ask it to continue so it
+          // actually delivers the spoken answer instead of leaving the
+          // turn silent. Capped so a model that keeps doing this can't
+          // loop forever.
+          if (autoContinueAttemptsRef.current < 2) {
+            autoContinueAttemptsRef.current += 1;
+            sendClientEvent({
+              type: "conversation.item.create",
+              item: {
+                type: "function_call_output",
+                call_id: pendingCallIdRef.current,
+                output: "Displayed on screen.",
+              },
+            });
+            sendClientEvent({ type: "response.create" });
+          }
+          pendingCallIdRef.current = null;
+        } else {
+          autoContinueAttemptsRef.current = 0;
+        }
       }
     }
   }, [events]);
